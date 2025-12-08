@@ -1,0 +1,371 @@
+// Prisma Schema for Mazeland Dashboard
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// 사용자 및 인증
+// ==========================================
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  password    String
+  name        String
+  role        Role     @default(MAZE_ADMIN)
+  companyId   String?
+  company     Company? @relation(fields: [companyId], references: [id])
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  marketingLogs MarketingLog[]
+  uploadHistory UploadHistory[]
+}
+
+enum Role {
+  SUPER_ADMIN
+  SKP_ADMIN
+  MAZE_ADMIN
+  CULTURE_ADMIN
+  AGENCY_ADMIN
+}
+
+// ==========================================
+// 회사 정보
+// ==========================================
+model Company {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  code        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  
+  users       User[]
+  settlements Settlement[]
+}
+
+// ==========================================
+// 엑셀 업로드 이력
+// ==========================================
+model UploadHistory {
+  id           String       @id @default(cuid())
+  fileName     String
+  fileSize     Int
+  periodStart  DateTime     // 데이터 기간 시작
+  periodEnd    DateTime     // 데이터 기간 종료
+  
+  // 집계 정보
+  onlineCount  Int          @default(0)  // 인터넷 총 인원
+  offlineCount Int          @default(0)  // 현장 총 인원
+  totalCount   Int          @default(0)  // 전체 인원
+  
+  status       UploadStatus @default(PENDING)
+  errorMessage String?
+  
+  uploadedById String
+  uploadedBy   User         @relation(fields: [uploadedById], references: [id])
+  
+  // 관계
+  onlineSales  OnlineSale[]
+  offlineSales OfflineSale[]
+  monthlySummary MonthlySummary?
+  
+  createdAt    DateTime     @default(now())
+  
+  @@index([createdAt])
+  @@index([periodStart, periodEnd])
+}
+
+enum UploadStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+// ==========================================
+// 인터넷 판매 상세 (엑셀 매핑)
+// ==========================================
+// 엑셀 컬럼: 업체 | 종류(채널) | 연령구분 | 입금가 | 일별인원... | 주계 | 월계
+model OnlineSale {
+  id              String   @id @default(cuid())
+  
+  // 기본 정보
+  saleDate        DateTime // 판매일
+  
+  // 업체 정보
+  vendor          String   // 업체명 (브이패스, 놀유니버스레져, 엘에스컴퍼니 등)
+  
+  // 채널 정보
+  channel         String   // 채널명 (네이버 메이즈랜드25년, 일반채널 입장권, 메이즈랜드 입장권 등)
+  channelCode     String   // 채널코드 (NAVER_MAZE_25, GENERAL_TICKET, MAZE_TICKET 등)
+  feeRate         Decimal  @default(0) // 수수료율 (%)
+  
+  // 상품 정보
+  ageGroup        String   // 연령구분 (성인, 청소년, 어린이)
+  unitPrice       Decimal  // 입금가 (수수료 차감 후 단가)
+  
+  // 판매 수량
+  quantity        Int      // 해당 일 판매 인원
+  
+  // 매출 계산
+  totalAmount     Decimal  // 총 매출 (quantity * 3000)
+  feeAmount       Decimal  // 수수료 금액
+  netAmount       Decimal  // 순매출 (입금액)
+  
+  // 업로드 연결
+  uploadHistoryId String
+  uploadHistory   UploadHistory @relation(fields: [uploadHistoryId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([saleDate])
+  @@index([channel])
+  @@index([channelCode])
+  @@index([vendor])
+  @@index([uploadHistoryId])
+}
+
+// ==========================================
+// 현장 판매 상세 (엑셀 매핑)
+// ==========================================
+// 엑셀 컬럼: 구분 | 일별인원... | 주계 | 월계
+model OfflineSale {
+  id              String   @id @default(cuid())
+  
+  // 기본 정보
+  saleDate        DateTime // 판매일
+  
+  // 구분 정보
+  category        String   // 구분 (개인, 여행사, 택시, 도민, 올패스, 순환버스할인, 학단 등)
+  categoryCode    String   // 구분코드 (INDIVIDUAL, TRAVEL_AGENCY, TAXI, RESIDENT, ALL_PASS 등)
+  
+  // 판매 수량
+  quantity        Int      // 해당 일 판매 인원
+  
+  // 매출 (현장은 수수료 없음)
+  unitPrice       Decimal  @default(3000) // 단가
+  totalAmount     Decimal  // 총 매출 (quantity * 3000)
+  
+  // 업로드 연결
+  uploadHistoryId String
+  uploadHistory   UploadHistory @relation(fields: [uploadHistoryId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([saleDate])
+  @@index([category])
+  @@index([categoryCode])
+  @@index([uploadHistoryId])
+}
+
+// ==========================================
+// 월간 집계 (월계 데이터)
+// ==========================================
+model MonthlySummary {
+  id              String   @id @default(cuid())
+  
+  // 기간
+  year            Int      // 연도
+  month           Int      // 월
+  
+  // 인터넷 판매 월계
+  onlineTotal     Int      // 인터넷 총 인원
+  onlineByChannel Json     // 채널별 인원 { "NAVER_MAZE_25": 459, "MAZE_TICKET": 30, ... }
+  onlineByAge     Json     // 연령별 인원 { "성인": 560, "청소년": 56, "어린이": 214 }
+  
+  // 현장 판매 월계
+  offlineTotal    Int      // 현장 총 인원
+  offlineByCategory Json   // 구분별 인원 { "개인": 1018, "여행사": 163, ... }
+  
+  // 전체 집계
+  grandTotal      Int      // 전체 인원
+  
+  // 매출 집계
+  onlineRevenue   Decimal  // 인터넷 매출
+  onlineFee       Decimal  // 인터넷 수수료
+  onlineNet       Decimal  // 인터넷 순매출
+  offlineRevenue  Decimal  // 현장 매출
+  totalRevenue    Decimal  // 총 매출
+  totalNet        Decimal  // 총 순매출
+  
+  // 업로드 연결
+  uploadHistoryId String   @unique
+  uploadHistory   UploadHistory @relation(fields: [uploadHistoryId], references: [id], onDelete: Cascade)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@unique([year, month])
+  @@index([year, month])
+}
+
+// ==========================================
+// 회사별 정산 데이터
+// ==========================================
+model Settlement {
+  id          String   @id @default(cuid())
+  periodStart DateTime
+  periodEnd   DateTime
+  companyId   String
+  company     Company  @relation(fields: [companyId], references: [id])
+  
+  totalCount  Int
+  onlineCount Int
+  offlineCount Int
+  
+  revenue     Decimal
+  income      Decimal
+  cost        Decimal
+  profit      Decimal
+  profitRate  Decimal
+  
+  details     Json?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([periodStart, periodEnd, companyId])
+  @@index([periodStart, periodEnd])
+}
+
+// ==========================================
+// 마케팅/운영 이슈 로그
+// ==========================================
+model MarketingLog {
+  id          String   @id @default(cuid())
+  logDate     DateTime
+  logType     LogType
+  title       String
+  content     String
+  impact      String?
+  
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([logDate])
+  @@index([logType])
+}
+
+enum LogType {
+  CAMPAIGN
+  WEATHER
+  EVENT
+  MAINTENANCE
+  OTHER
+}
+
+// ==========================================
+// AI 인사이트 캐시
+// ==========================================
+model AIInsight {
+  id          String   @id @default(cuid())
+  periodStart DateTime
+  periodEnd   DateTime
+  insightType String
+  content     String
+  
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime
+  
+  @@unique([periodStart, periodEnd, insightType])
+  @@index([expiresAt])
+}
+
+// ==========================================
+// 마스터 데이터: 인터넷 채널
+// ==========================================
+model Channel {
+  id          String   @id @default(cuid())
+  code        String   @unique  // NAVER_MAZE_25, MAZE_TICKET, etc.
+  name        String            // 네이버 메이즈랜드25년, 메이즈랜드 입장권, etc.
+  feeRate     Decimal  @default(10) // 수수료율 (%)
+  sortOrder   Int      @default(0)  // 정렬 순서
+  isActive    Boolean  @default(true)
+  
+  monthlyAgg  MonthlyAgg[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([isActive, sortOrder])
+}
+
+// ==========================================
+// 마스터 데이터: 현장 판매 구분
+// ==========================================
+model Category {
+  id          String   @id @default(cuid())
+  code        String   @unique  // INDIVIDUAL, TRAVEL_AGENCY, TAXI, etc.
+  name        String            // 개인, 여행사, 택시, etc.
+  sortOrder   Int      @default(0)  // 정렬 순서
+  isActive    Boolean  @default(true)
+  
+  monthlyAgg  MonthlyAgg[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([isActive, sortOrder])
+}
+
+// ==========================================
+// 월별 집계 데이터 (통합)
+// ==========================================
+// 엑셀 업로드, 수기 입력, 혼합 모두 이 테이블에 저장
+model MonthlyAgg {
+  id          String   @id @default(cuid())
+  
+  // 기간
+  year        Int
+  month       Int
+  
+  // 판매 타입
+  saleType    SaleType // INTERNET or ONSITE
+  
+  // 채널/구분 연결 (둘 중 하나만 사용)
+  channelId   String?
+  channel     Channel? @relation(fields: [channelId], references: [id])
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  
+  // 판매 수량
+  count       Int      @default(0)
+  
+  // 데이터 소스
+  source      DataSource @default(MANUAL)
+  
+  // 업로드 연결 (파일 업로드 시)
+  uploadHistoryId String?
+  
+  // 메타 정보
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([year, month, saleType, channelId, categoryId])
+  @@index([year, month])
+  @@index([saleType])
+  @@index([channelId])
+  @@index([categoryId])
+}
+
+enum SaleType {
+  INTERNET  // 인터넷 판매
+  ONSITE    // 현장 판매
+}
+
+enum DataSource {
+  FILE      // 엑셀 파일 업로드
+  MANUAL    // 수기 입력
+  MIXED     // 혼합 (업로드 + 수기 수정)
+}

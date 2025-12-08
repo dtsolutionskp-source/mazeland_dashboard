@@ -1,0 +1,92 @@
+{
+  "date": "2025-11-13",
+  "channelSales": [
+    {
+      "date": "2025-11-13",
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "NAVER_MAZE_25",
+      "count": 39,
+      "feeRate": 10,
+      "grossRevenue": 117000,
+      "fee": 11700,
+      "netRevenue": 105300
+    },
+    {
+      "date": "2025-11-13",
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "GENERAL_TICKET",
+      "count": 4,
+      "feeRate": 15,
+      "grossRevenue": 12000,
+      "fee": 1800,
+      "netRevenue": 10200
+    },
+    {
+      "date": "2025-11-13",
+      "channelCode": "MAZE_TICKET",
+      "channelName": "MAZE_TICKET",
+      "count": 1,
+      "feeRate": 12,
+      "grossRevenue": 3000,
+      "fee": 360,
+      "netRevenue": 2640
+    },
+    {
+      "date": "2025-11-13",
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "MAZE_TICKET_SINGLE",
+      "count": 2,
+      "feeRate": 12,
+      "grossRevenue": 6000,
+      "fee": 720,
+      "netRevenue": 5280
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-11-13",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "INDIVIDUAL",
+      "count": 69,
+      "revenue": 207000
+    },
+    {
+      "date": "2025-11-13",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "TRAVEL_AGENCY",
+      "count": 11,
+      "revenue": 33000
+    },
+    {
+      "date": "2025-11-13",
+      "categoryCode": "TAXI",
+      "categoryName": "TAXI",
+      "count": 2,
+      "revenue": 6000
+    },
+    {
+      "date": "2025-11-13",
+      "categoryCode": "RESIDENT",
+      "categoryName": "RESIDENT",
+      "count": 12,
+      "revenue": 36000
+    },
+    {
+      "date": "2025-11-13",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "ALL_PASS",
+      "count": 3,
+      "revenue": 9000
+    }
+  ],
+  "summary": {
+    "date": "2025-11-13",
+    "onlineCount": 49,
+    "offlineCount": 100,
+    "totalCount": 149,
+    "onlineNetRevenue": 123420,
+    "offlineRevenue": 300000,
+    "totalNetRevenue": 423420
+  },
+  "source": "file"
+}

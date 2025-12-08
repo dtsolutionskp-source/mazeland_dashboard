@@ -1,0 +1,92 @@
+{
+  "date": "2025-11-19",
+  "channelSales": [
+    {
+      "date": "2025-11-19",
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "NAVER_MAZE_25",
+      "count": 11,
+      "feeRate": 10,
+      "grossRevenue": 33000,
+      "fee": 3300,
+      "netRevenue": 29700
+    },
+    {
+      "date": "2025-11-19",
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "GENERAL_TICKET",
+      "count": 1,
+      "feeRate": 15,
+      "grossRevenue": 3000,
+      "fee": 450,
+      "netRevenue": 2550
+    },
+    {
+      "date": "2025-11-19",
+      "channelCode": "MAZE_TICKET",
+      "channelName": "MAZE_TICKET",
+      "count": 0,
+      "feeRate": 12,
+      "grossRevenue": 0,
+      "fee": 0,
+      "netRevenue": 0
+    },
+    {
+      "date": "2025-11-19",
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "MAZE_TICKET_SINGLE",
+      "count": 0,
+      "feeRate": 12,
+      "grossRevenue": 0,
+      "fee": 0,
+      "netRevenue": 0
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-11-19",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "INDIVIDUAL",
+      "count": 24,
+      "revenue": 72000
+    },
+    {
+      "date": "2025-11-19",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "TRAVEL_AGENCY",
+      "count": 3,
+      "revenue": 9000
+    },
+    {
+      "date": "2025-11-19",
+      "categoryCode": "TAXI",
+      "categoryName": "TAXI",
+      "count": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2025-11-19",
+      "categoryCode": "RESIDENT",
+      "categoryName": "RESIDENT",
+      "count": 4,
+      "revenue": 12000
+    },
+    {
+      "date": "2025-11-19",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "ALL_PASS",
+      "count": 1,
+      "revenue": 3000
+    }
+  ],
+  "summary": {
+    "date": "2025-11-19",
+    "onlineCount": 14,
+    "offlineCount": 35,
+    "totalCount": 49,
+    "onlineNetRevenue": 32250,
+    "offlineRevenue": 105000,
+    "totalNetRevenue": 137250
+  },
+  "source": "file"
+}

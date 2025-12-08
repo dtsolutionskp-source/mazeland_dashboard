@@ -1,0 +1,2994 @@
+{
+  "year": 2025,
+  "month": 11,
+  "source": "file",
+  "uploadedAt": "2025-12-05T11:19:13.260Z",
+  "feeSettings": {
+    "year": 2025,
+    "month": 11,
+    "channels": [
+      {
+        "channelCode": "NAVER_MAZE_25",
+        "channelName": "네이버 메이즈랜드25년",
+        "year": 2025,
+        "month": 11,
+        "feeRate": 10,
+        "source": "default"
+      },
+      {
+        "channelCode": "GENERAL_TICKET",
+        "channelName": "일반채널 입장권",
+        "year": 2025,
+        "month": 11,
+        "feeRate": 15,
+        "source": "default"
+      },
+      {
+        "channelCode": "MAZE_TICKET",
+        "channelName": "메이즈랜드 입장권",
+        "year": 2025,
+        "month": 11,
+        "feeRate": 12,
+        "source": "default"
+      },
+      {
+        "channelCode": "MAZE_TICKET_SINGLE",
+        "channelName": "메이즈랜드 입장권(단품)",
+        "year": 2025,
+        "month": 11,
+        "feeRate": 12,
+        "source": "default"
+      },
+      {
+        "channelCode": "OTHER",
+        "channelName": "기타",
+        "year": 2025,
+        "month": 11,
+        "feeRate": 15,
+        "source": "default"
+      }
+    ],
+    "overrides": [],
+    "updatedAt": "2025-12-05T11:19:13.259Z"
+  },
+  "dailyData": [
+    {
+      "date": "2025-11-08",
+      "channelSales": [
+        {
+          "date": "2025-11-08",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 24,
+          "feeRate": 10,
+          "grossRevenue": 72000,
+          "fee": 7200,
+          "netRevenue": 64800
+        },
+        {
+          "date": "2025-11-08",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 3,
+          "feeRate": 15,
+          "grossRevenue": 9000,
+          "fee": 1350,
+          "netRevenue": 7650
+        },
+        {
+          "date": "2025-11-08",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-08",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-08",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-08",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 54,
+          "revenue": 162000
+        },
+        {
+          "date": "2025-11-08",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 9,
+          "revenue": 27000
+        },
+        {
+          "date": "2025-11-08",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-08",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 10,
+          "revenue": 30000
+        },
+        {
+          "date": "2025-11-08",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 3,
+          "revenue": 9000
+        },
+        {
+          "date": "2025-11-08",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-08",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-08",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-08",
+        "onlineCount": 30,
+        "offlineCount": 78,
+        "totalCount": 108,
+        "onlineNetRevenue": 80370,
+        "offlineRevenue": 234000,
+        "totalNetRevenue": 314370
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-09",
+      "channelSales": [
+        {
+          "date": "2025-11-09",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 27,
+          "feeRate": 10,
+          "grossRevenue": 81000,
+          "fee": 8100,
+          "netRevenue": 72900
+        },
+        {
+          "date": "2025-11-09",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 3,
+          "feeRate": 15,
+          "grossRevenue": 9000,
+          "fee": 1350,
+          "netRevenue": 7650
+        },
+        {
+          "date": "2025-11-09",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-09",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-09",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-09",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 37,
+          "revenue": 111000
+        },
+        {
+          "date": "2025-11-09",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 6,
+          "revenue": 18000
+        },
+        {
+          "date": "2025-11-09",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-09",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 7,
+          "revenue": 21000
+        },
+        {
+          "date": "2025-11-09",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-09",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-09",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-09",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-09",
+        "onlineCount": 33,
+        "offlineCount": 53,
+        "totalCount": 86,
+        "onlineNetRevenue": 88470,
+        "offlineRevenue": 159000,
+        "totalNetRevenue": 247470
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-10",
+      "channelSales": [
+        {
+          "date": "2025-11-10",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 24,
+          "feeRate": 10,
+          "grossRevenue": 72000,
+          "fee": 7200,
+          "netRevenue": 64800
+        },
+        {
+          "date": "2025-11-10",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 3,
+          "feeRate": 15,
+          "grossRevenue": 9000,
+          "fee": 1350,
+          "netRevenue": 7650
+        },
+        {
+          "date": "2025-11-10",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-10",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-10",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-10",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 43,
+          "revenue": 129000
+        },
+        {
+          "date": "2025-11-10",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 7,
+          "revenue": 21000
+        },
+        {
+          "date": "2025-11-10",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-10",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 8,
+          "revenue": 24000
+        },
+        {
+          "date": "2025-11-10",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-10",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-10",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-10",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-10",
+        "onlineCount": 30,
+        "offlineCount": 62,
+        "totalCount": 92,
+        "onlineNetRevenue": 80370,
+        "offlineRevenue": 186000,
+        "totalNetRevenue": 266370
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-11",
+      "channelSales": [
+        {
+          "date": "2025-11-11",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 33,
+          "feeRate": 10,
+          "grossRevenue": 99000,
+          "fee": 9900,
+          "netRevenue": 89100
+        },
+        {
+          "date": "2025-11-11",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 4,
+          "feeRate": 15,
+          "grossRevenue": 12000,
+          "fee": 1800,
+          "netRevenue": 10200
+        },
+        {
+          "date": "2025-11-11",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-11",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-11",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-11",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 21,
+          "revenue": 63000
+        },
+        {
+          "date": "2025-11-11",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 3,
+          "revenue": 9000
+        },
+        {
+          "date": "2025-11-11",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-11",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-11",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-11",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-11",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-11",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-11",
+        "onlineCount": 40,
+        "offlineCount": 30,
+        "totalCount": 70,
+        "onlineNetRevenue": 107220,
+        "offlineRevenue": 90000,
+        "totalNetRevenue": 197220
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-12",
+      "channelSales": [
+        {
+          "date": "2025-11-12",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 22,
+          "feeRate": 10,
+          "grossRevenue": 66000,
+          "fee": 6600,
+          "netRevenue": 59400
+        },
+        {
+          "date": "2025-11-12",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 2,
+          "feeRate": 15,
+          "grossRevenue": 6000,
+          "fee": 900,
+          "netRevenue": 5100
+        },
+        {
+          "date": "2025-11-12",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-12",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-12",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-12",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 15,
+          "revenue": 45000
+        },
+        {
+          "date": "2025-11-12",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-12",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-12",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 3,
+          "revenue": 9000
+        },
+        {
+          "date": "2025-11-12",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-12",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-12",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-12",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-12",
+        "onlineCount": 27,
+        "offlineCount": 22,
+        "totalCount": 49,
+        "onlineNetRevenue": 72420,
+        "offlineRevenue": 66000,
+        "totalNetRevenue": 138420
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-13",
+      "channelSales": [
+        {
+          "date": "2025-11-13",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 40,
+          "feeRate": 10,
+          "grossRevenue": 120000,
+          "fee": 12000,
+          "netRevenue": 108000
+        },
+        {
+          "date": "2025-11-13",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 4,
+          "feeRate": 15,
+          "grossRevenue": 12000,
+          "fee": 1800,
+          "netRevenue": 10200
+        },
+        {
+          "date": "2025-11-13",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-13",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 3,
+          "feeRate": 12,
+          "grossRevenue": 9000,
+          "fee": 1080,
+          "netRevenue": 7920
+        },
+        {
+          "date": "2025-11-13",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-13",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 70,
+          "revenue": 210000
+        },
+        {
+          "date": "2025-11-13",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 11,
+          "revenue": 33000
+        },
+        {
+          "date": "2025-11-13",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 3,
+          "revenue": 9000
+        },
+        {
+          "date": "2025-11-13",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 13,
+          "revenue": 39000
+        },
+        {
+          "date": "2025-11-13",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-13",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-13",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-13",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-13",
+        "onlineCount": 49,
+        "offlineCount": 101,
+        "totalCount": 150,
+        "onlineNetRevenue": 131400,
+        "offlineRevenue": 303000,
+        "totalNetRevenue": 434400
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-14",
+      "channelSales": [
+        {
+          "date": "2025-11-14",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 55,
+          "feeRate": 10,
+          "grossRevenue": 165000,
+          "fee": 16500,
+          "netRevenue": 148500
+        },
+        {
+          "date": "2025-11-14",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 6,
+          "feeRate": 15,
+          "grossRevenue": 18000,
+          "fee": 2700,
+          "netRevenue": 15300
+        },
+        {
+          "date": "2025-11-14",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-14",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 4,
+          "feeRate": 12,
+          "grossRevenue": 12000,
+          "fee": 1440,
+          "netRevenue": 10560
+        },
+        {
+          "date": "2025-11-14",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-14",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 65,
+          "revenue": 195000
+        },
+        {
+          "date": "2025-11-14",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 10,
+          "revenue": 30000
+        },
+        {
+          "date": "2025-11-14",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-14",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 12,
+          "revenue": 36000
+        },
+        {
+          "date": "2025-11-14",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-14",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-14",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-14",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-14",
+        "onlineCount": 67,
+        "offlineCount": 93,
+        "totalCount": 160,
+        "onlineNetRevenue": 179640,
+        "offlineRevenue": 279000,
+        "totalNetRevenue": 458640
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-15",
+      "channelSales": [
+        {
+          "date": "2025-11-15",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 74,
+          "feeRate": 10,
+          "grossRevenue": 222000,
+          "fee": 22200,
+          "netRevenue": 199800
+        },
+        {
+          "date": "2025-11-15",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 8,
+          "feeRate": 15,
+          "grossRevenue": 24000,
+          "fee": 3600,
+          "netRevenue": 20400
+        },
+        {
+          "date": "2025-11-15",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 3,
+          "feeRate": 12,
+          "grossRevenue": 9000,
+          "fee": 1080,
+          "netRevenue": 7920
+        },
+        {
+          "date": "2025-11-15",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 5,
+          "feeRate": 12,
+          "grossRevenue": 15000,
+          "fee": 1800,
+          "netRevenue": 13200
+        },
+        {
+          "date": "2025-11-15",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-15",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 99,
+          "revenue": 297000
+        },
+        {
+          "date": "2025-11-15",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 16,
+          "revenue": 48000
+        },
+        {
+          "date": "2025-11-15",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-15",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 18,
+          "revenue": 54000
+        },
+        {
+          "date": "2025-11-15",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 5,
+          "revenue": 15000
+        },
+        {
+          "date": "2025-11-15",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-15",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-15",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-15",
+        "onlineCount": 90,
+        "offlineCount": 142,
+        "totalCount": 232,
+        "onlineNetRevenue": 241320,
+        "offlineRevenue": 426000,
+        "totalNetRevenue": 667320
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-16",
+      "channelSales": [
+        {
+          "date": "2025-11-16",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 35,
+          "feeRate": 10,
+          "grossRevenue": 105000,
+          "fee": 10500,
+          "netRevenue": 94500
+        },
+        {
+          "date": "2025-11-16",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 4,
+          "feeRate": 15,
+          "grossRevenue": 12000,
+          "fee": 1800,
+          "netRevenue": 10200
+        },
+        {
+          "date": "2025-11-16",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-16",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 3,
+          "feeRate": 12,
+          "grossRevenue": 9000,
+          "fee": 1080,
+          "netRevenue": 7920
+        },
+        {
+          "date": "2025-11-16",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-16",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 41,
+          "revenue": 123000
+        },
+        {
+          "date": "2025-11-16",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 7,
+          "revenue": 21000
+        },
+        {
+          "date": "2025-11-16",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-16",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 8,
+          "revenue": 24000
+        },
+        {
+          "date": "2025-11-16",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-16",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-16",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-16",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-16",
+        "onlineCount": 43,
+        "offlineCount": 60,
+        "totalCount": 103,
+        "onlineNetRevenue": 115260,
+        "offlineRevenue": 180000,
+        "totalNetRevenue": 295260
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-17",
+      "channelSales": [
+        {
+          "date": "2025-11-17",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 32,
+          "feeRate": 10,
+          "grossRevenue": 96000,
+          "fee": 9600,
+          "netRevenue": 86400
+        },
+        {
+          "date": "2025-11-17",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 4,
+          "feeRate": 15,
+          "grossRevenue": 12000,
+          "fee": 1800,
+          "netRevenue": 10200
+        },
+        {
+          "date": "2025-11-17",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-17",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-17",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-17",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 28,
+          "revenue": 84000
+        },
+        {
+          "date": "2025-11-17",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-17",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-17",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 5,
+          "revenue": 15000
+        },
+        {
+          "date": "2025-11-17",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-17",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-17",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-17",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-17",
+        "onlineCount": 39,
+        "offlineCount": 40,
+        "totalCount": 79,
+        "onlineNetRevenue": 104520,
+        "offlineRevenue": 120000,
+        "totalNetRevenue": 224520
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-18",
+      "channelSales": [
+        {
+          "date": "2025-11-18",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 10,
+          "feeRate": 10,
+          "grossRevenue": 30000,
+          "fee": 3000,
+          "netRevenue": 27000
+        },
+        {
+          "date": "2025-11-18",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 1,
+          "feeRate": 15,
+          "grossRevenue": 3000,
+          "fee": 450,
+          "netRevenue": 2550
+        },
+        {
+          "date": "2025-11-18",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 0,
+          "feeRate": 12,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        },
+        {
+          "date": "2025-11-18",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-18",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-18",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 26,
+          "revenue": 78000
+        },
+        {
+          "date": "2025-11-18",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-18",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-18",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 5,
+          "revenue": 15000
+        },
+        {
+          "date": "2025-11-18",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-18",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-18",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-18",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-18",
+        "onlineCount": 12,
+        "offlineCount": 37,
+        "totalCount": 49,
+        "onlineNetRevenue": 32190,
+        "offlineRevenue": 111000,
+        "totalNetRevenue": 143190
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-19",
+      "channelSales": [
+        {
+          "date": "2025-11-19",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 11,
+          "feeRate": 10,
+          "grossRevenue": 33000,
+          "fee": 3300,
+          "netRevenue": 29700
+        },
+        {
+          "date": "2025-11-19",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 1,
+          "feeRate": 15,
+          "grossRevenue": 3000,
+          "fee": 450,
+          "netRevenue": 2550
+        },
+        {
+          "date": "2025-11-19",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 0,
+          "feeRate": 12,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        },
+        {
+          "date": "2025-11-19",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-19",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-19",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 24,
+          "revenue": 72000
+        },
+        {
+          "date": "2025-11-19",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-19",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-19",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-19",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-19",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-19",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-19",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-19",
+        "onlineCount": 13,
+        "offlineCount": 34,
+        "totalCount": 47,
+        "onlineNetRevenue": 34890,
+        "offlineRevenue": 102000,
+        "totalNetRevenue": 136890
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-20",
+      "channelSales": [
+        {
+          "date": "2025-11-20",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 29,
+          "feeRate": 10,
+          "grossRevenue": 87000,
+          "fee": 8700,
+          "netRevenue": 78300
+        },
+        {
+          "date": "2025-11-20",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 3,
+          "feeRate": 15,
+          "grossRevenue": 9000,
+          "fee": 1350,
+          "netRevenue": 7650
+        },
+        {
+          "date": "2025-11-20",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-20",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-20",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-20",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 33,
+          "revenue": 99000
+        },
+        {
+          "date": "2025-11-20",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 5,
+          "revenue": 15000
+        },
+        {
+          "date": "2025-11-20",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-20",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 6,
+          "revenue": 18000
+        },
+        {
+          "date": "2025-11-20",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-20",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-20",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-20",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-20",
+        "onlineCount": 35,
+        "offlineCount": 47,
+        "totalCount": 82,
+        "onlineNetRevenue": 93870,
+        "offlineRevenue": 141000,
+        "totalNetRevenue": 234870
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-21",
+      "channelSales": [
+        {
+          "date": "2025-11-21",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 26,
+          "feeRate": 10,
+          "grossRevenue": 78000,
+          "fee": 7800,
+          "netRevenue": 70200
+        },
+        {
+          "date": "2025-11-21",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 3,
+          "feeRate": 15,
+          "grossRevenue": 9000,
+          "fee": 1350,
+          "netRevenue": 7650
+        },
+        {
+          "date": "2025-11-21",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-21",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-21",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-21",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 43,
+          "revenue": 129000
+        },
+        {
+          "date": "2025-11-21",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 7,
+          "revenue": 21000
+        },
+        {
+          "date": "2025-11-21",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-21",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 8,
+          "revenue": 24000
+        },
+        {
+          "date": "2025-11-21",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-21",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-21",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-21",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-21",
+        "onlineCount": 32,
+        "offlineCount": 62,
+        "totalCount": 94,
+        "onlineNetRevenue": 85770,
+        "offlineRevenue": 186000,
+        "totalNetRevenue": 271770
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-22",
+      "channelSales": [
+        {
+          "date": "2025-11-22",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 38,
+          "feeRate": 10,
+          "grossRevenue": 114000,
+          "fee": 11400,
+          "netRevenue": 102600
+        },
+        {
+          "date": "2025-11-22",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 4,
+          "feeRate": 15,
+          "grossRevenue": 12000,
+          "fee": 1800,
+          "netRevenue": 10200
+        },
+        {
+          "date": "2025-11-22",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-22",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 3,
+          "feeRate": 12,
+          "grossRevenue": 9000,
+          "fee": 1080,
+          "netRevenue": 7920
+        },
+        {
+          "date": "2025-11-22",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-22",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 54,
+          "revenue": 162000
+        },
+        {
+          "date": "2025-11-22",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 9,
+          "revenue": 27000
+        },
+        {
+          "date": "2025-11-22",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-22",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 10,
+          "revenue": 30000
+        },
+        {
+          "date": "2025-11-22",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 3,
+          "revenue": 9000
+        },
+        {
+          "date": "2025-11-22",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-22",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-22",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-22",
+        "onlineCount": 47,
+        "offlineCount": 78,
+        "totalCount": 125,
+        "onlineNetRevenue": 126000,
+        "offlineRevenue": 234000,
+        "totalNetRevenue": 360000
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-23",
+      "channelSales": [
+        {
+          "date": "2025-11-23",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 29,
+          "feeRate": 10,
+          "grossRevenue": 87000,
+          "fee": 8700,
+          "netRevenue": 78300
+        },
+        {
+          "date": "2025-11-23",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 3,
+          "feeRate": 15,
+          "grossRevenue": 9000,
+          "fee": 1350,
+          "netRevenue": 7650
+        },
+        {
+          "date": "2025-11-23",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-23",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-23",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-23",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 66,
+          "revenue": 198000
+        },
+        {
+          "date": "2025-11-23",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 11,
+          "revenue": 33000
+        },
+        {
+          "date": "2025-11-23",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-23",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 12,
+          "revenue": 36000
+        },
+        {
+          "date": "2025-11-23",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-23",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-23",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-23",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-23",
+        "onlineCount": 35,
+        "offlineCount": 95,
+        "totalCount": 130,
+        "onlineNetRevenue": 93870,
+        "offlineRevenue": 285000,
+        "totalNetRevenue": 378870
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-24",
+      "channelSales": [
+        {
+          "date": "2025-11-24",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 33,
+          "feeRate": 10,
+          "grossRevenue": 99000,
+          "fee": 9900,
+          "netRevenue": 89100
+        },
+        {
+          "date": "2025-11-24",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 4,
+          "feeRate": 15,
+          "grossRevenue": 12000,
+          "fee": 1800,
+          "netRevenue": 10200
+        },
+        {
+          "date": "2025-11-24",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-24",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-24",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-24",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 41,
+          "revenue": 123000
+        },
+        {
+          "date": "2025-11-24",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 7,
+          "revenue": 21000
+        },
+        {
+          "date": "2025-11-24",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-24",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 8,
+          "revenue": 24000
+        },
+        {
+          "date": "2025-11-24",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-24",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-24",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-24",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-24",
+        "onlineCount": 40,
+        "offlineCount": 60,
+        "totalCount": 100,
+        "onlineNetRevenue": 107220,
+        "offlineRevenue": 180000,
+        "totalNetRevenue": 287220
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-25",
+      "channelSales": [
+        {
+          "date": "2025-11-25",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 19,
+          "feeRate": 10,
+          "grossRevenue": 57000,
+          "fee": 5700,
+          "netRevenue": 51300
+        },
+        {
+          "date": "2025-11-25",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 2,
+          "feeRate": 15,
+          "grossRevenue": 6000,
+          "fee": 900,
+          "netRevenue": 5100
+        },
+        {
+          "date": "2025-11-25",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-25",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-25",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-25",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 17,
+          "revenue": 51000
+        },
+        {
+          "date": "2025-11-25",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 3,
+          "revenue": 9000
+        },
+        {
+          "date": "2025-11-25",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-25",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 3,
+          "revenue": 9000
+        },
+        {
+          "date": "2025-11-25",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-25",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-25",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-25",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-25",
+        "onlineCount": 23,
+        "offlineCount": 25,
+        "totalCount": 48,
+        "onlineNetRevenue": 61680,
+        "offlineRevenue": 75000,
+        "totalNetRevenue": 136680
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-26",
+      "channelSales": [
+        {
+          "date": "2025-11-26",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 26,
+          "feeRate": 10,
+          "grossRevenue": 78000,
+          "fee": 7800,
+          "netRevenue": 70200
+        },
+        {
+          "date": "2025-11-26",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 3,
+          "feeRate": 15,
+          "grossRevenue": 9000,
+          "fee": 1350,
+          "netRevenue": 7650
+        },
+        {
+          "date": "2025-11-26",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-26",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-26",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-26",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 43,
+          "revenue": 129000
+        },
+        {
+          "date": "2025-11-26",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 7,
+          "revenue": 21000
+        },
+        {
+          "date": "2025-11-26",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-26",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 8,
+          "revenue": 24000
+        },
+        {
+          "date": "2025-11-26",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-26",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-26",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-26",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-26",
+        "onlineCount": 32,
+        "offlineCount": 62,
+        "totalCount": 94,
+        "onlineNetRevenue": 85770,
+        "offlineRevenue": 186000,
+        "totalNetRevenue": 271770
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-27",
+      "channelSales": [
+        {
+          "date": "2025-11-27",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 8,
+          "feeRate": 10,
+          "grossRevenue": 24000,
+          "fee": 2400,
+          "netRevenue": 21600
+        },
+        {
+          "date": "2025-11-27",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 1,
+          "feeRate": 15,
+          "grossRevenue": 3000,
+          "fee": 450,
+          "netRevenue": 2550
+        },
+        {
+          "date": "2025-11-27",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 0,
+          "feeRate": 12,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        },
+        {
+          "date": "2025-11-27",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-27",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-27",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 24,
+          "revenue": 72000
+        },
+        {
+          "date": "2025-11-27",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-27",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-27",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-27",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-27",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-27",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-27",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-27",
+        "onlineCount": 10,
+        "offlineCount": 34,
+        "totalCount": 44,
+        "onlineNetRevenue": 26790,
+        "offlineRevenue": 102000,
+        "totalNetRevenue": 128790
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-28",
+      "channelSales": [
+        {
+          "date": "2025-11-28",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 17,
+          "feeRate": 10,
+          "grossRevenue": 51000,
+          "fee": 5100,
+          "netRevenue": 45900
+        },
+        {
+          "date": "2025-11-28",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 2,
+          "feeRate": 15,
+          "grossRevenue": 6000,
+          "fee": 900,
+          "netRevenue": 5100
+        },
+        {
+          "date": "2025-11-28",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-28",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-28",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-28",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 31,
+          "revenue": 93000
+        },
+        {
+          "date": "2025-11-28",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 5,
+          "revenue": 15000
+        },
+        {
+          "date": "2025-11-28",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 1,
+          "revenue": 3000
+        },
+        {
+          "date": "2025-11-28",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 6,
+          "revenue": 18000
+        },
+        {
+          "date": "2025-11-28",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 2,
+          "revenue": 6000
+        },
+        {
+          "date": "2025-11-28",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-28",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-28",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-28",
+        "onlineCount": 21,
+        "offlineCount": 45,
+        "totalCount": 66,
+        "onlineNetRevenue": 56280,
+        "offlineRevenue": 135000,
+        "totalNetRevenue": 191280
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-29",
+      "channelSales": [
+        {
+          "date": "2025-11-29",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 40,
+          "feeRate": 10,
+          "grossRevenue": 120000,
+          "fee": 12000,
+          "netRevenue": 108000
+        },
+        {
+          "date": "2025-11-29",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 4,
+          "feeRate": 15,
+          "grossRevenue": 12000,
+          "fee": 1800,
+          "netRevenue": 10200
+        },
+        {
+          "date": "2025-11-29",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-29",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 3,
+          "feeRate": 12,
+          "grossRevenue": 9000,
+          "fee": 1080,
+          "netRevenue": 7920
+        },
+        {
+          "date": "2025-11-29",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-29",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 71,
+          "revenue": 213000
+        },
+        {
+          "date": "2025-11-29",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 11,
+          "revenue": 33000
+        },
+        {
+          "date": "2025-11-29",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 3,
+          "revenue": 9000
+        },
+        {
+          "date": "2025-11-29",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 13,
+          "revenue": 39000
+        },
+        {
+          "date": "2025-11-29",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-29",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-29",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-29",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-29",
+        "onlineCount": 49,
+        "offlineCount": 102,
+        "totalCount": 151,
+        "onlineNetRevenue": 131400,
+        "offlineRevenue": 306000,
+        "totalNetRevenue": 437400
+      },
+      "source": "file"
+    },
+    {
+      "date": "2025-11-30",
+      "channelSales": [
+        {
+          "date": "2025-11-30",
+          "channelCode": "NAVER_MAZE_25",
+          "channelName": "네이버 메이즈랜드25년",
+          "count": 24,
+          "feeRate": 10,
+          "grossRevenue": 72000,
+          "fee": 7200,
+          "netRevenue": 64800
+        },
+        {
+          "date": "2025-11-30",
+          "channelCode": "GENERAL_TICKET",
+          "channelName": "일반채널 입장권",
+          "count": 3,
+          "feeRate": 15,
+          "grossRevenue": 9000,
+          "fee": 1350,
+          "netRevenue": 7650
+        },
+        {
+          "date": "2025-11-30",
+          "channelCode": "MAZE_TICKET",
+          "channelName": "메이즈랜드 입장권",
+          "count": 1,
+          "feeRate": 12,
+          "grossRevenue": 3000,
+          "fee": 360,
+          "netRevenue": 2640
+        },
+        {
+          "date": "2025-11-30",
+          "channelCode": "MAZE_TICKET_SINGLE",
+          "channelName": "메이즈랜드 입장권(단품)",
+          "count": 2,
+          "feeRate": 12,
+          "grossRevenue": 6000,
+          "fee": 720,
+          "netRevenue": 5280
+        },
+        {
+          "date": "2025-11-30",
+          "channelCode": "OTHER",
+          "channelName": "기타",
+          "count": 0,
+          "feeRate": 15,
+          "grossRevenue": 0,
+          "fee": 0,
+          "netRevenue": 0
+        }
+      ],
+      "categorySales": [
+        {
+          "date": "2025-11-30",
+          "categoryCode": "INDIVIDUAL",
+          "categoryName": "개인",
+          "count": 69,
+          "revenue": 207000
+        },
+        {
+          "date": "2025-11-30",
+          "categoryCode": "TRAVEL_AGENCY",
+          "categoryName": "여행사",
+          "count": 11,
+          "revenue": 33000
+        },
+        {
+          "date": "2025-11-30",
+          "categoryCode": "TAXI",
+          "categoryName": "택시",
+          "count": 3,
+          "revenue": 9000
+        },
+        {
+          "date": "2025-11-30",
+          "categoryCode": "RESIDENT",
+          "categoryName": "도민",
+          "count": 13,
+          "revenue": 39000
+        },
+        {
+          "date": "2025-11-30",
+          "categoryCode": "ALL_PASS",
+          "categoryName": "올패스",
+          "count": 4,
+          "revenue": 12000
+        },
+        {
+          "date": "2025-11-30",
+          "categoryCode": "SHUTTLE_DISCOUNT",
+          "categoryName": "순환버스할인",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-30",
+          "categoryCode": "SCHOOL_GROUP",
+          "categoryName": "학단",
+          "count": 0,
+          "revenue": 0
+        },
+        {
+          "date": "2025-11-30",
+          "categoryCode": "OTHER",
+          "categoryName": "기타",
+          "count": 0,
+          "revenue": 0
+        }
+      ],
+      "summary": {
+        "date": "2025-11-30",
+        "onlineCount": 30,
+        "offlineCount": 100,
+        "totalCount": 130,
+        "onlineNetRevenue": 80370,
+        "offlineRevenue": 300000,
+        "totalNetRevenue": 380370
+      },
+      "source": "file"
+    }
+  ],
+  "channelAggs": [
+    {
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "네이버 메이즈랜드25년",
+      "avgFeeRate": 10,
+      "totalCount": 676,
+      "grossRevenue": 2028000,
+      "totalFee": 202800,
+      "netRevenue": 1825200
+    },
+    {
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "일반채널 입장권",
+      "avgFeeRate": 15,
+      "totalCount": 75,
+      "grossRevenue": 225000,
+      "totalFee": 33750,
+      "netRevenue": 191250
+    },
+    {
+      "channelCode": "MAZE_TICKET",
+      "channelName": "메이즈랜드 입장권",
+      "avgFeeRate": 12,
+      "totalCount": 26,
+      "grossRevenue": 78000,
+      "totalFee": 9360,
+      "netRevenue": 68640
+    },
+    {
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "메이즈랜드 입장권(단품)",
+      "avgFeeRate": 12,
+      "totalCount": 50,
+      "grossRevenue": 150000,
+      "totalFee": 18000,
+      "netRevenue": 132000
+    },
+    {
+      "channelCode": "OTHER",
+      "channelName": "기타",
+      "avgFeeRate": 0,
+      "totalCount": 0,
+      "grossRevenue": 0,
+      "totalFee": 0,
+      "netRevenue": 0
+    }
+  ],
+  "categoryAggs": [
+    {
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "개인",
+      "totalCount": 1015,
+      "revenue": 3045000
+    },
+    {
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "여행사",
+      "totalCount": 163,
+      "revenue": 489000
+    },
+    {
+      "categoryCode": "TAXI",
+      "categoryName": "택시",
+      "totalCount": 41,
+      "revenue": 123000
+    },
+    {
+      "categoryCode": "RESIDENT",
+      "categoryName": "도민",
+      "totalCount": 188,
+      "revenue": 564000
+    },
+    {
+      "categoryCode": "ALL_PASS",
+      "categoryName": "올패스",
+      "totalCount": 55,
+      "revenue": 165000
+    },
+    {
+      "categoryCode": "SHUTTLE_DISCOUNT",
+      "categoryName": "순환버스할인",
+      "totalCount": 0,
+      "revenue": 0
+    },
+    {
+      "categoryCode": "SCHOOL_GROUP",
+      "categoryName": "학단",
+      "totalCount": 0,
+      "revenue": 0
+    },
+    {
+      "categoryCode": "OTHER",
+      "categoryName": "기타",
+      "totalCount": 0,
+      "revenue": 0
+    }
+  ],
+  "summary": {
+    "totalDays": 23,
+    "onlineCount": 827,
+    "offlineCount": 1462,
+    "totalCount": 2289,
+    "onlineGrossRevenue": 2481000,
+    "onlineFee": 263910,
+    "onlineNetRevenue": 2217090,
+    "offlineRevenue": 4386000,
+    "totalGrossRevenue": 6867000,
+    "totalNetRevenue": 6603090
+  }
+}

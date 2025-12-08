@@ -1,0 +1,92 @@
+{
+  "date": "2025-11-16",
+  "channelSales": [
+    {
+      "date": "2025-11-16",
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "NAVER_MAZE_25",
+      "count": 35,
+      "feeRate": 10,
+      "grossRevenue": 105000,
+      "fee": 10500,
+      "netRevenue": 94500
+    },
+    {
+      "date": "2025-11-16",
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "GENERAL_TICKET",
+      "count": 3,
+      "feeRate": 15,
+      "grossRevenue": 9000,
+      "fee": 1350,
+      "netRevenue": 7650
+    },
+    {
+      "date": "2025-11-16",
+      "channelCode": "MAZE_TICKET",
+      "channelName": "MAZE_TICKET",
+      "count": 1,
+      "feeRate": 12,
+      "grossRevenue": 3000,
+      "fee": 360,
+      "netRevenue": 2640
+    },
+    {
+      "date": "2025-11-16",
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "MAZE_TICKET_SINGLE",
+      "count": 2,
+      "feeRate": 12,
+      "grossRevenue": 6000,
+      "fee": 720,
+      "netRevenue": 5280
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-11-16",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "INDIVIDUAL",
+      "count": 41,
+      "revenue": 123000
+    },
+    {
+      "date": "2025-11-16",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "TRAVEL_AGENCY",
+      "count": 6,
+      "revenue": 18000
+    },
+    {
+      "date": "2025-11-16",
+      "categoryCode": "TAXI",
+      "categoryName": "TAXI",
+      "count": 1,
+      "revenue": 3000
+    },
+    {
+      "date": "2025-11-16",
+      "categoryCode": "RESIDENT",
+      "categoryName": "RESIDENT",
+      "count": 7,
+      "revenue": 21000
+    },
+    {
+      "date": "2025-11-16",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "ALL_PASS",
+      "count": 2,
+      "revenue": 6000
+    }
+  ],
+  "summary": {
+    "date": "2025-11-16",
+    "onlineCount": 43,
+    "offlineCount": 59,
+    "totalCount": 102,
+    "onlineNetRevenue": 110070,
+    "offlineRevenue": 177000,
+    "totalNetRevenue": 287070
+  },
+  "source": "file"
+}

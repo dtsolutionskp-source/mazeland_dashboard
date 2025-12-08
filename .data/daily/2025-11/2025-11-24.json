@@ -1,0 +1,92 @@
+{
+  "date": "2025-11-24",
+  "channelSales": [
+    {
+      "date": "2025-11-24",
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "NAVER_MAZE_25",
+      "count": 33,
+      "feeRate": 10,
+      "grossRevenue": 99000,
+      "fee": 9900,
+      "netRevenue": 89100
+    },
+    {
+      "date": "2025-11-24",
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "GENERAL_TICKET",
+      "count": 3,
+      "feeRate": 15,
+      "grossRevenue": 9000,
+      "fee": 1350,
+      "netRevenue": 7650
+    },
+    {
+      "date": "2025-11-24",
+      "channelCode": "MAZE_TICKET",
+      "channelName": "MAZE_TICKET",
+      "count": 1,
+      "feeRate": 12,
+      "grossRevenue": 3000,
+      "fee": 360,
+      "netRevenue": 2640
+    },
+    {
+      "date": "2025-11-24",
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "MAZE_TICKET_SINGLE",
+      "count": 2,
+      "feeRate": 12,
+      "grossRevenue": 6000,
+      "fee": 720,
+      "netRevenue": 5280
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-11-24",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "INDIVIDUAL",
+      "count": 42,
+      "revenue": 126000
+    },
+    {
+      "date": "2025-11-24",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "TRAVEL_AGENCY",
+      "count": 6,
+      "revenue": 18000
+    },
+    {
+      "date": "2025-11-24",
+      "categoryCode": "TAXI",
+      "categoryName": "TAXI",
+      "count": 1,
+      "revenue": 3000
+    },
+    {
+      "date": "2025-11-24",
+      "categoryCode": "RESIDENT",
+      "categoryName": "RESIDENT",
+      "count": 7,
+      "revenue": 21000
+    },
+    {
+      "date": "2025-11-24",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "ALL_PASS",
+      "count": 2,
+      "revenue": 6000
+    }
+  ],
+  "summary": {
+    "date": "2025-11-24",
+    "onlineCount": 41,
+    "offlineCount": 61,
+    "totalCount": 102,
+    "onlineNetRevenue": 104670,
+    "offlineRevenue": 183000,
+    "totalNetRevenue": 287670
+  },
+  "source": "file"
+}

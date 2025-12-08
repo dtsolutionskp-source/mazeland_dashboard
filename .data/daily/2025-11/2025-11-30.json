@@ -1,0 +1,92 @@
+{
+  "date": "2025-11-30",
+  "channelSales": [
+    {
+      "date": "2025-11-30",
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "NAVER_MAZE_25",
+      "count": 33,
+      "feeRate": 10,
+      "grossRevenue": 99000,
+      "fee": 9900,
+      "netRevenue": 89100
+    },
+    {
+      "date": "2025-11-30",
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "GENERAL_TICKET",
+      "count": 14,
+      "feeRate": 15,
+      "grossRevenue": 42000,
+      "fee": 6300,
+      "netRevenue": 35700
+    },
+    {
+      "date": "2025-11-30",
+      "channelCode": "MAZE_TICKET",
+      "channelName": "MAZE_TICKET",
+      "count": 11,
+      "feeRate": 12,
+      "grossRevenue": 33000,
+      "fee": 3960,
+      "netRevenue": 29040
+    },
+    {
+      "date": "2025-11-30",
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "MAZE_TICKET_SINGLE",
+      "count": 14,
+      "feeRate": 12,
+      "grossRevenue": 42000,
+      "fee": 5040,
+      "netRevenue": 36960
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-11-30",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "INDIVIDUAL",
+      "count": 80,
+      "revenue": 240000
+    },
+    {
+      "date": "2025-11-30",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "TRAVEL_AGENCY",
+      "count": 25,
+      "revenue": 75000
+    },
+    {
+      "date": "2025-11-30",
+      "categoryCode": "TAXI",
+      "categoryName": "TAXI",
+      "count": 15,
+      "revenue": 45000
+    },
+    {
+      "date": "2025-11-30",
+      "categoryCode": "RESIDENT",
+      "categoryName": "RESIDENT",
+      "count": 25,
+      "revenue": 75000
+    },
+    {
+      "date": "2025-11-30",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "ALL_PASS",
+      "count": 15,
+      "revenue": 45000
+    }
+  ],
+  "summary": {
+    "date": "2025-11-30",
+    "onlineCount": 28,
+    "offlineCount": 97,
+    "totalCount": 125,
+    "onlineNetRevenue": 190800,
+    "offlineRevenue": 291000,
+    "totalNetRevenue": 481800
+  },
+  "source": "file"
+}

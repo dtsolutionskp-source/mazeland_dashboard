@@ -1,0 +1,260 @@
+{
+  "uploadedAt": "2025-12-08T01:40:20.632Z",
+  "fileName": "2025년_11월_수정데이터.xlsx",
+  "periodStart": "2025-11-08T00:00:00.000Z",
+  "periodEnd": "2025-11-30T00:00:00.000Z",
+  "source": "file",
+  "summary": {
+    "onlineCount": 830,
+    "offlineCount": 1457,
+    "totalCount": 2287
+  },
+  "dailyData": [
+    {
+      "date": "2025-11-08",
+      "online": 29,
+      "offline": 76,
+      "total": 105
+    },
+    {
+      "date": "2025-11-09",
+      "online": 33,
+      "offline": 53,
+      "total": 86
+    },
+    {
+      "date": "2025-11-10",
+      "online": 30,
+      "offline": 62,
+      "total": 92
+    },
+    {
+      "date": "2025-11-11",
+      "online": 40,
+      "offline": 30,
+      "total": 70
+    },
+    {
+      "date": "2025-11-12",
+      "online": 27,
+      "offline": 21,
+      "total": 48
+    },
+    {
+      "date": "2025-11-13",
+      "online": 49,
+      "offline": 100,
+      "total": 149
+    },
+    {
+      "date": "2025-11-14",
+      "online": 68,
+      "offline": 93,
+      "total": 161
+    },
+    {
+      "date": "2025-11-15",
+      "online": 92,
+      "offline": 142,
+      "total": 234
+    },
+    {
+      "date": "2025-11-16",
+      "online": 43,
+      "offline": 59,
+      "total": 102
+    },
+    {
+      "date": "2025-11-17",
+      "online": 39,
+      "offline": 40,
+      "total": 79
+    },
+    {
+      "date": "2025-11-18",
+      "online": 12,
+      "offline": 37,
+      "total": 49
+    },
+    {
+      "date": "2025-11-19",
+      "online": 14,
+      "offline": 35,
+      "total": 49
+    },
+    {
+      "date": "2025-11-20",
+      "online": 35,
+      "offline": 48,
+      "total": 83
+    },
+    {
+      "date": "2025-11-21",
+      "online": 32,
+      "offline": 62,
+      "total": 94
+    },
+    {
+      "date": "2025-11-22",
+      "online": 47,
+      "offline": 78,
+      "total": 125
+    },
+    {
+      "date": "2025-11-23",
+      "online": 36,
+      "offline": 94,
+      "total": 130
+    },
+    {
+      "date": "2025-11-24",
+      "online": 41,
+      "offline": 61,
+      "total": 102
+    },
+    {
+      "date": "2025-11-25",
+      "online": 23,
+      "offline": 25,
+      "total": 48
+    },
+    {
+      "date": "2025-11-26",
+      "online": 32,
+      "offline": 62,
+      "total": 94
+    },
+    {
+      "date": "2025-11-27",
+      "online": 10,
+      "offline": 35,
+      "total": 45
+    },
+    {
+      "date": "2025-11-28",
+      "online": 21,
+      "offline": 44,
+      "total": 65
+    },
+    {
+      "date": "2025-11-29",
+      "online": 49,
+      "offline": 103,
+      "total": 152
+    },
+    {
+      "date": "2025-11-30",
+      "online": 28,
+      "offline": 97,
+      "total": 125
+    }
+  ],
+  "channels": {
+    "NAVER_MAZE_25": {
+      "name": "NAVER_MAZE_25",
+      "count": 677,
+      "feeRate": 10
+    },
+    "GENERAL_TICKET": {
+      "name": "GENERAL_TICKET",
+      "count": 76,
+      "feeRate": 15
+    },
+    "MAZE_TICKET": {
+      "name": "MAZE_TICKET",
+      "count": 30,
+      "feeRate": 12
+    },
+    "MAZE_TICKET_SINGLE": {
+      "name": "MAZE_TICKET_SINGLE",
+      "count": 47,
+      "feeRate": 12
+    }
+  },
+  "categories": {
+    "INDIVIDUAL": {
+      "name": "INDIVIDUAL",
+      "count": 1018
+    },
+    "TRAVEL_AGENCY": {
+      "name": "TRAVEL_AGENCY",
+      "count": 163
+    },
+    "TAXI": {
+      "name": "TAXI",
+      "count": 38
+    },
+    "RESIDENT": {
+      "name": "RESIDENT",
+      "count": 183
+    },
+    "ALL_PASS": {
+      "name": "ALL_PASS",
+      "count": 55
+    }
+  },
+  "monthly": {
+    "onlineByChannel": {
+      "NAVER_MAZE_25": 677,
+      "GENERAL_TICKET": 76,
+      "MAZE_TICKET": 30,
+      "MAZE_TICKET_SINGLE": 47
+    },
+    "onlineByAge": {},
+    "offlineByCategory": {
+      "INDIVIDUAL": 1018,
+      "TRAVEL_AGENCY": 163,
+      "TAXI": 38,
+      "RESIDENT": 183,
+      "ALL_PASS": 55
+    },
+    "revenue": {
+      "online": 2490000,
+      "onlineFee": 265020,
+      "onlineNet": 2224980,
+      "offline": 4371000,
+      "total": 6861000,
+      "totalNet": 6595980
+    }
+  },
+  "settlement": {
+    "companies": [
+      {
+        "name": "SKP",
+        "code": "SKP",
+        "revenue": 6595980,
+        "income": 7035712,
+        "cost": 3957588,
+        "profit": 3078124,
+        "profitRate": 43.75
+      },
+      {
+        "name": "메이즈랜드",
+        "code": "MAZE",
+        "revenue": 2198660,
+        "income": 2198660,
+        "cost": 1099330,
+        "profit": 1099330,
+        "profitRate": 50
+      },
+      {
+        "name": "컬처커넥션",
+        "code": "CULTURE",
+        "revenue": 2198660,
+        "income": 2198660,
+        "cost": 439732,
+        "profit": 1758928,
+        "profitRate": 80
+      },
+      {
+        "name": "FMC",
+        "code": "AGENCY",
+        "revenue": 659598,
+        "income": 659598,
+        "cost": 0,
+        "profit": 659598,
+        "profitRate": 100
+      }
+    ]
+  }
+}

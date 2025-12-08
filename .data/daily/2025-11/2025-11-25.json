@@ -1,0 +1,92 @@
+{
+  "date": "2025-11-25",
+  "channelSales": [
+    {
+      "date": "2025-11-25",
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "NAVER_MAZE_25",
+      "count": 18,
+      "feeRate": 10,
+      "grossRevenue": 54000,
+      "fee": 5400,
+      "netRevenue": 48600
+    },
+    {
+      "date": "2025-11-25",
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "GENERAL_TICKET",
+      "count": 2,
+      "feeRate": 15,
+      "grossRevenue": 6000,
+      "fee": 900,
+      "netRevenue": 5100
+    },
+    {
+      "date": "2025-11-25",
+      "channelCode": "MAZE_TICKET",
+      "channelName": "MAZE_TICKET",
+      "count": 0,
+      "feeRate": 12,
+      "grossRevenue": 0,
+      "fee": 0,
+      "netRevenue": 0
+    },
+    {
+      "date": "2025-11-25",
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "MAZE_TICKET_SINGLE",
+      "count": 1,
+      "feeRate": 12,
+      "grossRevenue": 3000,
+      "fee": 360,
+      "netRevenue": 2640
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-11-25",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "INDIVIDUAL",
+      "count": 17,
+      "revenue": 51000
+    },
+    {
+      "date": "2025-11-25",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "TRAVEL_AGENCY",
+      "count": 2,
+      "revenue": 6000
+    },
+    {
+      "date": "2025-11-25",
+      "categoryCode": "TAXI",
+      "categoryName": "TAXI",
+      "count": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2025-11-25",
+      "categoryCode": "RESIDENT",
+      "categoryName": "RESIDENT",
+      "count": 3,
+      "revenue": 9000
+    },
+    {
+      "date": "2025-11-25",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "ALL_PASS",
+      "count": 0,
+      "revenue": 0
+    }
+  ],
+  "summary": {
+    "date": "2025-11-25",
+    "onlineCount": 23,
+    "offlineCount": 25,
+    "totalCount": 48,
+    "onlineNetRevenue": 56340,
+    "offlineRevenue": 75000,
+    "totalNetRevenue": 131340
+  },
+  "source": "file"
+}

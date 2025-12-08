@@ -1,0 +1,92 @@
+{
+  "date": "2025-11-26",
+  "channelSales": [
+    {
+      "date": "2025-11-26",
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "NAVER_MAZE_25",
+      "count": 26,
+      "feeRate": 10,
+      "grossRevenue": 78000,
+      "fee": 7800,
+      "netRevenue": 70200
+    },
+    {
+      "date": "2025-11-26",
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "GENERAL_TICKET",
+      "count": 2,
+      "feeRate": 15,
+      "grossRevenue": 6000,
+      "fee": 900,
+      "netRevenue": 5100
+    },
+    {
+      "date": "2025-11-26",
+      "channelCode": "MAZE_TICKET",
+      "channelName": "MAZE_TICKET",
+      "count": 1,
+      "feeRate": 12,
+      "grossRevenue": 3000,
+      "fee": 360,
+      "netRevenue": 2640
+    },
+    {
+      "date": "2025-11-26",
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "MAZE_TICKET_SINGLE",
+      "count": 1,
+      "feeRate": 12,
+      "grossRevenue": 3000,
+      "fee": 360,
+      "netRevenue": 2640
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-11-26",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "INDIVIDUAL",
+      "count": 43,
+      "revenue": 129000
+    },
+    {
+      "date": "2025-11-26",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "TRAVEL_AGENCY",
+      "count": 6,
+      "revenue": 18000
+    },
+    {
+      "date": "2025-11-26",
+      "categoryCode": "TAXI",
+      "categoryName": "TAXI",
+      "count": 1,
+      "revenue": 3000
+    },
+    {
+      "date": "2025-11-26",
+      "categoryCode": "RESIDENT",
+      "categoryName": "RESIDENT",
+      "count": 7,
+      "revenue": 21000
+    },
+    {
+      "date": "2025-11-26",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "ALL_PASS",
+      "count": 2,
+      "revenue": 6000
+    }
+  ],
+  "summary": {
+    "date": "2025-11-26",
+    "onlineCount": 32,
+    "offlineCount": 62,
+    "totalCount": 94,
+    "onlineNetRevenue": 80580,
+    "offlineRevenue": 186000,
+    "totalNetRevenue": 266580
+  },
+  "source": "file"
+}

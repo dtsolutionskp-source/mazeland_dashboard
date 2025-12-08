@@ -1,0 +1,92 @@
+{
+  "date": "2025-11-11",
+  "channelSales": [
+    {
+      "date": "2025-11-11",
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "NAVER_MAZE_25",
+      "count": 32,
+      "feeRate": 10,
+      "grossRevenue": 96000,
+      "fee": 9600,
+      "netRevenue": 86400
+    },
+    {
+      "date": "2025-11-11",
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "GENERAL_TICKET",
+      "count": 3,
+      "feeRate": 15,
+      "grossRevenue": 9000,
+      "fee": 1350,
+      "netRevenue": 7650
+    },
+    {
+      "date": "2025-11-11",
+      "channelCode": "MAZE_TICKET",
+      "channelName": "MAZE_TICKET",
+      "count": 1,
+      "feeRate": 12,
+      "grossRevenue": 3000,
+      "fee": 360,
+      "netRevenue": 2640
+    },
+    {
+      "date": "2025-11-11",
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "MAZE_TICKET_SINGLE",
+      "count": 2,
+      "feeRate": 12,
+      "grossRevenue": 6000,
+      "fee": 720,
+      "netRevenue": 5280
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-11-11",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "INDIVIDUAL",
+      "count": 20,
+      "revenue": 60000
+    },
+    {
+      "date": "2025-11-11",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "TRAVEL_AGENCY",
+      "count": 3,
+      "revenue": 9000
+    },
+    {
+      "date": "2025-11-11",
+      "categoryCode": "TAXI",
+      "categoryName": "TAXI",
+      "count": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2025-11-11",
+      "categoryCode": "RESIDENT",
+      "categoryName": "RESIDENT",
+      "count": 3,
+      "revenue": 9000
+    },
+    {
+      "date": "2025-11-11",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "ALL_PASS",
+      "count": 1,
+      "revenue": 3000
+    }
+  ],
+  "summary": {
+    "date": "2025-11-11",
+    "onlineCount": 40,
+    "offlineCount": 30,
+    "totalCount": 70,
+    "onlineNetRevenue": 101970,
+    "offlineRevenue": 90000,
+    "totalNetRevenue": 191970
+  },
+  "source": "file"
+}

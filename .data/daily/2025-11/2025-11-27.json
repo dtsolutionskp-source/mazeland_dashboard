@@ -1,0 +1,92 @@
+{
+  "date": "2025-11-27",
+  "channelSales": [
+    {
+      "date": "2025-11-27",
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "NAVER_MAZE_25",
+      "count": 8,
+      "feeRate": 10,
+      "grossRevenue": 24000,
+      "fee": 2400,
+      "netRevenue": 21600
+    },
+    {
+      "date": "2025-11-27",
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "GENERAL_TICKET",
+      "count": 0,
+      "feeRate": 15,
+      "grossRevenue": 0,
+      "fee": 0,
+      "netRevenue": 0
+    },
+    {
+      "date": "2025-11-27",
+      "channelCode": "MAZE_TICKET",
+      "channelName": "MAZE_TICKET",
+      "count": 0,
+      "feeRate": 12,
+      "grossRevenue": 0,
+      "fee": 0,
+      "netRevenue": 0
+    },
+    {
+      "date": "2025-11-27",
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "MAZE_TICKET_SINGLE",
+      "count": 0,
+      "feeRate": 12,
+      "grossRevenue": 0,
+      "fee": 0,
+      "netRevenue": 0
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-11-27",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "INDIVIDUAL",
+      "count": 24,
+      "revenue": 72000
+    },
+    {
+      "date": "2025-11-27",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "TRAVEL_AGENCY",
+      "count": 3,
+      "revenue": 9000
+    },
+    {
+      "date": "2025-11-27",
+      "categoryCode": "TAXI",
+      "categoryName": "TAXI",
+      "count": 0,
+      "revenue": 0
+    },
+    {
+      "date": "2025-11-27",
+      "categoryCode": "RESIDENT",
+      "categoryName": "RESIDENT",
+      "count": 4,
+      "revenue": 12000
+    },
+    {
+      "date": "2025-11-27",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "ALL_PASS",
+      "count": 1,
+      "revenue": 3000
+    }
+  ],
+  "summary": {
+    "date": "2025-11-27",
+    "onlineCount": 10,
+    "offlineCount": 35,
+    "totalCount": 45,
+    "onlineNetRevenue": 21600,
+    "offlineRevenue": 105000,
+    "totalNetRevenue": 126600
+  },
+  "source": "file"
+}

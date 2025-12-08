@@ -1,0 +1,92 @@
+{
+  "date": "2025-11-23",
+  "channelSales": [
+    {
+      "date": "2025-11-23",
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "NAVER_MAZE_25",
+      "count": 29,
+      "feeRate": 10,
+      "grossRevenue": 87000,
+      "fee": 8700,
+      "netRevenue": 78300
+    },
+    {
+      "date": "2025-11-23",
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "GENERAL_TICKET",
+      "count": 3,
+      "feeRate": 15,
+      "grossRevenue": 9000,
+      "fee": 1350,
+      "netRevenue": 7650
+    },
+    {
+      "date": "2025-11-23",
+      "channelCode": "MAZE_TICKET",
+      "channelName": "MAZE_TICKET",
+      "count": 1,
+      "feeRate": 12,
+      "grossRevenue": 3000,
+      "fee": 360,
+      "netRevenue": 2640
+    },
+    {
+      "date": "2025-11-23",
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "MAZE_TICKET_SINGLE",
+      "count": 2,
+      "feeRate": 12,
+      "grossRevenue": 6000,
+      "fee": 720,
+      "netRevenue": 5280
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-11-23",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "INDIVIDUAL",
+      "count": 65,
+      "revenue": 195000
+    },
+    {
+      "date": "2025-11-23",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "TRAVEL_AGENCY",
+      "count": 10,
+      "revenue": 30000
+    },
+    {
+      "date": "2025-11-23",
+      "categoryCode": "TAXI",
+      "categoryName": "TAXI",
+      "count": 2,
+      "revenue": 6000
+    },
+    {
+      "date": "2025-11-23",
+      "categoryCode": "RESIDENT",
+      "categoryName": "RESIDENT",
+      "count": 11,
+      "revenue": 33000
+    },
+    {
+      "date": "2025-11-23",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "ALL_PASS",
+      "count": 3,
+      "revenue": 9000
+    }
+  ],
+  "summary": {
+    "date": "2025-11-23",
+    "onlineCount": 36,
+    "offlineCount": 94,
+    "totalCount": 130,
+    "onlineNetRevenue": 93870,
+    "offlineRevenue": 282000,
+    "totalNetRevenue": 375870
+  },
+  "source": "file"
+}

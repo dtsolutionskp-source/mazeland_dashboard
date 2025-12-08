@@ -1,0 +1,92 @@
+{
+  "date": "2025-11-22",
+  "channelSales": [
+    {
+      "date": "2025-11-22",
+      "channelCode": "NAVER_MAZE_25",
+      "channelName": "NAVER_MAZE_25",
+      "count": 38,
+      "feeRate": 10,
+      "grossRevenue": 114000,
+      "fee": 11400,
+      "netRevenue": 102600
+    },
+    {
+      "date": "2025-11-22",
+      "channelCode": "GENERAL_TICKET",
+      "channelName": "GENERAL_TICKET",
+      "count": 4,
+      "feeRate": 15,
+      "grossRevenue": 12000,
+      "fee": 1800,
+      "netRevenue": 10200
+    },
+    {
+      "date": "2025-11-22",
+      "channelCode": "MAZE_TICKET",
+      "channelName": "MAZE_TICKET",
+      "count": 1,
+      "feeRate": 12,
+      "grossRevenue": 3000,
+      "fee": 360,
+      "netRevenue": 2640
+    },
+    {
+      "date": "2025-11-22",
+      "channelCode": "MAZE_TICKET_SINGLE",
+      "channelName": "MAZE_TICKET_SINGLE",
+      "count": 2,
+      "feeRate": 12,
+      "grossRevenue": 6000,
+      "fee": 720,
+      "netRevenue": 5280
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-11-22",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "INDIVIDUAL",
+      "count": 54,
+      "revenue": 162000
+    },
+    {
+      "date": "2025-11-22",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "TRAVEL_AGENCY",
+      "count": 8,
+      "revenue": 24000
+    },
+    {
+      "date": "2025-11-22",
+      "categoryCode": "TAXI",
+      "categoryName": "TAXI",
+      "count": 2,
+      "revenue": 6000
+    },
+    {
+      "date": "2025-11-22",
+      "categoryCode": "RESIDENT",
+      "categoryName": "RESIDENT",
+      "count": 9,
+      "revenue": 27000
+    },
+    {
+      "date": "2025-11-22",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "ALL_PASS",
+      "count": 2,
+      "revenue": 6000
+    }
+  ],
+  "summary": {
+    "date": "2025-11-22",
+    "onlineCount": 47,
+    "offlineCount": 78,
+    "totalCount": 125,
+    "onlineNetRevenue": 120720,
+    "offlineRevenue": 234000,
+    "totalNetRevenue": 354720
+  },
+  "source": "file"
+}
