@@ -27,8 +27,13 @@ interface SalesData {
 
 interface MarketingMarker {
   date: string
+  endDate?: string
   type: string
   title: string
+  // 새로운 마케팅 로그 구조
+  impressions?: number
+  clicks?: number
+  clickRate?: string
 }
 
 interface SalesChartProps {
@@ -46,19 +51,21 @@ interface SalesChartProps {
 }
 
 const TYPE_COLORS: Record<string, string> = {
-  CAMPAIGN: '#3b82f6',
-  WEATHER: '#f59e0b',
-  EVENT: '#8b5cf6',
-  MAINTENANCE: '#f97316',
+  CAMPAIGN: '#3b82f6',     // 캠페인 - 파란색
+  PERFORMANCE: '#22c55e',  // 퍼포먼스 - 초록색
   OTHER: '#6b7280',
 }
 
 const TYPE_ICONS: Record<string, string> = {
   CAMPAIGN: '📢',
-  WEATHER: '🌤️',
-  EVENT: '🎉',
-  MAINTENANCE: '🔧',
+  PERFORMANCE: '📈',
   OTHER: '📌',
+}
+
+const TYPE_NAMES: Record<string, string> = {
+  CAMPAIGN: '캠페인',
+  PERFORMANCE: '퍼포먼스',
+  OTHER: '기타',
 }
 
 export function SalesChart({ 
@@ -80,9 +87,20 @@ export function SalesChart({
   const showOffline = propShowOffline ?? store.showOffline
   const showPrevMonth = propShowPrevMonth ?? store.showPrevMonthLine
 
-  // 전월 데이터를 현재 데이터에 병합 (날짜 기준 매핑)
-  const mergedData = data.map((item, index) => {
-    const prevItem = prevData?.[index]
+  // 전월 데이터를 현재 데이터에 병합 (날짜의 "일" 기준 매핑)
+  // 예: 12/1은 11/1과 비교, 12/8은 11/8과 비교
+  const mergedData = data.map((item) => {
+    // 날짜에서 "일"만 추출 (예: "12/08" -> 8, "1/15" -> 15)
+    const dayMatch = item.date.match(/\/(\d+)$/)
+    const currentDay = dayMatch ? parseInt(dayMatch[1]) : null
+    
+    // 전월 데이터에서 같은 "일"을 찾음
+    const prevItem = prevData?.find(p => {
+      const prevDayMatch = p.date.match(/\/(\d+)$/)
+      const prevDay = prevDayMatch ? parseInt(prevDayMatch[1]) : null
+      return prevDay === currentDay
+    })
+    
     return {
       ...item,
       prevOnline: prevItem?.online,
@@ -146,15 +164,35 @@ export function SalesChart({
           
           {marker && (
             <div className="mt-3 pt-3 border-t border-dashboard-border">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 mb-2">
                 <span className="text-lg">{TYPE_ICONS[marker.type] || '📌'}</span>
                 <div>
-                  <p className="text-xs text-dashboard-muted">마케팅 이벤트</p>
+                  <p className="text-xs text-dashboard-muted">
+                    {TYPE_NAMES[marker.type] || '마케팅'}
+                    {marker.endDate && marker.endDate !== marker.date && ` (${marker.date}~${marker.endDate})`}
+                  </p>
                   <p className="text-sm font-medium" style={{ color: TYPE_COLORS[marker.type] }}>
-                    {marker.title}
+                    {marker.title || '마케팅 이벤트'}
                   </p>
                 </div>
               </div>
+              {/* 노출량/클릭수/클릭율 표시 */}
+              {(marker.impressions !== undefined && marker.impressions > 0) && (
+                <div className="grid grid-cols-3 gap-2 text-center bg-dashboard-bg rounded p-2 mt-2">
+                  <div>
+                    <p className="text-[10px] text-dashboard-muted">노출량</p>
+                    <p className="text-xs font-bold text-dashboard-text">{formatNumber(marker.impressions)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-dashboard-muted">클릭수</p>
+                    <p className="text-xs font-bold text-dashboard-text">{formatNumber(marker.clicks || 0)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-dashboard-muted">클릭율</p>
+                    <p className="text-xs font-bold text-maze-500">{marker.clickRate}%</p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -241,18 +279,18 @@ export function SalesChart({
             />
           ))}
           
-          {/* 전월 라인 (연한 회색, 점선) */}
-          {showPrevMonth && prevData && (
+          {/* 전월 라인 (회색 계열, 점선) - 현재 월과 구분되도록 */}
+          {showPrevMonth && prevData && prevData.length > 0 && (
             <>
               {showOnline && (
                 <Line
                   type="monotone"
                   dataKey="prevOnline"
                   name="인터넷(전월)"
-                  stroke="#22c55e"
-                  strokeWidth={1.5}
-                  strokeDasharray="3 3"
-                  strokeOpacity={0.3}
+                  stroke="#9ca3af"
+                  strokeWidth={2}
+                  strokeDasharray="8 4"
+                  strokeOpacity={0.7}
                   dot={false}
                   activeDot={false}
                 />
@@ -262,10 +300,10 @@ export function SalesChart({
                   type="monotone"
                   dataKey="prevOffline"
                   name="현장(전월)"
-                  stroke="#3b82f6"
-                  strokeWidth={1.5}
-                  strokeDasharray="3 3"
-                  strokeOpacity={0.3}
+                  stroke="#6b7280"
+                  strokeWidth={2}
+                  strokeDasharray="8 4"
+                  strokeOpacity={0.7}
                   dot={false}
                   activeDot={false}
                 />
@@ -275,10 +313,10 @@ export function SalesChart({
                   type="monotone"
                   dataKey="prevTotal"
                   name="전체(전월)"
-                  stroke="#f59e0b"
-                  strokeWidth={1.5}
-                  strokeDasharray="3 3"
-                  strokeOpacity={0.3}
+                  stroke="#d1d5db"
+                  strokeWidth={2}
+                  strokeDasharray="8 4"
+                  strokeOpacity={0.7}
                   dot={false}
                   activeDot={false}
                 />
@@ -324,16 +362,53 @@ export function SalesChart({
         </LineChart>
       </ResponsiveContainer>
       
-      {/* 마커 범례 */}
+      {/* 마커 범례 - 컴팩트하게 표시, 호버 시 상세 정보 */}
       {markers.length > 0 && (
-        <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-dashboard-border">
-          <span className="text-sm text-dashboard-muted">마케팅 이벤트:</span>
+        <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-dashboard-border">
+          <span className="text-sm text-dashboard-muted">마케팅:</span>
           {markers.map((marker, index) => (
-            <div key={index} className="flex items-center gap-2">
+            <div 
+              key={index} 
+              className="group relative flex items-center gap-1 px-2 py-1 rounded-full text-xs cursor-pointer transition-all hover:ring-2 hover:ring-maze-500/50"
+              style={{ 
+                backgroundColor: `${TYPE_COLORS[marker.type]}20`,
+                color: TYPE_COLORS[marker.type] 
+              }}
+            >
               <span>{TYPE_ICONS[marker.type] || '📌'}</span>
-              <span className="text-sm" style={{ color: TYPE_COLORS[marker.type] }}>
-                {marker.date} - {marker.title}
+              <span className="font-medium">
+                {marker.date}{marker.endDate && marker.endDate !== marker.date ? `~${marker.endDate}` : ''}
               </span>
+              
+              {/* 호버 시 상세 정보 툴팁 */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                <div className="bg-dashboard-card border border-dashboard-border rounded-lg p-3 shadow-xl min-w-[180px] whitespace-nowrap">
+                  <p className="text-xs text-dashboard-muted mb-1">
+                    {TYPE_NAMES[marker.type] || '마케팅'}
+                  </p>
+                  <p className="text-sm font-semibold text-dashboard-text mb-2">
+                    {marker.title || '-'}
+                  </p>
+                  {marker.impressions !== undefined && marker.impressions > 0 && (
+                    <div className="grid grid-cols-3 gap-2 text-center border-t border-dashboard-border pt-2">
+                      <div>
+                        <p className="text-[9px] text-dashboard-muted">노출</p>
+                        <p className="text-xs font-bold">{formatNumber(marker.impressions)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-dashboard-muted">클릭</p>
+                        <p className="text-xs font-bold">{formatNumber(marker.clicks || 0)}</p>
+                      </div>
+                      <div>
+                        <p className="text-[9px] text-dashboard-muted">CTR</p>
+                        <p className="text-xs font-bold text-maze-500">{marker.clickRate}%</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                {/* 툴팁 화살표 */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-dashboard-card" />
+              </div>
             </div>
           ))}
         </div>

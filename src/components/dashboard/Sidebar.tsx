@@ -44,12 +44,6 @@ const navItems: NavItem[] = [
     roles: ['SUPER_ADMIN', 'SKP_ADMIN'],
   },
   {
-    href: '/sales',
-    label: '판매 분석',
-    icon: <BarChart3 size={20} />,
-    roles: 'all',
-  },
-  {
     href: '/settlement',
     label: '정산 현황',
     icon: <Calculator size={20} />,

@@ -10,7 +10,8 @@ import { getMasterData, getChannelFeeRate, BASE_PRICE } from './master-data'
 
 // 데이터 저장 경로
 const DATA_DIR = path.join(process.cwd(), '.data')
-const UPLOAD_DATA_FILE = path.join(DATA_DIR, 'upload-data.json')
+const UPLOAD_DATA_FILE = path.join(DATA_DIR, 'upload-data.json')  // 레거시 (단일 파일)
+const UPLOAD_DATA_DIR = path.join(DATA_DIR, 'uploads')  // 월별 분리 저장
 const MONTHLY_DATA_DIR = path.join(DATA_DIR, 'monthly')
 
 // 기존 StoredUploadData 타입 (하위 호환성 유지)
@@ -30,6 +31,8 @@ export interface StoredUploadData {
     online: number
     offline: number
     total: number
+    channelData?: Record<string, { count: number; feeRate: number }>
+    categoryData?: Record<string, { count: number }>
   }[]
   channels: Record<string, { name: string; count: number; feeRate: number }>
   categories: Record<string, { name: string; count: number }>
@@ -82,6 +85,24 @@ async function ensureMonthlyDataDir(): Promise<void> {
 }
 
 /**
+ * 월별 업로드 데이터 디렉토리 생성
+ */
+async function ensureUploadDataDir(): Promise<void> {
+  try {
+    await fs.access(UPLOAD_DATA_DIR)
+  } catch {
+    await fs.mkdir(UPLOAD_DATA_DIR, { recursive: true })
+  }
+}
+
+/**
+ * 월별 업로드 데이터 파일 경로
+ */
+function getUploadDataPath(year: number, month: number): string {
+  return path.join(UPLOAD_DATA_DIR, `${year}-${String(month).padStart(2, '0')}.json`)
+}
+
+/**
  * 월별 데이터 파일 경로
  */
 function getMonthlyDataPath(year: number, month: number): string {
@@ -89,11 +110,67 @@ function getMonthlyDataPath(year: number, month: number): string {
 }
 
 // ==========================================
-// 기존 업로드 데이터 함수 (하위 호환성)
+// 월별 업로드 데이터 함수 (신규 - 월별 분리)
 // ==========================================
 
 /**
- * 업로드 데이터 저장 (기존)
+ * 월별 업로드 데이터 저장
+ */
+export async function saveUploadDataByMonth(year: number, month: number, data: StoredUploadData): Promise<void> {
+  await ensureUploadDataDir()
+  const filePath = getUploadDataPath(year, month)
+  await fs.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8')
+  console.log(`[DataStore] Saved upload data for ${year}-${month}`)
+}
+
+/**
+ * 월별 업로드 데이터 조회
+ */
+export async function getUploadDataByMonth(year: number, month: number): Promise<StoredUploadData | null> {
+  try {
+    await ensureUploadDataDir()
+    const filePath = getUploadDataPath(year, month)
+    const content = await fs.readFile(filePath, 'utf-8')
+    return JSON.parse(content)
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 사용 가능한 업로드 데이터 월 목록 조회
+ */
+export async function getAvailableUploadMonths(): Promise<{ year: number; month: number }[]> {
+  try {
+    await ensureUploadDataDir()
+    const files = await fs.readdir(UPLOAD_DATA_DIR)
+    
+    return files
+      .filter(f => f.endsWith('.json'))
+      .map(f => {
+        const match = f.match(/(\d{4})-(\d{2})\.json/)
+        if (match) {
+          return { year: parseInt(match[1]), month: parseInt(match[2]) }
+        }
+        return null
+      })
+      .filter((m): m is { year: number; month: number } => m !== null)
+      .sort((a, b) => {
+        if (a.year !== b.year) return b.year - a.year
+        return b.month - a.month
+      })
+  } catch {
+    return []
+  }
+}
+
+// ==========================================
+// 기존 업로드 데이터 함수 (하위 호환성 - 레거시)
+// ==========================================
+
+/**
+ * 업로드 데이터 저장 (레거시 - 단일 파일)
+ * @deprecated saveUploadDataByMonth 사용 권장
  */
 export async function saveUploadData(data: StoredUploadData): Promise<void> {
   await ensureDataDir()
@@ -101,7 +178,8 @@ export async function saveUploadData(data: StoredUploadData): Promise<void> {
 }
 
 /**
- * 저장된 업로드 데이터 불러오기 (기존)
+ * 저장된 업로드 데이터 불러오기 (레거시 - 단일 파일)
+ * @deprecated getUploadDataByMonth 사용 권장
  */
 export async function getUploadData(): Promise<StoredUploadData | null> {
   try {

@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { 
+  getMarketingLogById, 
+  updateMarketingLog, 
+  deleteMarketingLog 
+} from '@/lib/marketing-log-store'
 import { z } from 'zod'
 
 const updateLogSchema = z.object({
-  logDate: z.string().transform(s => new Date(s)).optional(),
-  logType: z.enum(['CAMPAIGN', 'WEATHER', 'EVENT', 'MAINTENANCE', 'OTHER']).optional(),
-  title: z.string().min(1).optional(),
-  content: z.string().min(1).optional(),
-  impact: z.string().optional(),
+  logType: z.enum(['CAMPAIGN', 'PERFORMANCE']).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  title: z.string().optional(),
+  content: z.string().optional(),
+  subType: z.string().optional(),
+  impressions: z.number().optional(),
+  clicks: z.number().optional(),
 })
 
 // 마케팅 로그 상세 조회
@@ -25,14 +32,7 @@ export async function GET(
       )
     }
 
-    const log = await prisma.marketingLog.findUnique({
-      where: { id: params.id },
-      include: {
-        createdBy: {
-          select: { name: true, email: true },
-        },
-      },
-    })
+    const log = await getMarketingLogById(params.id)
 
     if (!log) {
       return NextResponse.json(
@@ -51,8 +51,8 @@ export async function GET(
   }
 }
 
-// 마케팅 로그 수정
-export async function PATCH(
+// 마케팅 로그 수정 (PUT)
+export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
@@ -65,9 +65,7 @@ export async function PATCH(
       )
     }
 
-    const existingLog = await prisma.marketingLog.findUnique({
-      where: { id: params.id },
-    })
+    const existingLog = await getMarketingLogById(params.id)
 
     if (!existingLog) {
       return NextResponse.json(
@@ -89,17 +87,21 @@ export async function PATCH(
     const body = await request.json()
     const validatedData = updateLogSchema.parse(body)
 
-    const log = await prisma.marketingLog.update({
-      where: { id: params.id },
-      data: validatedData,
-      include: {
-        createdBy: {
-          select: { name: true, email: true },
-        },
-      },
+    const log = await updateMarketingLog(params.id, {
+      logType: validatedData.logType,
+      startDate: validatedData.startDate,
+      endDate: validatedData.endDate,
+      title: validatedData.title,
+      content: validatedData.content,
+      subType: validatedData.subType,
+      impressions: validatedData.impressions,
+      clicks: validatedData.clicks,
     })
 
-    return NextResponse.json({ log, message: '마케팅 로그가 수정되었습니다.' })
+    return NextResponse.json({ 
+      log,
+      message: '마케팅 로그가 수정되었습니다.' 
+    })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -116,6 +118,14 @@ export async function PATCH(
   }
 }
 
+// 마케팅 로그 수정 (PATCH - 호환용)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  return PUT(request, { params })
+}
+
 // 마케팅 로그 삭제
 export async function DELETE(
   request: NextRequest,
@@ -130,9 +140,7 @@ export async function DELETE(
       )
     }
 
-    const existingLog = await prisma.marketingLog.findUnique({
-      where: { id: params.id },
-    })
+    const existingLog = await getMarketingLogById(params.id)
 
     if (!existingLog) {
       return NextResponse.json(
@@ -151,9 +159,7 @@ export async function DELETE(
       )
     }
 
-    await prisma.marketingLog.delete({
-      where: { id: params.id },
-    })
+    await deleteMarketingLog(params.id)
 
     return NextResponse.json({ message: '마케팅 로그가 삭제되었습니다.' })
   } catch (error) {
@@ -164,6 +170,3 @@ export async function DELETE(
     )
   }
 }
-
-
-

@@ -18,6 +18,8 @@ import {
   Plus,
   X,
   Trash2,
+  Percent,
+  Settings2,
 } from 'lucide-react'
 
 const BASE_PRICE = 3000
@@ -60,6 +62,9 @@ export function DailyInputTable({
   const [dailyData, setDailyData] = useState<Map<string, DailyAggData>>(new Map())
   const [hasChanges, setHasChanges] = useState(false)
   
+  // 수수료율 편집 모드
+  const [feeEditMode, setFeeEditMode] = useState(false)
+  
   // 추가된 채널/카테고리
   const [customChannels, setCustomChannels] = useState<CustomChannel[]>([])
   const [customCategories, setCustomCategories] = useState<CustomCategory[]>([])
@@ -71,28 +76,24 @@ export function DailyInputTable({
   const [newChannelFeeRate, setNewChannelFeeRate] = useState(10)
   const [newCategoryName, setNewCategoryName] = useState('')
 
-  // 전체 채널 목록 (마스터 + 커스텀 + 기존 데이터에서 추출)
+  // 전체 채널 목록 (업로드 데이터에서 추출 + 커스텀)
+  // 마스터 채널은 사용하지 않음 - 업로드된 데이터 기준으로 표시
   const allChannels = useMemo(() => {
     const channelMap = new Map<string, CustomChannel>()
     
-    // 마스터 채널
-    masterChannels.forEach(ch => {
-      channelMap.set(ch.code, {
-        code: ch.code,
-        name: ch.name,
-        defaultFeeRate: ch.defaultFeeRate,
-      })
-    })
-    
-    // 기존 데이터에서 채널 추출 (마스터에 없는 것들)
+    // 기존 데이터에서 채널 추출 (업로드 데이터 기반)
     initialDailyData.forEach(d => {
       d.channelSales?.forEach(ch => {
-        if (!channelMap.has(ch.channelCode)) {
-          channelMap.set(ch.channelCode, {
-            code: ch.channelCode,
-            name: ch.channelName,
-            defaultFeeRate: ch.feeRate || 10,
-          })
+        if (ch.count > 0 || !channelMap.has(ch.channelCode)) {
+          // 더 큰 count를 가진 데이터로 업데이트 (또는 신규 추가)
+          const existing = channelMap.get(ch.channelCode)
+          if (!existing || ch.count > 0) {
+            channelMap.set(ch.channelCode, {
+              code: ch.channelCode,
+              name: ch.channelName,
+              defaultFeeRate: ch.feeRate || 0,
+            })
+          }
         }
       })
     })
@@ -101,6 +102,17 @@ export function DailyInputTable({
     customChannels.forEach(ch => {
       channelMap.set(ch.code, ch)
     })
+    
+    // 데이터가 없으면 마스터 채널 사용 (신규 입력용)
+    if (channelMap.size === 0) {
+      masterChannels.forEach(ch => {
+        channelMap.set(ch.code, {
+          code: ch.code,
+          name: ch.name,
+          defaultFeeRate: ch.defaultFeeRate,
+        })
+      })
+    }
     
     return Array.from(channelMap.values())
   }, [masterChannels, customChannels, initialDailyData])
@@ -334,6 +346,37 @@ export function DailyInputTable({
     })
     setHasChanges(true)
   }
+  
+  // 채널 수수료율 변경 (일자별)
+  const handleChannelFeeRateChange = (date: string, channelCode: string, feeRate: number) => {
+    setDailyData(prev => {
+      const newMap = new Map(prev)
+      const data = newMap.get(date) || createEmptyDailyData(date)
+      
+      const channelSales = data.channelSales.map(ch =>
+        ch.channelCode === channelCode ? { ...ch, feeRate } : ch
+      )
+      
+      newMap.set(date, { ...data, channelSales, source: 'manual' })
+      return newMap
+    })
+    setHasChanges(true)
+  }
+  
+  // 특정 채널의 일괄 수수료율 변경
+  const handleBulkFeeRateChange = (channelCode: string, feeRate: number) => {
+    setDailyData(prev => {
+      const newMap = new Map(prev)
+      newMap.forEach((data, date) => {
+        const channelSales = data.channelSales.map(ch =>
+          ch.channelCode === channelCode ? { ...ch, feeRate } : ch
+        )
+        newMap.set(date, { ...data, channelSales, source: 'manual' })
+      })
+      return newMap
+    })
+    setHasChanges(true)
+  }
 
   // 카테고리 건수 변경
   const handleCategoryCountChange = (date: string, categoryCode: string, count: number) => {
@@ -441,8 +484,22 @@ export function DailyInputTable({
             description="각 일자의 채널별 판매 건수를 입력하세요"
           />
           
-          {/* 채널 추가 버튼 */}
-          <div className="mb-4 flex justify-end">
+          {/* 채널 추가 및 수수료 편집 모드 */}
+          <div className="mb-4 flex justify-between items-center">
+            {/* 수수료율 편집 모드 토글 */}
+            <button
+              onClick={() => setFeeEditMode(!feeEditMode)}
+              className={cn(
+                'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all',
+                feeEditMode
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-dashboard-bg text-dashboard-muted hover:text-dashboard-text'
+              )}
+            >
+              <Percent className="w-4 h-4" />
+              {feeEditMode ? '수수료율 편집 중' : '수수료율 편집'}
+            </button>
+            
             {!showAddChannel ? (
               <Button size="sm" variant="outline" onClick={() => setShowAddChannel(true)}>
                 <Plus className="w-4 h-4 mr-1" />
@@ -473,24 +530,70 @@ export function DailyInputTable({
             )}
           </div>
           
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="sticky top-0 bg-dashboard-card z-10">
-                <tr className="border-b border-dashboard-border">
-                  <th className="text-left py-3 px-2 font-semibold text-dashboard-muted w-24 sticky left-0 bg-dashboard-card">
+          <div className="overflow-x-auto max-h-[600px] relative">
+            <table className="w-full text-sm border-collapse">
+              <thead className="sticky top-0 bg-dashboard-card z-20">
+                <tr className="border-b-2 border-dashboard-border">
+                  <th className="text-left py-3 px-3 font-semibold text-dashboard-muted w-20 sticky left-0 bg-dashboard-card z-30 shadow-[2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                     일자
                   </th>
-                  {allChannels.map(ch => (
-                    <th key={ch.code} className="text-center py-3 px-2 font-semibold text-dashboard-muted min-w-[80px]">
-                      <div className="flex flex-col items-center">
-                        <span className="text-xs truncate max-w-[70px]">{ch.name}</span>
-                        <span className="text-[10px] text-orange-500">
-                          ({ch.defaultFeeRate}%)
-                        </span>
-                      </div>
-                    </th>
-                  ))}
-                  <th className="text-center py-3 px-2 font-semibold text-maze-500 w-20 sticky right-0 bg-dashboard-card">
+                  {allChannels.map(ch => {
+                    // 채널 코드 형식: "업체_종류" -> 분리하여 표시
+                    const parts = ch.code.split('_')
+                    const vendor = parts[0] || ''
+                    // 중분류: 코드에서 업체 제외한 나머지
+                    const channelTypeFromCode = parts.slice(1).join(' ')
+                    
+                    // 표시명 결정: ch.name이 코드와 같거나 없으면 코드에서 추출한 중분류 사용
+                    const isNameSameAsCode = !ch.name || ch.name === ch.code || ch.name.includes('_')
+                    const displayName = isNameSameAsCode ? channelTypeFromCode : ch.name
+                    
+                    return (
+                      <th key={ch.code} className="text-center py-2 px-2 font-semibold text-dashboard-muted min-w-[100px] max-w-[140px]">
+                        <div className="flex flex-col items-center gap-0.5">
+                          {/* 대분류 (업체) - 작은 글씨 */}
+                          <span className="text-[9px] text-dashboard-muted/60 font-normal leading-tight">
+                            {vendor.slice(0, 12)}
+                          </span>
+                          {/* 중분류 (종류) - 큰 글씨 */}
+                          <span 
+                            className="text-[11px] font-medium leading-tight text-center" 
+                            title={`${vendor} > ${displayName}`}
+                            style={{ 
+                              wordBreak: 'keep-all',
+                              maxWidth: '130px',
+                              display: '-webkit-box',
+                              WebkitLineClamp: 2,
+                              WebkitBoxOrient: 'vertical',
+                              overflow: 'hidden'
+                            }}
+                          >
+                            {displayName}
+                          </span>
+                          {feeEditMode ? (
+                            <div className="flex items-center gap-0.5 mt-1">
+                              <input
+                                type="number"
+                                min="0"
+                                max="100"
+                                step="0.5"
+                                value={ch.defaultFeeRate}
+                                onChange={(e) => handleBulkFeeRateChange(ch.code, parseFloat(e.target.value) || 0)}
+                                className="w-10 text-center bg-orange-100 dark:bg-orange-900/30 border border-orange-500 rounded px-0.5 py-0.5 text-[10px] text-orange-600 dark:text-orange-400 focus:outline-none"
+                                title="전체 일자에 일괄 적용"
+                              />
+                              <span className="text-[10px] text-orange-500">%</span>
+                            </div>
+                          ) : (
+                            <span className="text-[9px] text-orange-500 font-medium">
+                              {ch.defaultFeeRate}%
+                            </span>
+                          )}
+                        </div>
+                      </th>
+                    )
+                  })}
+                  <th className="text-center py-3 px-3 font-semibold text-maze-500 w-20 sticky right-0 bg-dashboard-card z-30 shadow-[-2px_0_4px_-2px_rgba(0,0,0,0.1)]">
                     합계
                   </th>
                 </tr>
@@ -520,16 +623,41 @@ export function DailyInputTable({
                       </td>
                       {allChannels.map(ch => {
                         const channelData = data?.channelSales?.find(c => c.channelCode === ch.code)
+                        const currentFeeRate = channelData?.feeRate ?? ch.defaultFeeRate
+                        const defaultFeeRate = getFeeRateForChannel(ch.code, date)
+                        const hasCustomFee = channelData?.feeRate !== undefined && channelData.feeRate !== defaultFeeRate
+                        
                         return (
                           <td key={ch.code} className="py-1 px-1 text-center">
-                            <input
-                              type="number"
-                              min="0"
-                              value={channelData?.count || ''}
-                              onChange={(e) => handleChannelCountChange(date, ch.code, parseInt(e.target.value) || 0)}
-                              placeholder="0"
-                              className="w-full max-w-[60px] text-center bg-dashboard-bg border border-transparent focus:border-maze-500 rounded px-1 py-1 text-xs text-dashboard-text focus:outline-none"
-                            />
+                            <div className="flex flex-col items-center gap-0.5">
+                              <input
+                                type="number"
+                                min="0"
+                                value={channelData?.count || ''}
+                                onChange={(e) => handleChannelCountChange(date, ch.code, parseInt(e.target.value) || 0)}
+                                placeholder="0"
+                                className="w-full max-w-[60px] text-center bg-dashboard-bg border border-transparent focus:border-maze-500 rounded px-1 py-1 text-xs text-dashboard-text focus:outline-none"
+                              />
+                              {feeEditMode && (
+                                <div className="flex items-center gap-0.5">
+                                  <input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.5"
+                                    value={currentFeeRate}
+                                    onChange={(e) => handleChannelFeeRateChange(date, ch.code, parseFloat(e.target.value) || 0)}
+                                    className={cn(
+                                      "w-10 text-center border rounded px-0.5 py-0.5 text-[9px] focus:outline-none",
+                                      hasCustomFee
+                                        ? "bg-orange-100 dark:bg-orange-900/40 border-orange-500 text-orange-600 dark:text-orange-400"
+                                        : "bg-dashboard-bg/50 border-dashboard-border text-dashboard-muted"
+                                    )}
+                                  />
+                                  <span className="text-[9px] text-dashboard-muted">%</span>
+                                </div>
+                              )}
+                            </div>
                           </td>
                         )
                       })}

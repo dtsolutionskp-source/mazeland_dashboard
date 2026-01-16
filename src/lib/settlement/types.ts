@@ -7,6 +7,7 @@ export type ChannelCode =
   | 'NAVER_MAZE_25'      // 네이버 메이즈랜드25년
   | 'MAZE_TICKET'        // 메이즈랜드 입장권
   | 'MAZE_TICKET_SINGLE' // 메이즈랜드 입장권(단품)
+  | 'MAZE_25_SPECIAL'    // 25특가
   | 'GENERAL_TICKET'     // 일반채널 입장권
   | 'OTHER';             // 기타 채널
 

@@ -3,8 +3,8 @@
   "channelSales": [
     {
       "date": "2025-11-15",
-      "channelCode": "NAVER_MAZE_25",
-      "channelName": "NAVER_MAZE_25",
+      "channelCode": "주식회사브이패스VPASS_네이버메이즈랜드25년",
+      "channelName": "네이버  메이즈랜드25년",
       "count": 75,
       "feeRate": 10,
       "grossRevenue": 225000,
@@ -13,8 +13,8 @@
     },
     {
       "date": "2025-11-15",
-      "channelCode": "GENERAL_TICKET",
-      "channelName": "GENERAL_TICKET",
+      "channelCode": "주식회사브이패스VPASS_일반채널입장권",
+      "channelName": "일반채널  입장권",
       "count": 8,
       "feeRate": 15,
       "grossRevenue": 24000,
@@ -23,8 +23,8 @@
     },
     {
       "date": "2025-11-15",
-      "channelCode": "MAZE_TICKET",
-      "channelName": "MAZE_TICKET",
+      "channelCode": "놀유니버스레져_메이즈랜드입장권",
+      "channelName": "메이즈랜드  입장권",
       "count": 3,
       "feeRate": 12,
       "grossRevenue": 9000,
@@ -33,8 +33,8 @@
     },
     {
       "date": "2025-11-15",
-      "channelCode": "MAZE_TICKET_SINGLE",
-      "channelName": "MAZE_TICKET_SINGLE",
+      "channelCode": "주식회사엘에스컴퍼니_메이즈랜드입장권단품",
+      "channelName": "메이즈랜드  입장권 [단품]",
       "count": 5,
       "feeRate": 12,
       "grossRevenue": 15000,
@@ -46,35 +46,35 @@
     {
       "date": "2025-11-15",
       "categoryCode": "INDIVIDUAL",
-      "categoryName": "INDIVIDUAL",
+      "categoryName": "개인",
       "count": 99,
       "revenue": 297000
     },
     {
       "date": "2025-11-15",
       "categoryCode": "TRAVEL_AGENCY",
-      "categoryName": "TRAVEL_AGENCY",
+      "categoryName": "여행사",
       "count": 15,
       "revenue": 45000
     },
     {
       "date": "2025-11-15",
       "categoryCode": "TAXI",
-      "categoryName": "TAXI",
+      "categoryName": "택시",
       "count": 3,
       "revenue": 9000
     },
     {
       "date": "2025-11-15",
       "categoryCode": "RESIDENT",
-      "categoryName": "RESIDENT",
+      "categoryName": "도민",
       "count": 17,
       "revenue": 51000
     },
     {
       "date": "2025-11-15",
       "categoryCode": "ALL_PASS",
-      "categoryName": "ALL_PASS",
+      "categoryName": "올패스",
       "count": 5,
       "revenue": 15000
     }

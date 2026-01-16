@@ -3,7 +3,7 @@ import { getCurrentUser, canUploadData } from '@/lib/auth'
 import { parseExcelFile, ParseResult } from '@/lib/excel-parser'
 import { calculateSettlement } from '@/lib/settlement'
 import { prisma } from '@/lib/prisma'
-import { saveUploadData, StoredUploadData } from '@/lib/data-store'
+import { saveUploadData, getUploadData, getUploadDataByMonth, StoredUploadData } from '@/lib/data-store'
 
 // 청크 사이즈 (bulk insert 시 한 번에 처리할 레코드 수)
 const CHUNK_SIZE = 500
@@ -17,6 +17,7 @@ function getChannelFeeRate(channelCode: string): number {
     'NAVER_MAZE_25': 10,
     'MAZE_TICKET': 12,
     'MAZE_TICKET_SINGLE': 12,
+    'MAZE_25_SPECIAL': 10,  // 25특가
     'GENERAL_TICKET': 15,
     'OTHER': 15,
   }
@@ -110,34 +111,125 @@ export async function POST(request: NextRequest) {
     }
 
     // 7. 파서 결과에서 데이터 추출 (이제 파서가 일별 데이터에서 직접 계산함)
+    console.log('[Upload] Step 7: Extracting parser results')
     const { monthlySummary, onlineSales, offlineSales } = parseResult
     
     console.log('[Upload] Parser results:')
     console.log('  - Online total:', monthlySummary.onlineTotal)
-    console.log('  - Online by channel:', monthlySummary.onlineByChannel)
+    console.log('  - Online by channel:', JSON.stringify(monthlySummary.onlineByChannel))
     console.log('  - Offline total:', monthlySummary.offlineTotal)
-    console.log('  - Offline by category:', monthlySummary.offlineByCategory)
+    console.log('  - Offline by category:', JSON.stringify(monthlySummary.offlineByCategory))
+    console.log('  - Online sales records:', onlineSales.length)
+    console.log('  - Offline sales records:', offlineSales.length)
 
-    // 8. 일별 데이터 집계 (대시보드용)
-    const dailyDataMap = new Map<string, { date: string; online: number; offline: number; total: number }>()
+    // 7.5. 기존 데이터 로드하여 겹치는 날짜 확인 (해당 월만)
+    console.log('[Upload] Step 7.5: Loading existing data for target month')
+    let existingData = null
+    let existingDates: string[] = []
+    let overlappingDates: string[] = []
+    
+    // 파싱된 데이터의 연/월 추출
+    const targetYear = monthlySummary.year
+    const targetMonth = monthlySummary.month
+    console.log('[Upload] Target year/month:', targetYear, targetMonth)
+    
+    try {
+      // 해당 월의 데이터만 확인
+      existingData = await getUploadDataByMonth(targetYear, targetMonth)
+      if (existingData && existingData.dailyData) {
+        existingDates = existingData.dailyData.map(d => d.date)
+        console.log('[Upload] Existing dates count for', targetYear, targetMonth, ':', existingDates.length)
+      } else {
+        console.log('[Upload] No existing data found for', targetYear, targetMonth)
+      }
+    } catch (e) {
+      console.log('[Upload] Error loading existing data (continuing without):', e)
+    }
+
+    // 8. 일별 데이터 집계 (대시보드용 + 일자별 채널/카테고리별 상세)
+    interface DailyDataWithDetails {
+      date: string
+      online: number
+      offline: number
+      total: number
+      channelData?: Record<string, { count: number; feeRate: number }>
+      categoryData?: Record<string, { count: number }>
+    }
+    
+    const dailyDataMap = new Map<string, DailyDataWithDetails>()
     
     for (const sale of onlineSales) {
       const dateKey = sale.saleDate.toISOString().split('T')[0]
-      const existing = dailyDataMap.get(dateKey) || { date: dateKey, online: 0, offline: 0, total: 0 }
+      const existing = dailyDataMap.get(dateKey) || { 
+        date: dateKey, 
+        online: 0, 
+        offline: 0, 
+        total: 0,
+        channelData: {},
+        categoryData: {},
+      }
       existing.online += sale.quantity
       existing.total += sale.quantity
+      
+      // 채널별 일별 집계
+      if (!existing.channelData) existing.channelData = {}
+      if (!existing.channelData[sale.channelCode]) {
+        existing.channelData[sale.channelCode] = { count: 0, feeRate: sale.feeRate }
+      }
+      existing.channelData[sale.channelCode].count += sale.quantity
+      
       dailyDataMap.set(dateKey, existing)
     }
     
     for (const sale of offlineSales) {
       const dateKey = sale.saleDate.toISOString().split('T')[0]
-      const existing = dailyDataMap.get(dateKey) || { date: dateKey, online: 0, offline: 0, total: 0 }
+      const existing = dailyDataMap.get(dateKey) || { 
+        date: dateKey, 
+        online: 0, 
+        offline: 0, 
+        total: 0,
+        channelData: {},
+        categoryData: {},
+      }
       existing.offline += sale.quantity
       existing.total += sale.quantity
+      
+      // 카테고리별 일별 집계
+      if (!existing.categoryData) existing.categoryData = {}
+      if (!existing.categoryData[sale.categoryCode]) {
+        existing.categoryData[sale.categoryCode] = { count: 0 }
+      }
+      existing.categoryData[sale.categoryCode].count += sale.quantity
+      
       dailyDataMap.set(dateKey, existing)
     }
     
-    const dailyData = Array.from(dailyDataMap.values()).sort((a, b) => a.date.localeCompare(b.date))
+    console.log('[Upload] Daily data with channel/category details:', 
+      Array.from(dailyDataMap.entries()).slice(0, 3).map(([date, data]) => ({
+        date,
+        online: data.online,
+        offline: data.offline,
+        channels: data.channelData,
+        categories: data.categoryData,
+      }))
+    )
+    
+    // 겹치는 날짜 확인
+    const newDates = Array.from(dailyDataMap.keys())
+    overlappingDates = newDates.filter(d => existingDates.includes(d))
+    console.log('[Upload] New dates:', newDates)
+    console.log('[Upload] Overlapping dates:', overlappingDates)
+    
+    const dailyData = Array.from(dailyDataMap.values())
+      .sort((a, b) => a.date.localeCompare(b.date))
+      .map(d => ({
+        date: d.date,
+        online: d.online,
+        offline: d.offline,
+        total: d.total,
+        channelData: d.channelData || {},
+        categoryData: d.categoryData || {},
+      }))
 
     // 9. 정산 계산 - 파서 결과를 그대로 사용
     const settlementInput = {
@@ -180,13 +272,17 @@ export async function POST(request: NextRequest) {
       channels: Object.fromEntries(
         Object.entries(monthlySummary.onlineByChannel).map(([code, count]) => [
           code,
-          { name: code, count, feeRate: getChannelFeeRate(code) }
+          { 
+            name: parseResult.channelNames[code] || code,  // 중분류명 사용
+            count, 
+            feeRate: parseResult.channelFeeRates[code] ?? getChannelFeeRate(code) 
+          }
         ])
       ),
       categories: Object.fromEntries(
         Object.entries(monthlySummary.offlineByCategory).map(([code, count]) => [
           code,
-          { name: code, count }
+          { name: parseResult.categoryNames[code] || code, count }
         ])
       ),
       monthly: {
@@ -215,11 +311,10 @@ export async function POST(request: NextRequest) {
       },
     }
     
-    console.log('[Upload] Saving data with settlement:', JSON.stringify(storedData.settlement.companies, null, 2))
-    await saveUploadData(storedData)
-    console.log('[Upload] Data saved successfully')
+    // 파싱된 데이터 (저장은 save API에서 처리)
+    console.log('[Upload] Parsed data ready for save')
 
-    // 11. 응답
+    // 11. 응답 (저장하지 않고 파싱 결과만 반환)
     return NextResponse.json({
       success: true,
       uploadId: uploadHistoryId,
@@ -274,14 +369,31 @@ export async function POST(request: NextRequest) {
         })),
       },
       
-      message: dbSaveSuccess 
-        ? `${monthlySummary.grandTotal}명의 데이터가 저장되었습니다.`
+      // 기존 데이터 정보 (병합용)
+      existingData: existingData ? {
+        periodStart: existingData.periodStart,
+        periodEnd: existingData.periodEnd,
+        dates: existingDates,
+        summary: existingData.summary,
+      } : null,
+      
+      // 겹치는 날짜
+      overlappingDates,
+      hasOverlap: overlappingDates.length > 0,
+      
+      message: overlappingDates.length > 0
+        ? `파싱 완료 - ${monthlySummary.grandTotal}명. ⚠️ 기존 데이터와 ${overlappingDates.length}일 겹침`
         : `파싱 완료 - 인터넷 ${monthlySummary.onlineTotal}명, 현장 ${monthlySummary.offlineTotal}명, 총 ${monthlySummary.grandTotal}명`,
     })
   } catch (error) {
     console.error('[Upload] Error:', error)
+    console.error('[Upload] Error stack:', error instanceof Error ? error.stack : 'No stack')
+    console.error('[Upload] Error message:', error instanceof Error ? error.message : String(error))
     return NextResponse.json(
-      { error: '업로드 처리 중 오류가 발생했습니다.' },
+      { 
+        error: '업로드 처리 중 오류가 발생했습니다.',
+        details: error instanceof Error ? error.message : String(error),
+      },
       { status: 500 }
     )
   }

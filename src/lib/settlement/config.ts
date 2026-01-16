@@ -20,6 +20,7 @@ export const DEFAULT_SETTLEMENT_CONFIG: SettlementConfig = {
     'NAVER_MAZE_25': 10,       // 네이버 메이즈랜드25년: 10%
     'MAZE_TICKET': 12,         // 메이즈랜드 입장권: 12%
     'MAZE_TICKET_SINGLE': 12,  // 메이즈랜드 입장권(단품): 12%
+    'MAZE_25_SPECIAL': 10,     // 25특가: 10%
     'GENERAL_TICKET': 15,      // 일반채널 입장권: 15%
     'OTHER': 15,               // 기타 채널: 15% (기본값)
   },
@@ -69,6 +70,10 @@ export const CHANNEL_NAME_MAP: Record<string, ChannelCode> = {
   '일반채널입장권': 'GENERAL_TICKET',
   '일반채널': 'GENERAL_TICKET',
   'GENERAL_TICKET': 'GENERAL_TICKET',
+  
+  // 25특가 관련
+  '25특가': 'MAZE_25_SPECIAL',
+  'MAZE_25_SPECIAL': 'MAZE_25_SPECIAL',
 };
 
 /**
@@ -78,6 +83,7 @@ export const CHANNEL_CODE_TO_NAME: Record<ChannelCode, string> = {
   'NAVER_MAZE_25': '네이버 메이즈랜드25년',
   'MAZE_TICKET': '메이즈랜드 입장권',
   'MAZE_TICKET_SINGLE': '메이즈랜드 입장권(단품)',
+  'MAZE_25_SPECIAL': '25특가',
   'GENERAL_TICKET': '일반채널 입장권',
   'OTHER': '기타 채널',
 };

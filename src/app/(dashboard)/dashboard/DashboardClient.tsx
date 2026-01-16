@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Role } from '@prisma/client'
 import { Card, CardHeader, StatCard } from '@/components/ui'
-import { SalesChart, ChannelChart, SettlementTable } from '@/components/charts'
+import { SalesChart, ChannelChart } from '@/components/charts'
 import { DashboardFilters } from '@/components/dashboard/DashboardFilters'
 import { KpiCard, ComparisonBadge } from '@/components/dashboard/KpiCard'
 import { MonthSelector } from '@/components/dashboard/MonthSelector'
@@ -22,8 +22,8 @@ import {
   ArrowDownRight,
 } from 'lucide-react'
 
-// 탭 정의
-type TabType = 'overview' | 'company' | 'channels' | 'marketing'
+// 탭 없이 단일 페이지로 구성
+type TabType = 'overview'
 
 interface DashboardClientProps {
   userRole: Role
@@ -31,7 +31,6 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ userRole, companyCode }: DashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('overview')
   const [data, setData] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -95,14 +94,6 @@ export function DashboardClient({ userRole, companyCode }: DashboardClientProps)
     )
   }
 
-  // 탭 목록 (역할에 따라 다름)
-  const tabs = [
-    { id: 'overview' as const, label: '전체 현황', icon: BarChart3 },
-    { id: 'company' as const, label: getCompanyTabLabel(userRole), icon: Building2 },
-    { id: 'channels' as const, label: '채널/구분 분석', icon: PieChart },
-    { id: 'marketing' as const, label: '마케팅 로그', icon: Sparkles },
-  ]
-
   return (
     <div className="space-y-6 animate-fade-in">
       {/* 필터 영역 (연/월 선택, 뷰모드, 전월비 옵션) */}
@@ -117,33 +108,8 @@ export function DashboardClient({ userRole, companyCode }: DashboardClientProps)
         <DashboardFilters />
       </div>
 
-      {/* 탭 네비게이션 */}
-      <div className="flex gap-2 border-b border-dashboard-border pb-4">
-        {tabs.map((tab) => {
-          const Icon = tab.icon
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                'flex items-center gap-2 px-4 py-2 rounded-lg transition-all',
-                activeTab === tab.id
-                  ? 'bg-maze-500 text-white'
-                  : 'text-dashboard-muted hover:bg-dashboard-card hover:text-dashboard-text'
-              )}
-            >
-              <Icon className="w-4 h-4" />
-              <span>{tab.label}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* 탭 콘텐츠 */}
-      {activeTab === 'overview' && <OverviewTab data={data} userRole={userRole} />}
-      {activeTab === 'company' && <CompanyTab data={data} userRole={userRole} />}
-      {activeTab === 'channels' && <ChannelsTab data={data} />}
-      {activeTab === 'marketing' && <MarketingTab data={data} />}
+      {/* 단일 대시보드 뷰 - 모든 콘텐츠 통합 */}
+      <OverviewTab data={data} userRole={userRole} />
     </div>
   )
 }
@@ -165,7 +131,7 @@ function getCompanyTabLabel(role: Role): string {
 }
 
 // ==========================================
-// 전체 현황 탭
+// 전체 현황 (단일 대시보드)
 // ==========================================
 function OverviewTab({ data, userRole }: { data: any; userRole: Role }) {
   const rawData = data || {}
@@ -184,15 +150,42 @@ function OverviewTab({ data, userRole }: { data: any; userRole: Role }) {
   const dailyTrend = rawData.dailyTrend || []
   const prevDailyTrend = rawData.prevDailyTrend || []
   const marketingLogs = rawData.marketingLogs || []
-  const settlement = Array.isArray(rawData.settlement) ? rawData.settlement : []
+  const channels = rawData.channels || []
+  const categories = rawData.categories || []
   const comparison = rawData.comparison || null
 
   // 마케팅 로그를 차트 마커 형식으로 변환
-  const markers = (marketingLogs || []).map((log: any) => ({
-    date: log.date.slice(5).replace('-', '/'),
-    type: log.type,
-    title: log.title,
-  }))
+  const markers = (marketingLogs || []).map((log: any) => {
+    const dateStr = log.startDate || ''
+    const endDateStr = log.endDate || ''
+    const isCampaign = log.logType === 'CAMPAIGN'
+    
+    return {
+      date: dateStr.slice(5).replace('-', '/'),
+      endDate: endDateStr.slice(5).replace('-', '/'),
+      type: log.logType || 'CAMPAIGN',
+      // 캠페인은 제목, 퍼포먼스는 세부유형 표시
+      title: isCampaign ? (log.title || '') : (log.subType || ''),
+      content: isCampaign ? log.content : null,
+      impressions: log.impressions || 0,
+      clicks: log.clicks || 0,
+      clickRate: log.impressions > 0 ? ((log.clicks / log.impressions) * 100).toFixed(2) : '0.00',
+    }
+  })
+
+  // 채널별 합계 계산
+  const channelTotals = (channels || []).reduce((acc: any, ch: any) => ({
+    count: acc.count + (ch.count || 0),
+    revenue: acc.revenue + (ch.revenue || 0),
+    fee: acc.fee + (ch.fee || 0),
+    netRevenue: acc.netRevenue + (ch.netRevenue || 0),
+  }), { count: 0, revenue: 0, fee: 0, netRevenue: 0 })
+
+  // 구분별 합계 계산
+  const categoryTotals = (categories || []).reduce((acc: any, cat: any) => ({
+    count: acc.count + (cat.count || 0),
+    revenue: acc.revenue + (cat.revenue || cat.count * 3000 || 0),
+  }), { count: 0, revenue: 0 })
 
   return (
     <div className="space-y-6">
@@ -217,7 +210,7 @@ function OverviewTab({ data, userRole }: { data: any; userRole: Role }) {
           icon={<BarChart3 className="w-6 h-6" />}
         />
         <KpiCard
-          title="SKP 매출"
+          title="디지털프로그램 매출"
           value={formatCurrency(summary.totalRevenue)}
           comparison={comparison?.totalRevenue}
           icon={<DollarSign className="w-6 h-6" />}
@@ -225,7 +218,7 @@ function OverviewTab({ data, userRole }: { data: any; userRole: Role }) {
         />
       </div>
 
-      {/* 인터넷/현장 비율 */}
+      {/* 인터넷/현장 비율 + 매출 상세 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader title="판매 채널 비율" />
@@ -261,7 +254,7 @@ function OverviewTab({ data, userRole }: { data: any; userRole: Role }) {
           <CardHeader title="매출 상세" />
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center p-4 bg-dashboard-bg rounded-lg">
-              <p className="text-sm text-dashboard-muted">SKP 매출</p>
+              <p className="text-sm text-dashboard-muted">디지털프로그램 매출</p>
               <p className="text-xl font-bold text-maze-500 mt-1">
                 {formatCurrency(summary.totalRevenue)}
               </p>
@@ -284,45 +277,195 @@ function OverviewTab({ data, userRole }: { data: any; userRole: Role }) {
           title="일별 방문객 추이"
           description="인터넷/현장 판매 구분 및 마케팅 이벤트 표시"
         />
-        <SalesChart
-          data={dailyTrend.map((d: any) => ({
-            date: d.dateLabel,
-            online: d.online,
-            offline: d.offline,
-            total: d.total,
-          }))}
-          prevData={prevDailyTrend.map((d: any) => ({
-            date: d.dateLabel,
-            online: d.online,
-            offline: d.offline,
-            total: d.total,
-          }))}
-          markers={markers}
-          height={350}
-        />
+        {/* 데이터가 많을 때 스크롤 가능하도록 */}
+        <div className="overflow-x-auto">
+          <div style={{ minWidth: Math.max(800, dailyTrend.length * 25) }}>
+            <SalesChart
+              data={dailyTrend.map((d: any) => ({
+                date: d.dateLabel,
+                online: d.online,
+                offline: d.offline,
+                total: d.total,
+              }))}
+              prevData={prevDailyTrend.map((d: any) => ({
+                date: d.dateLabel,
+                online: d.online,
+                offline: d.offline,
+                total: d.total,
+              }))}
+              markers={markers}
+              height={350}
+            />
+          </div>
+        </div>
       </Card>
 
-      {/* 회사별 정산 요약 */}
+      {/* 채널/구분 분석 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader title="채널별 인터넷 판매" description="수수료율 포함" />
+          <ChannelChart
+            data={channels?.map((ch: any) => ({
+              name: ch.name,
+              value: ch.count,
+              color: getChannelColor(ch.code),
+            })) || []}
+            height={280}
+          />
+        </Card>
+
+        <Card>
+          <CardHeader title="구분별 현장 판매" />
+          <ChannelChart
+            data={categories?.map((cat: any) => ({
+              name: cat.name,
+              value: cat.count,
+              color: getCategoryColor(cat.code),
+            })) || []}
+            height={280}
+          />
+        </Card>
+      </div>
+
+      {/* 채널별 상세 현황 테이블 */}
       <Card>
-        <CardHeader
-          title="회사별 정산 현황"
-          description="월 누적 기준"
-        />
-        <SettlementTable
-          data={settlement.map((s: any) => ({
-            companyName: s.companyName,
-            companyCode: s.companyCode,
-            revenue: typeof s.revenue === 'number' ? s.revenue : 0,
-            income: typeof s.income === 'number' ? s.income : 0,
-            cost: typeof s.cost === 'number' ? s.cost : 0,
-            profit: typeof s.profit === 'number' ? s.profit : 0,
-            profitRate: typeof s.profitRate === 'number' ? s.profitRate : 0,
-          }))}
-          showDetails={userRole === 'SUPER_ADMIN' || userRole === 'SKP_ADMIN'}
-        />
+        <CardHeader title="채널별 상세 현황" description="인터넷 판매 채널별 매출/수수료/순매출" />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b-2 border-dashboard-border">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-dashboard-muted">채널명</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-dashboard-muted">판매수</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-dashboard-muted">수수료율</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-dashboard-muted">매출</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-dashboard-muted">수수료</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-dashboard-muted">순매출</th>
+              </tr>
+            </thead>
+            <tbody>
+              {channels?.map((ch: any) => (
+                <tr key={ch.code} className="border-b border-dashboard-border/50 hover:bg-dashboard-border/30">
+                  <td className="py-4 px-4">
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: getChannelColor(ch.code) }}
+                      />
+                      <span className="text-dashboard-text">{ch.name}</span>
+                    </div>
+                  </td>
+                  <td className="py-4 px-4 text-right text-dashboard-text">
+                    {formatNumber(ch.count)}명
+                  </td>
+                  <td className="py-4 px-4 text-right text-orange-500">
+                    {ch.feeRate || 0}%
+                  </td>
+                  <td className="py-4 px-4 text-right text-dashboard-text">
+                    {formatCurrency(ch.revenue || ch.count * 3000)}
+                  </td>
+                  <td className="py-4 px-4 text-right text-red-400">
+                    -{formatCurrency(ch.fee || Math.round((ch.count * 3000) * (ch.feeRate || 0) / 100))}
+                  </td>
+                  <td className="py-4 px-4 text-right text-maze-500 font-semibold">
+                    {formatCurrency(ch.netRevenue || (ch.count * 3000) - Math.round((ch.count * 3000) * (ch.feeRate || 0) / 100))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            {/* 합계 행 */}
+            <tfoot>
+              <tr className="border-t-2 border-dashboard-border bg-dashboard-bg/50">
+                <td className="py-4 px-4 font-bold text-dashboard-text">합계</td>
+                <td className="py-4 px-4 text-right font-bold text-dashboard-text">
+                  {formatNumber(channelTotals.count)}명
+                </td>
+                <td className="py-4 px-4 text-right text-dashboard-muted">-</td>
+                <td className="py-4 px-4 text-right font-bold text-dashboard-text">
+                  {formatCurrency(channelTotals.revenue || channelTotals.count * 3000)}
+                </td>
+                <td className="py-4 px-4 text-right font-bold text-red-400">
+                  -{formatCurrency(channelTotals.fee || summary.totalFee)}
+                </td>
+                <td className="py-4 px-4 text-right font-bold text-maze-500">
+                  {formatCurrency(channelTotals.netRevenue || summary.totalRevenue)}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </Card>
+
+      {/* 구분별 현장 판매 현황 */}
+      <Card>
+        <CardHeader title="구분별 현장 판매 현황" />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b-2 border-dashboard-border">
+                <th className="text-left py-3 px-4 text-sm font-semibold text-dashboard-muted">구분</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-dashboard-muted">판매수</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-dashboard-muted">매출</th>
+                <th className="text-right py-3 px-4 text-sm font-semibold text-dashboard-muted">비율</th>
+              </tr>
+            </thead>
+            <tbody>
+              {categories?.map((cat: any) => {
+                const catRevenue = cat.revenue || cat.count * 3000
+                return (
+                  <tr key={cat.code} className="border-b border-dashboard-border/50 hover:bg-dashboard-border/30">
+                    <td className="py-4 px-4">
+                      <div className="flex items-center gap-2">
+                        <div
+                          className="w-3 h-3 rounded-full"
+                          style={{ backgroundColor: getCategoryColor(cat.code) }}
+                        />
+                        <span className="text-dashboard-text">{cat.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-4 text-right text-dashboard-text">
+                      {formatNumber(cat.count)}명
+                    </td>
+                    <td className="py-4 px-4 text-right text-dashboard-text">
+                      {formatCurrency(catRevenue)}
+                    </td>
+                    <td className="py-4 px-4 text-right text-blue-500">
+                      {categoryTotals.count > 0 ? ((cat.count / categoryTotals.count) * 100).toFixed(1) : 0}%
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-dashboard-border bg-dashboard-bg/50">
+                <td className="py-4 px-4 font-bold text-dashboard-text">합계</td>
+                <td className="py-4 px-4 text-right font-bold text-dashboard-text">
+                  {formatNumber(categoryTotals.count)}명
+                </td>
+                <td className="py-4 px-4 text-right font-bold text-maze-500">
+                  {formatCurrency(categoryTotals.revenue)}
+                </td>
+                <td className="py-4 px-4 text-right font-bold text-blue-500">100%</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
       </Card>
     </div>
   )
+}
+
+// 카테고리별 색상
+function getCategoryColor(code: string): string {
+  const colors: Record<string, string> = {
+    INDIVIDUAL: '#3b82f6',
+    TRAVEL_AGENCY: '#8b5cf6',
+    TAXI: '#f59e0b',
+    RESIDENT: '#22c55e',
+    ALL_PASS: '#ec4899',
+    SHUTTLE_DISCOUNT: '#06b6d4',
+    SCHOOL_GROUP: '#f97316',
+  }
+  return colors[code] || CHANNEL_COLORS[colorIndex++ % CHANNEL_COLORS.length]
 }
 
 // ==========================================
@@ -734,46 +877,83 @@ function MarketingTab({ data }: { data: any }) {
   const { marketingLogs = [], dailyTrend = [], prevDailyTrend = [] } = data
 
   const markers = (marketingLogs || []).map((log: any) => ({
-    date: log.date.slice(5).replace('-', '/'),
-    type: log.type,
-    title: log.title,
+    date: log.startDate ? log.startDate.slice(5).replace('-', '/') : log.date?.slice(5).replace('-', '/'),
+    type: log.logType || log.type,
+    title: log.subType || log.title,
   }))
 
   const getLogTypeColor = (type: string) => {
     switch (type) {
-      case 'CAMPAIGN': return 'bg-blue-500/20 text-blue-500 border-blue-500/30'
-      case 'WEATHER': return 'bg-yellow-500/20 text-yellow-500 border-yellow-500/30'
-      case 'EVENT': return 'bg-purple-500/20 text-purple-500 border-purple-500/30'
-      case 'MAINTENANCE': return 'bg-orange-500/20 text-orange-500 border-orange-500/30'
+      case 'OKCASHBACK_PUSH': return 'bg-blue-500/20 text-blue-500 border-blue-500/30'
+      case 'OKCASHBACK_BANNER': return 'bg-purple-500/20 text-purple-500 border-purple-500/30'
       default: return 'bg-gray-500/20 text-gray-500 border-gray-500/30'
     }
   }
 
   const getLogTypeName = (type: string) => {
     switch (type) {
-      case 'CAMPAIGN': return '캠페인'
-      case 'WEATHER': return '날씨'
-      case 'EVENT': return '행사'
-      case 'MAINTENANCE': return '공사/점검'
+      case 'OKCASHBACK_PUSH': return 'OK캐쉬백 푸쉬'
+      case 'OKCASHBACK_BANNER': return 'OK캐쉬백 배너'
       default: return '기타'
     }
   }
 
+  // 클릭율 계산
+  const calculateClickRate = (clicks: number, impressions: number) => {
+    if (!impressions || impressions === 0) return '0.00'
+    return ((clicks / impressions) * 100).toFixed(2)
+  }
+
+  // 전체 통계
+  const totalStats = (marketingLogs || []).reduce((acc: any, log: any) => ({
+    impressions: acc.impressions + (log.impressions || 0),
+    clicks: acc.clicks + (log.clicks || 0),
+  }), { impressions: 0, clicks: 0 })
+
   return (
     <div className="space-y-6">
+      {/* 통계 요약 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card>
+          <div className="text-center">
+            <p className="text-sm text-dashboard-muted">총 노출량</p>
+            <p className="text-2xl font-bold text-dashboard-text mt-1">
+              {formatNumber(totalStats.impressions)}
+            </p>
+          </div>
+        </Card>
+        <Card>
+          <div className="text-center">
+            <p className="text-sm text-dashboard-muted">총 클릭수</p>
+            <p className="text-2xl font-bold text-dashboard-text mt-1">
+              {formatNumber(totalStats.clicks)}
+            </p>
+          </div>
+        </Card>
+        <Card>
+          <div className="text-center">
+            <p className="text-sm text-dashboard-muted">평균 클릭율</p>
+            <p className="text-2xl font-bold text-maze-500 mt-1">
+              {calculateClickRate(totalStats.clicks, totalStats.impressions)}%
+            </p>
+          </div>
+        </Card>
+      </div>
+
+      {/* 방문객 추이 차트 */}
       <Card>
         <CardHeader
-          title="마케팅 이벤트 타임라인"
-          description="그래프 위 마커(📌)가 마케팅/이슈 이벤트입니다"
+          title="방문객 추이 & 마케팅 이벤트"
+          description="그래프 위 마커(📌)가 마케팅 이벤트입니다"
         />
         <SalesChart
-          data={dailyTrend.map((d: any) => ({
+          data={(dailyTrend || []).map((d: any) => ({
             date: d.dateLabel,
             online: d.online,
             offline: d.offline,
             total: d.total,
           }))}
-          prevData={prevDailyTrend.map((d: any) => ({
+          prevData={(prevDailyTrend || []).map((d: any) => ({
             date: d.dateLabel,
             online: d.online,
             offline: d.offline,
@@ -784,10 +964,11 @@ function MarketingTab({ data }: { data: any }) {
         />
       </Card>
 
+      {/* 마케팅 로그 테이블 */}
       <Card>
         <CardHeader
           title="등록된 마케팅 로그"
-          description="날짜, 유형, 내용"
+          description="기간, 유형, 노출량, 클릭수, 클릭율"
           action={
             <a
               href="/marketing-log"
@@ -797,32 +978,58 @@ function MarketingTab({ data }: { data: any }) {
             </a>
           }
         />
-        <div className="space-y-3">
-          {(marketingLogs || []).map((log: any) => (
-            <div
-              key={log.id}
-              className={cn(
-                'p-4 rounded-lg border',
-                getLogTypeColor(log.type)
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-dashboard-border">
+                <th className="text-left py-3 px-4 font-semibold text-dashboard-muted">기간</th>
+                <th className="text-left py-3 px-4 font-semibold text-dashboard-muted">유형</th>
+                <th className="text-left py-3 px-4 font-semibold text-dashboard-muted">세부</th>
+                <th className="text-right py-3 px-4 font-semibold text-dashboard-muted">노출량</th>
+                <th className="text-right py-3 px-4 font-semibold text-dashboard-muted">클릭수</th>
+                <th className="text-right py-3 px-4 font-semibold text-dashboard-muted">클릭율</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(marketingLogs || []).length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="text-center py-8 text-dashboard-muted">
+                    등록된 마케팅 로그가 없습니다.
+                  </td>
+                </tr>
+              ) : (
+                (marketingLogs || []).map((log: any) => (
+                  <tr key={log.id} className="border-b border-dashboard-border/50 hover:bg-dashboard-border/30">
+                    <td className="py-3 px-4 text-dashboard-text">
+                      {log.startDate && log.endDate 
+                        ? `${log.startDate.slice(5)} ~ ${log.endDate.slice(5)}`
+                        : log.date?.slice(5) || '-'}
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={cn(
+                        'px-2 py-1 rounded text-xs',
+                        getLogTypeColor(log.logType || log.type)
+                      )}>
+                        {getLogTypeName(log.logType || log.type)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-dashboard-text">
+                      {log.subType || log.title || '-'}
+                    </td>
+                    <td className="py-3 px-4 text-right text-dashboard-text">
+                      {formatNumber(log.impressions || 0)}
+                    </td>
+                    <td className="py-3 px-4 text-right text-dashboard-text">
+                      {formatNumber(log.clicks || 0)}
+                    </td>
+                    <td className="py-3 px-4 text-right font-bold text-maze-500">
+                      {calculateClickRate(log.clicks || 0, log.impressions || 0)}%
+                    </td>
+                  </tr>
+                ))
               )}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <span className="text-sm font-medium">{log.date}</span>
-                  <span className={cn(
-                    'px-2 py-0.5 rounded text-xs',
-                    getLogTypeColor(log.type)
-                  )}>
-                    {getLogTypeName(log.type)}
-                  </span>
-                </div>
-              </div>
-              <p className="mt-2 font-medium">{log.title}</p>
-              {log.content && (
-                <p className="mt-1 text-sm opacity-80">{log.content}</p>
-              )}
-            </div>
-          ))}
+            </tbody>
+          </table>
         </div>
       </Card>
     </div>
@@ -868,24 +1075,29 @@ function FlowArrow() {
   )
 }
 
-function getChannelColor(code: string): string {
-  const colors: Record<string, string> = {
-    NAVER_MAZE_25: '#22c55e',
-    MAZE_TICKET: '#3b82f6',
-    MAZE_TICKET_SINGLE: '#f59e0b',
-    GENERAL_TICKET: '#ef4444',
-    OTHER: '#8b5cf6',
-  }
-  return colors[code] || '#6b7280'
-}
+// 채널별 색상 (동적으로 생성)
+const CHANNEL_COLORS = [
+  '#22c55e', // green
+  '#3b82f6', // blue
+  '#f59e0b', // amber
+  '#ef4444', // red
+  '#8b5cf6', // violet
+  '#ec4899', // pink
+  '#06b6d4', // cyan
+  '#f97316', // orange
+  '#84cc16', // lime
+  '#14b8a6', // teal
+  '#6366f1', // indigo
+  '#a855f7', // purple
+]
 
-function getCategoryColor(code: string): string {
-  const colors: Record<string, string> = {
-    INDIVIDUAL: '#22c55e',
-    TRAVEL_AGENCY: '#3b82f6',
-    TAXI: '#f59e0b',
-    RESIDENT: '#8b5cf6',
-    ALL_PASS: '#ec4899',
+const channelColorMap: Record<string, string> = {}
+let colorIndex = 0
+
+function getChannelColor(code: string): string {
+  if (!channelColorMap[code]) {
+    channelColorMap[code] = CHANNEL_COLORS[colorIndex % CHANNEL_COLORS.length]
+    colorIndex++
   }
-  return colors[code] || '#6b7280'
+  return channelColorMap[code]
 }

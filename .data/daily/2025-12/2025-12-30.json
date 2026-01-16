@@ -1,0 +1,102 @@
+{
+  "date": "2025-12-30",
+  "channelSales": [
+    {
+      "date": "2025-12-30",
+      "channelCode": "주식회사브이패스VPASS_네이버메이즈랜드25년",
+      "channelName": "네이버  메이즈랜드25년",
+      "count": 47,
+      "feeRate": 10,
+      "grossRevenue": 141000,
+      "fee": 14100,
+      "netRevenue": 126900
+    },
+    {
+      "date": "2025-12-30",
+      "channelCode": "주식회사브이패스VPASS_메이즈랜드입장권",
+      "channelName": "메이즈랜드  입장권",
+      "count": 2,
+      "feeRate": 12,
+      "grossRevenue": 6000,
+      "fee": 720,
+      "netRevenue": 5280
+    },
+    {
+      "date": "2025-12-30",
+      "channelCode": "주식회사브이패스VPASS_25특가",
+      "channelName": "25특가",
+      "count": 12,
+      "feeRate": 15,
+      "grossRevenue": 36000,
+      "fee": 5400,
+      "netRevenue": 30600
+    },
+    {
+      "date": "2025-12-30",
+      "channelCode": "놀유니버스레져_메이즈랜드입장권",
+      "channelName": "메이즈랜드  입장권",
+      "count": 3,
+      "feeRate": 12,
+      "grossRevenue": 9000,
+      "fee": 1080,
+      "netRevenue": 7920
+    },
+    {
+      "date": "2025-12-30",
+      "channelCode": "주식회사엘에스컴퍼니_메이즈랜드입장권단품",
+      "channelName": "메이즈랜드  입장권 [단품]",
+      "count": 2,
+      "feeRate": 12,
+      "grossRevenue": 6000,
+      "fee": 720,
+      "netRevenue": 5280
+    }
+  ],
+  "categorySales": [
+    {
+      "date": "2025-12-30",
+      "categoryCode": "INDIVIDUAL",
+      "categoryName": "개인",
+      "count": 41,
+      "revenue": 123000
+    },
+    {
+      "date": "2025-12-30",
+      "categoryCode": "TRAVEL_AGENCY",
+      "categoryName": "여행사",
+      "count": 6,
+      "revenue": 18000
+    },
+    {
+      "date": "2025-12-30",
+      "categoryCode": "RESIDENT",
+      "categoryName": "도민",
+      "count": 6,
+      "revenue": 18000
+    },
+    {
+      "date": "2025-12-30",
+      "categoryCode": "ALL_PASS",
+      "categoryName": "올패스",
+      "count": 4,
+      "revenue": 12000
+    },
+    {
+      "date": "2025-12-30",
+      "categoryCode": "SCHOOL_GROUP",
+      "categoryName": "학단",
+      "count": 0,
+      "revenue": 0
+    }
+  ],
+  "summary": {
+    "date": "2025-12-30",
+    "onlineCount": 69,
+    "offlineCount": 60,
+    "totalCount": 129,
+    "onlineNetRevenue": 175980,
+    "offlineRevenue": 180000,
+    "totalNetRevenue": 355980
+  },
+  "source": "file"
+}

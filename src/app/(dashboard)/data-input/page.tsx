@@ -80,6 +80,8 @@ interface DailyData {
   offline: number
   total: number
   isEdited?: boolean
+  channelData?: Record<string, { count: number; feeRate: number }>
+  categoryData?: Record<string, { count: number }>
 }
 
 interface ChannelData {
@@ -111,6 +113,15 @@ interface UploadResult {
   settlement?: any
   message?: string
   error?: string
+  // 기존 데이터 병합용
+  existingData?: {
+    periodStart: string
+    periodEnd: string
+    dates: string[]
+    summary: { onlineCount: number; offlineCount: number; totalCount: number }
+  }
+  overlappingDates?: string[]
+  hasOverlap?: boolean
 }
 
 export default function DataInputPage() {
@@ -158,21 +169,174 @@ export default function DataInputPage() {
   const loadExistingData = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/sales-data-v2?year=${year}&month=${month}&includeDaily=true`)
+      // 업로드 데이터 API에서 직접 조회 (엑셀 업로드와 일자별 입력 동일 소스)
+      const response = await fetch(`/api/upload-data?year=${year}&month=${month}`)
       const result = await response.json()
       
       if (result.success) {
         setMasterData(result.masterData)
         setFeeSettings(result.feeSettings)
-        setMonthlyData(result.monthlyData)
         
-        // 일자별 입력용 데이터
-        setDailyDataForInput(result.monthlyData?.dailyData || [])
-        
-        // 엑셀 업로드 모드에서도 기존 데이터가 있으면 표시
-        if (inputMode === 'file' && result.monthlyData && result.monthlyData.summary.totalCount > 0) {
-          // 기존 데이터로 편집 가능 데이터 초기화
-          initializeFromExistingData(result.monthlyData)
+        if (result.hasData && result.uploadData) {
+          const uploadData = result.uploadData
+          console.log('[LoadData] Found upload data:', {
+            dailyCount: uploadData.dailyData?.length,
+            summary: uploadData.summary,
+          })
+          
+          // 일별 데이터 설정 (channelData, categoryData 포함)
+          const dailyList = (uploadData.dailyData || []).map((d: any) => ({
+            date: d.date,
+            online: d.online || 0,
+            offline: d.offline || 0,
+            total: d.total || (d.online || 0) + (d.offline || 0),
+            isEdited: false,
+            channelData: d.channelData || {},
+            categoryData: d.categoryData || {},
+          }))
+          setEditableDailyData(dailyList)
+          
+          console.log('[LoadData] Daily list with channelData:', 
+            dailyList.slice(0, 2).map((d: any) => ({
+              date: d.date,
+              online: d.online,
+              hasChannelData: Object.keys(d.channelData || {}).length > 0,
+              channelData: d.channelData,
+            }))
+          )
+          
+          // 채널 데이터 설정
+          setEditableChannels(uploadData.channels || {})
+          
+          // 카테고리 데이터 설정
+          setEditableCategories(uploadData.categories || {})
+          
+          // 일자별 입력용 DailyAggData 형식 변환
+          // 일별 채널/카테고리별 데이터가 있으면 사용, 없으면 비율 배분
+          const dailyAggData = (uploadData.dailyData || []).map((d: any) => {
+            const hasChannelData = d.channelData && Object.keys(d.channelData).length > 0
+            const hasCategoryData = d.categoryData && Object.keys(d.categoryData).length > 0
+            
+            // 채널별 데이터 생성
+            let channelSales: any[]
+            if (hasChannelData) {
+              // 일별 상세 데이터 사용
+              channelSales = Object.entries(d.channelData).map(([code, ch]: [string, any]) => ({
+                date: d.date,
+                channelCode: code,
+                channelName: uploadData.channels?.[code]?.name || code,
+                count: ch.count || 0,
+                feeRate: ch.feeRate || uploadData.channels?.[code]?.feeRate || 10,
+              }))
+              
+              // 월 합계에는 있지만 이 날에는 없는 채널 추가 (count: 0)
+              for (const code of Object.keys(uploadData.channels || {})) {
+                if (!d.channelData[code]) {
+                  channelSales.push({
+                    date: d.date,
+                    channelCode: code,
+                    channelName: uploadData.channels[code]?.name || code,
+                    count: 0,
+                    feeRate: uploadData.channels[code]?.feeRate || 10,
+                  })
+                }
+              }
+            } else {
+              // 채널 데이터가 없으면 0으로 설정 (수기 입력 대기)
+              channelSales = Object.entries(uploadData.channels || {}).map(([code, ch]: [string, any]) => ({
+                date: d.date,
+                channelCode: code,
+                channelName: ch.name || code,
+                count: 0,
+                feeRate: ch.feeRate || 10,
+              }))
+            }
+            
+            // 카테고리별 데이터 생성
+            let categorySales: any[]
+            if (hasCategoryData) {
+              categorySales = Object.entries(d.categoryData).map(([code, cat]: [string, any]) => ({
+                date: d.date,
+                categoryCode: code,
+                categoryName: uploadData.categories?.[code]?.name || code,
+                count: cat.count || 0,
+              }))
+              
+              // 월 합계에는 있지만 이 날에는 없는 카테고리 추가
+              for (const code of Object.keys(uploadData.categories || {})) {
+                if (!d.categoryData[code]) {
+                  categorySales.push({
+                    date: d.date,
+                    categoryCode: code,
+                    categoryName: uploadData.categories[code]?.name || code,
+                    count: 0,
+                  })
+                }
+              }
+            } else {
+              categorySales = Object.entries(uploadData.categories || {}).map(([code, cat]: [string, any]) => ({
+                date: d.date,
+                categoryCode: code,
+                categoryName: cat.name || code,
+                count: 0,
+              }))
+            }
+            
+            return {
+              date: d.date,
+              channelSales,
+              categorySales,
+              summary: {
+                date: d.date,
+                onlineCount: d.online,
+                offlineCount: d.offline,
+                totalCount: d.total,
+                onlineNetRevenue: 0,
+                offlineRevenue: 0,
+                totalNetRevenue: 0,
+              },
+              source: 'file' as const,
+            }
+          })
+          setDailyDataForInput(dailyAggData)
+          
+          console.log('[LoadData] Daily data with channel details:', 
+            dailyAggData.slice(0, 2).map((d: any) => ({
+              date: d.date,
+              channels: d.channelSales?.map((c: any) => `${c.channelCode}:${c.count}`),
+              categories: d.categorySales?.map((c: any) => `${c.categoryCode}:${c.count}`),
+            }))
+          )
+          
+          // 업로드 결과 설정 (UI 표시용)
+          setUploadResult({
+            success: true,
+            dbSaved: true,
+            summary: {
+              periodStart: uploadData.periodStart,
+              periodEnd: uploadData.periodEnd,
+              onlineCount: uploadData.summary.onlineCount,
+              offlineCount: uploadData.summary.offlineCount,
+              totalCount: uploadData.summary.totalCount,
+            },
+            existingData: {
+              periodStart: uploadData.periodStart,
+              periodEnd: uploadData.periodEnd,
+              dates: dailyList.map((d: any) => d.date),
+              summary: uploadData.summary,
+            },
+            hasOverlap: false,
+            overlappingDates: [],
+          })
+          
+          setHasChanges(false)
+        } else {
+          // 데이터 없음 - 초기화
+          setEditableDailyData([])
+          setEditableChannels({})
+          setEditableCategories({})
+          setDailyDataForInput([])
+          setUploadResult(null)
         }
       }
     } catch (error) {
@@ -270,14 +434,24 @@ export default function DataInputPage() {
         // 새로 파싱된 데이터로 업데이트 (기존 데이터 덮어쓰기)
         setUploadResult({ success: true, ...data })
         
-        // 수정 가능 데이터 초기화
+        // 수정 가능 데이터 초기화 (channelData, categoryData 포함)
         setEditableDailyData(
           (data.dailyData || []).map((d: any) => ({
-            ...d,
+            date: d.date,
             online: d.online || 0,
             offline: d.offline || 0,
             total: (d.online || 0) + (d.offline || 0),
             isEdited: false,
+            channelData: d.channelData || {},
+            categoryData: d.categoryData || {},
+          }))
+        )
+        
+        console.log('[Upload] Daily data with channelData:', 
+          (data.dailyData || []).slice(0, 2).map((d: any) => ({
+            date: d.date,
+            hasChannelData: !!d.channelData,
+            channelData: d.channelData,
           }))
         )
         
@@ -401,8 +575,31 @@ export default function DataInputPage() {
   }
 
   // 엑셀 업로드 데이터 저장
-  const handleSaveUploadData = async () => {
+  const handleSaveUploadData = async (mergeMode?: boolean) => {
     if (!uploadResult && editableDailyData.length === 0) return
+
+    // 기존 데이터가 있는 경우 처리
+    if (uploadResult?.existingData) {
+      // 겹치는 날짜가 있으면 사용자에게 확인
+      if (uploadResult.hasOverlap && mergeMode === undefined) {
+        const overlappingCount = uploadResult.overlappingDates?.length || 0
+        const choice = window.confirm(
+          `⚠️ 기존 데이터와 ${overlappingCount}일이 겹칩니다.\n\n` +
+          `[확인] - 기존 데이터와 병합 (겹치는 날짜는 새 데이터로 덮어쓰기)\n` +
+          `[취소] - 전체 덮어쓰기 (기존 데이터 삭제)`
+        )
+        return handleSaveUploadData(choice)
+      }
+      
+      // 겹치는 날짜가 없으면 자동으로 병합
+      if (!uploadResult.hasOverlap && mergeMode === undefined) {
+        mergeMode = true  // 자동 병합
+        console.log('[Save] Auto-merging with existing data (no overlap)')
+      }
+    }
+    
+    // 기본값 설정
+    const finalMergeMode = mergeMode ?? false
 
     setIsSaving(true)
 
@@ -421,13 +618,15 @@ export default function DataInputPage() {
           },
           year,
           month,
+          mergeMode: finalMergeMode,  // 병합 모드 전달
         }),
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        alert('데이터가 성공적으로 반영되었습니다.\n대시보드, 판매분석, 정산현황에 모두 반영됩니다.')
+        const modeText = finalMergeMode ? '병합 저장' : '저장'
+        alert(`데이터가 성공적으로 ${modeText}되었습니다.\n대시보드, 판매분석, 정산현황에 모두 반영됩니다.`)
         setHasChanges(false)
         
         setUploadResult(prev => prev ? {
@@ -435,6 +634,8 @@ export default function DataInputPage() {
           dbSaved: true,
           summary: data.summary,
           settlement: data.settlement,
+          hasOverlap: false,  // 저장 후 겹침 상태 초기화
+          overlappingDates: [],
         } : {
           success: true,
           dbSaved: true,
@@ -486,46 +687,88 @@ export default function DataInputPage() {
     }
   }
 
-  // 일자별 데이터 저장
+  // 일자별 데이터 저장 (upload-data와 동기화)
   const handleSaveDailyData = async (dataList: DailyAggData[]) => {
     setIsSaving(true)
     try {
-      const response = await fetch('/api/sales-data-v2', {
+      // DailyAggData를 간단한 형식으로 변환
+      const dailyData = dataList.map(d => ({
+        date: d.date,
+        online: d.channelSales?.reduce((sum, ch) => sum + ch.count, 0) || 0,
+        offline: d.categorySales?.reduce((sum, cat) => sum + cat.count, 0) || 0,
+        total: (d.channelSales?.reduce((sum, ch) => sum + ch.count, 0) || 0) + 
+               (d.categorySales?.reduce((sum, cat) => sum + cat.count, 0) || 0),
+      }))
+      
+      // 채널별 합계 계산
+      const channelTotals: Record<string, { name: string; count: number; feeRate: number }> = {}
+      dataList.forEach(d => {
+        d.channelSales?.forEach(ch => {
+          if (!channelTotals[ch.channelCode]) {
+            channelTotals[ch.channelCode] = {
+              name: ch.channelName,
+              count: 0,
+              feeRate: ch.feeRate || 10,
+            }
+          }
+          channelTotals[ch.channelCode].count += ch.count
+        })
+      })
+      
+      // 카테고리별 합계 계산
+      const categoryTotals: Record<string, { name: string; count: number }> = {}
+      dataList.forEach(d => {
+        d.categorySales?.forEach(cat => {
+          if (!categoryTotals[cat.categoryCode]) {
+            categoryTotals[cat.categoryCode] = {
+              name: cat.categoryName,
+              count: 0,
+            }
+          }
+          categoryTotals[cat.categoryCode].count += cat.count
+        })
+      })
+      
+      // upload/save API 사용 (upload-data와 동기화)
+      const response = await fetch('/api/upload/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          action: 'saveBulkDaily',
+          dailyData,
+          channels: channelTotals,
+          categories: categoryTotals,
           year,
           month,
-          dailyDataList: dataList,
-          source: 'manual',
+          mergeMode: false,  // 전체 덮어쓰기
         }),
       })
 
       const result = await response.json()
 
       if (result.success) {
-        setMonthlyData(result.monthlyData)
         setDailyDataForInput(dataList)
-        alert(`${result.savedCount}일 데이터가 저장되었습니다.`)
+        
+        // 편집 가능 데이터도 업데이트
+        setEditableDailyData(dailyData)
+        setEditableChannels(channelTotals)
+        setEditableCategories(categoryTotals)
+        
+        alert(`${dataList.length}일 데이터가 저장되었습니다.`)
+        
+        // 데이터 새로고침
+        await loadExistingData()
       } else {
         alert(result.error || '저장 실패')
       }
     } catch (error) {
+      console.error('Save error:', error)
       alert('네트워크 오류가 발생했습니다.')
     } finally {
       setIsSaving(false)
     }
   }
 
-  // 합계 계산 (엑셀 업로드용)
-  const totals = useMemo(() => {
-    const online = editableDailyData.reduce((sum, d) => sum + (d.online || 0), 0)
-    const offline = editableDailyData.reduce((sum, d) => sum + (d.offline || 0), 0)
-    return { online, offline, total: online + offline }
-  }, [editableDailyData])
-
-  // 채널/카테고리 합계 (엑셀 업로드용)
+  // 채널/카테고리 합계 (엑셀 업로드용 - 월 계 데이터 기준)
   const channelSum = useMemo(() => 
     Object.values(editableChannels).reduce((sum, ch) => sum + (ch.count || 0), 0), 
     [editableChannels]
@@ -534,10 +777,25 @@ export default function DataInputPage() {
     Object.values(editableCategories).reduce((sum, cat) => sum + (cat.count || 0), 0), 
     [editableCategories]
   )
+  
+  // 일별 데이터 합계 (일별 레코드 기준)
+  const dailyTotals = useMemo(() => {
+    const online = editableDailyData.reduce((sum, d) => sum + (d.online || 0), 0)
+    const offline = editableDailyData.reduce((sum, d) => sum + (d.offline || 0), 0)
+    return { online, offline, total: online + offline }
+  }, [editableDailyData])
 
-  // 불일치 체크
-  const channelMismatch = channelSum !== totals.online && totals.online > 0
-  const categoryMismatch = categorySum !== totals.offline && totals.offline > 0
+  // 합계 계산 (채널/카테고리 합계 우선 사용, 없으면 일별 합계)
+  const totals = useMemo(() => {
+    // 채널/카테고리 합계가 있으면 그것을 사용 (월 계 데이터)
+    const online = channelSum > 0 ? channelSum : dailyTotals.online
+    const offline = categorySum > 0 ? categorySum : dailyTotals.offline
+    return { online, offline, total: online + offline }
+  }, [channelSum, categorySum, dailyTotals])
+
+  // 불일치 체크 (일별 합계와 채널/카테고리 합계 비교)
+  const channelMismatch = channelSum !== dailyTotals.online && dailyTotals.online > 0 && channelSum > 0
+  const categoryMismatch = categorySum !== dailyTotals.offline && dailyTotals.offline > 0 && categorySum > 0
 
   // SKP 매출 계산 (수정된 수수료율 반영)
   const calculateSkpRevenue = useMemo(() => {
@@ -962,27 +1220,69 @@ export default function DataInputPage() {
                   </div>
                 </Card>
 
+                {/* 기존 데이터 병합 안내 */}
+                {uploadResult?.existingData && (
+                  <Card className="bg-blue-500/10 border border-blue-500/30">
+                    <div className="flex items-start gap-3">
+                      <Database className="w-5 h-5 text-blue-500 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-blue-500">기존 데이터 발견</p>
+                        <p className="text-sm text-dashboard-muted mt-1">
+                          기간: {uploadResult.existingData.periodStart.split('T')[0]} ~ {uploadResult.existingData.periodEnd.split('T')[0]}
+                          {' '}({uploadResult.existingData.dates.length}일, {formatNumber(uploadResult.existingData.summary.totalCount)}명)
+                        </p>
+                        {uploadResult.hasOverlap ? (
+                          <p className="text-sm text-yellow-500 mt-1">
+                            ⚠️ {uploadResult.overlappingDates?.length}일 겹침 - 저장 시 병합/덮어쓰기 선택
+                          </p>
+                        ) : (
+                          <p className="text-sm text-green-500 mt-1">
+                            ✓ 겹치는 날짜 없음 - 저장 시 기존 데이터와 자동 병합됩니다
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
                 {/* 저장 버튼 */}
                 <Card className="bg-gradient-to-br from-maze-500/10 to-transparent">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div>
                       <p className="text-lg font-semibold text-dashboard-text">데이터 반영</p>
                       <p className="text-sm text-dashboard-muted">
-                        수정이 완료되면 저장하여 대시보드에 반영하세요
+                        {uploadResult?.existingData 
+                          ? (uploadResult.hasOverlap 
+                              ? '겹치는 날짜가 있어 저장 시 선택이 필요합니다' 
+                              : '기존 데이터와 자동으로 병합됩니다')
+                          : '수정이 완료되면 저장하여 대시보드에 반영하세요'}
                       </p>
                       {hasChanges && (
                         <p className="text-sm text-yellow-500 mt-1">⚠️ 저장되지 않은 변경사항이 있습니다</p>
                       )}
                     </div>
-                    <Button
-                      onClick={handleSaveUploadData}
-                      disabled={isSaving}
-                      isLoading={isSaving}
-                      size="lg"
-                    >
-                      <Save className="w-4 h-4 mr-2" />
-                      {isSaving ? '저장 중...' : '데이터 반영'}
-                    </Button>
+                    <div className="flex gap-2">
+                      {uploadResult?.existingData && (
+                        <Button
+                          onClick={() => handleSaveUploadData(false)}
+                          disabled={isSaving}
+                          variant="outline"
+                          size="lg"
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          전체 덮어쓰기
+                        </Button>
+                      )}
+                      <Button
+                        onClick={() => handleSaveUploadData()}
+                        disabled={isSaving}
+                        isLoading={isSaving}
+                        size="lg"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        {isSaving ? '저장 중...' : (uploadResult?.existingData ? '데이터 병합 저장' : '데이터 반영')}
+                      </Button>
+                    </div>
                   </div>
                 </Card>
               </>
@@ -1009,8 +1309,27 @@ export default function DataInputPage() {
               <DailyInputTable
                 year={year}
                 month={month}
-                channels={masterData.channels}
-                categories={masterData.categories}
+                channels={
+                  // 업로드된 채널이 있으면 사용, 없으면 마스터 채널
+                  Object.keys(editableChannels).length > 0
+                    ? Object.entries(editableChannels).map(([code, ch]) => ({
+                        code,
+                        name: ch.name || code,
+                        defaultFeeRate: ch.feeRate ?? 0,
+                        active: true,
+                      }))
+                    : masterData.channels
+                }
+                categories={
+                  // 업로드된 카테고리가 있으면 사용, 없으면 마스터 카테고리
+                  Object.keys(editableCategories).length > 0
+                    ? Object.entries(editableCategories).map(([code, cat]) => ({
+                        code,
+                        name: cat.name || code,
+                        active: true,
+                      }))
+                    : masterData.categories
+                }
                 feeSettings={feeSettings}
                 initialDailyData={dailyDataForInput}
                 onSave={handleSaveDailyData}

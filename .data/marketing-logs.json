@@ -1,0 +1,70 @@
+[
+  {
+    "logType": "CAMPAIGN",
+    "startDate": "2025-12-01",
+    "endDate": "2025-12-10",
+    "title": "수학여행 시즌 시작",
+    "content": "하반기 수학 여행 시즌 시작",
+    "impressions": 0,
+    "clicks": 0,
+    "createdById": "1",
+    "id": "log_1767778225455_h0jkntfao",
+    "createdBy": {
+      "name": "시스템 관리자",
+      "email": "admin@mazeland.com"
+    },
+    "createdAt": "2026-01-07T09:30:25.455Z",
+    "updatedAt": "2026-01-07T09:30:25.455Z"
+  },
+  {
+    "logType": "PERFORMANCE",
+    "startDate": "2025-12-01",
+    "endDate": "2025-12-10",
+    "subType": "OK캐쉬백 배너 광고",
+    "impressions": 76952,
+    "clicks": 2135,
+    "createdById": "1",
+    "id": "log_1767778141916_crzsfma0a",
+    "createdBy": {
+      "name": "시스템 관리자",
+      "email": "admin@mazeland.com"
+    },
+    "createdAt": "2026-01-07T09:29:01.916Z",
+    "updatedAt": "2026-01-07T09:29:01.916Z"
+  },
+  {
+    "logType": "CAMPAIGN",
+    "startDate": "2025-12-18",
+    "endDate": "2025-12-25",
+    "title": "도민 할인 20%",
+    "content": "제주 도민의 달 캠페인",
+    "impressions": 0,
+    "clicks": 0,
+    "createdById": "1",
+    "id": "log_1767777977531_y2cxdiarc",
+    "createdBy": {
+      "name": "시스템 관리자",
+      "email": "admin@mazeland.com"
+    },
+    "createdAt": "2026-01-07T09:26:17.531Z",
+    "updatedAt": "2026-01-07T09:26:17.531Z"
+  },
+  {
+    "logType": "PERFORMANCE",
+    "startDate": "2025-12-01",
+    "endDate": "2025-12-31",
+    "subType": "OK캐쉬백 실시간 푸쉬 광고",
+    "impressions": 100000,
+    "clicks": 23567,
+    "createdById": "1",
+    "id": "log_1767777832503_mqhlyqfhl",
+    "createdBy": {
+      "name": "시스템 관리자",
+      "email": "admin@mazeland.com"
+    },
+    "createdAt": "2026-01-07T09:23:52.503Z",
+    "updatedAt": "2026-01-07T09:25:34.835Z",
+    "title": "",
+    "content": ""
+  }
+]

@@ -240,11 +240,20 @@ model Settlement {
 // ==========================================
 model MarketingLog {
   id          String   @id @default(cuid())
-  logDate     DateTime
-  logType     LogType
-  title       String
-  content     String
-  impact      String?
+  logType     LogType  @default(CAMPAIGN)
+  
+  // 기간
+  startDate   DateTime
+  endDate     DateTime
+  
+  // 캠페인용 필드
+  title       String?
+  content     String?
+  
+  // 퍼포먼스용 필드
+  subType     String?   // 세부 유형 (예: OK캐쉬백 푸쉬, 배너 등)
+  impressions Int       @default(0)
+  clicks      Int       @default(0)
   
   createdById String
   createdBy   User     @relation(fields: [createdById], references: [id])
@@ -252,16 +261,14 @@ model MarketingLog {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  @@index([logDate])
+  @@index([startDate])
+  @@index([endDate])
   @@index([logType])
 }
 
 enum LogType {
-  CAMPAIGN
-  WEATHER
-  EVENT
-  MAINTENANCE
-  OTHER
+  CAMPAIGN    // 캠페인 (제목+내용)
+  PERFORMANCE // 퍼포먼스 (노출량/클릭수/클릭율)
 }
 
 // ==========================================

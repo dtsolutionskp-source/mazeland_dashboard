@@ -1,14 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
+import { 
+  getMarketingLogs, 
+  createMarketingLog,
+  getMarketingLogsByDateRange 
+} from '@/lib/marketing-log-store'
 import { z } from 'zod'
 
 const createLogSchema = z.object({
-  logDate: z.string().transform(s => new Date(s)),
-  logType: z.enum(['CAMPAIGN', 'WEATHER', 'EVENT', 'MAINTENANCE', 'OTHER']),
-  title: z.string().min(1, '제목을 입력해주세요'),
-  content: z.string().min(1, '내용을 입력해주세요'),
-  impact: z.string().optional(),
+  logType: z.enum(['CAMPAIGN', 'PERFORMANCE']),
+  startDate: z.string(),
+  endDate: z.string(),
+  // 캠페인용
+  title: z.string().optional(),
+  content: z.string().optional(),
+  // 퍼포먼스용
+  subType: z.string().optional(),
+  impressions: z.number().optional().default(0),
+  clicks: z.number().optional().default(0),
 })
 
 // 마케팅 로그 목록 조회
@@ -25,30 +34,24 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
-    const logType = searchParams.get('logType')
+    const logType = searchParams.get('logType') as 'CAMPAIGN' | 'PERFORMANCE' | null
 
-    const where: any = {}
-    
+    let logs
     if (startDate && endDate) {
-      where.logDate = {
-        gte: new Date(startDate),
-        lte: new Date(endDate),
+      logs = await getMarketingLogsByDateRange(
+        new Date(startDate),
+        new Date(endDate),
+        logType && logType !== 'ALL' ? logType : undefined
+      )
+    } else {
+      logs = await getMarketingLogs()
+      if (logType && logType !== 'ALL') {
+        logs = logs.filter(l => l.logType === logType)
       }
     }
-    
-    if (logType && logType !== 'ALL') {
-      where.logType = logType
-    }
 
-    const logs = await prisma.marketingLog.findMany({
-      where,
-      orderBy: { logDate: 'desc' },
-      include: {
-        createdBy: {
-          select: { name: true, email: true },
-        },
-      },
-    })
+    // startDate 기준 내림차순 정렬
+    logs.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime())
 
     return NextResponse.json({ logs })
   } catch (error) {
@@ -74,19 +77,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = createLogSchema.parse(body)
 
-    const log = await prisma.marketingLog.create({
-      data: {
-        ...validatedData,
+    const log = await createMarketingLog(
+      {
+        logType: validatedData.logType,
+        startDate: validatedData.startDate,
+        endDate: validatedData.endDate,
+        title: validatedData.title || undefined,
+        content: validatedData.content || undefined,
+        subType: validatedData.subType || undefined,
+        impressions: validatedData.impressions || 0,
+        clicks: validatedData.clicks || 0,
         createdById: user.id,
       },
-      include: {
-        createdBy: {
-          select: { name: true, email: true },
-        },
-      },
-    })
+      { id: user.id, name: user.name, email: user.email }
+    )
 
-    return NextResponse.json({ log, message: '마케팅 로그가 등록되었습니다.' })
+    return NextResponse.json({ 
+      log, 
+      message: '마케팅 로그가 등록되었습니다.' 
+    })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -102,6 +111,3 @@ export async function POST(request: NextRequest) {
     )
   }
 }
-
-
-

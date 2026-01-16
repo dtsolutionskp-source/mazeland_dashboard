@@ -1,0 +1,22 @@
+{
+  "2026-01": {
+    "yearMonth": "2026-01",
+    "checks": {
+      "SKP_TO_MAZE_REVENUE": {
+        "checked": false,
+        "amount": 0
+      }
+    },
+    "updatedAt": "2026-01-12T03:49:42.706Z"
+  },
+  "2025-12": {
+    "yearMonth": "2025-12",
+    "checks": {
+      "SKP_TO_FMC_AGENCY": {
+        "checked": false,
+        "amount": 0
+      }
+    },
+    "updatedAt": "2026-01-12T05:10:27.899Z"
+  }
+}

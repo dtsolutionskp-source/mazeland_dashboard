@@ -1,0 +1,747 @@
+{
+  "uploadedAt": "2026-01-07T02:09:53.277Z",
+  "fileName": "2025년_11월_수정데이터.xlsx",
+  "periodStart": "2025-11-08T00:00:00.000Z",
+  "periodEnd": "2025-11-30T00:00:00.000Z",
+  "source": "file",
+  "summary": {
+    "onlineCount": 830,
+    "offlineCount": 1457,
+    "totalCount": 2287
+  },
+  "dailyData": [
+    {
+      "date": "2025-11-08",
+      "online": 29,
+      "offline": 76,
+      "total": 105,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 19,
+          "feeRate": 10
+        },
+        "주식회사엘에스컴퍼니_메이즈랜드입장권단품": {
+          "count": 10,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 63
+        },
+        "TRAVEL_AGENCY": {
+          "count": 4
+        },
+        "RESIDENT": {
+          "count": 9
+        }
+      }
+    },
+    {
+      "date": "2025-11-09",
+      "online": 33,
+      "offline": 53,
+      "total": 86,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 33,
+          "feeRate": 10
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 35
+        },
+        "RESIDENT": {
+          "count": 18
+        }
+      }
+    },
+    {
+      "date": "2025-11-10",
+      "online": 30,
+      "offline": 62,
+      "total": 92,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 18,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 12,
+          "feeRate": 15
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 60
+        },
+        "TRAVEL_AGENCY": {
+          "count": 2
+        }
+      }
+    },
+    {
+      "date": "2025-11-11",
+      "online": 40,
+      "offline": 30,
+      "total": 70,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 26,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 10,
+          "feeRate": 15
+        },
+        "주식회사엘에스컴퍼니_메이즈랜드입장권단품": {
+          "count": 4,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 25
+        },
+        "TRAVEL_AGENCY": {
+          "count": 2
+        },
+        "RESIDENT": {
+          "count": 3
+        }
+      }
+    },
+    {
+      "date": "2025-11-12",
+      "online": 27,
+      "offline": 21,
+      "total": 48,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 23,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 4,
+          "feeRate": 15
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 18
+        },
+        "TRAVEL_AGENCY": {
+          "count": 2
+        },
+        "RESIDENT": {
+          "count": 1
+        }
+      }
+    },
+    {
+      "date": "2025-11-13",
+      "online": 49,
+      "offline": 100,
+      "total": 149,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 31,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 10,
+          "feeRate": 15
+        },
+        "놀유니버스레져_메이즈랜드입장권": {
+          "count": 2,
+          "feeRate": 12
+        },
+        "주식회사엘에스컴퍼니_메이즈랜드입장권단품": {
+          "count": 6,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 71
+        },
+        "TRAVEL_AGENCY": {
+          "count": 26
+        },
+        "RESIDENT": {
+          "count": 3
+        }
+      }
+    },
+    {
+      "date": "2025-11-14",
+      "online": 68,
+      "offline": 93,
+      "total": 161,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 58,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 3,
+          "feeRate": 15
+        },
+        "놀유니버스레져_메이즈랜드입장권": {
+          "count": 7,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 50
+        },
+        "TRAVEL_AGENCY": {
+          "count": 16
+        },
+        "RESIDENT": {
+          "count": 16
+        },
+        "ALL_PASS": {
+          "count": 11
+        }
+      }
+    },
+    {
+      "date": "2025-11-15",
+      "online": 92,
+      "offline": 142,
+      "total": 234,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 84,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 4,
+          "feeRate": 15
+        },
+        "주식회사엘에스컴퍼니_메이즈랜드입장권단품": {
+          "count": 4,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 114
+        },
+        "TRAVEL_AGENCY": {
+          "count": 8
+        },
+        "RESIDENT": {
+          "count": 13
+        },
+        "ALL_PASS": {
+          "count": 7
+        }
+      }
+    },
+    {
+      "date": "2025-11-16",
+      "online": 43,
+      "offline": 59,
+      "total": 102,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 40,
+          "feeRate": 10
+        },
+        "주식회사엘에스컴퍼니_메이즈랜드입장권단품": {
+          "count": 3,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 40
+        },
+        "RESIDENT": {
+          "count": 14
+        },
+        "ALL_PASS": {
+          "count": 5
+        }
+      }
+    },
+    {
+      "date": "2025-11-17",
+      "online": 39,
+      "offline": 40,
+      "total": 79,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 25,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 8,
+          "feeRate": 15
+        },
+        "주식회사엘에스컴퍼니_메이즈랜드입장권단품": {
+          "count": 6,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 40
+        }
+      }
+    },
+    {
+      "date": "2025-11-18",
+      "online": 12,
+      "offline": 37,
+      "total": 49,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 9,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 3,
+          "feeRate": 15
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 35
+        },
+        "TRAVEL_AGENCY": {
+          "count": 2
+        }
+      }
+    },
+    {
+      "date": "2025-11-19",
+      "online": 14,
+      "offline": 35,
+      "total": 49,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 10,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 4,
+          "feeRate": 15
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 24
+        },
+        "TRAVEL_AGENCY": {
+          "count": 6
+        },
+        "ALL_PASS": {
+          "count": 5
+        }
+      }
+    },
+    {
+      "date": "2025-11-20",
+      "online": 35,
+      "offline": 48,
+      "total": 83,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 35,
+          "feeRate": 10
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 37
+        },
+        "RESIDENT": {
+          "count": 3
+        },
+        "ALL_PASS": {
+          "count": 8
+        }
+      }
+    },
+    {
+      "date": "2025-11-21",
+      "online": 32,
+      "offline": 62,
+      "total": 94,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 23,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 9,
+          "feeRate": 15
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 36
+        },
+        "TRAVEL_AGENCY": {
+          "count": 26
+        }
+      }
+    },
+    {
+      "date": "2025-11-22",
+      "online": 47,
+      "offline": 78,
+      "total": 125,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 38,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 6,
+          "feeRate": 15
+        },
+        "주식회사엘에스컴퍼니_메이즈랜드입장권단품": {
+          "count": 3,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 40
+        },
+        "RESIDENT": {
+          "count": 35
+        },
+        "ALL_PASS": {
+          "count": 3
+        }
+      }
+    },
+    {
+      "date": "2025-11-23",
+      "online": 36,
+      "offline": 94,
+      "total": 130,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 25,
+          "feeRate": 10
+        },
+        "놀유니버스레져_메이즈랜드입장권": {
+          "count": 11,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 36
+        },
+        "TRAVEL_AGENCY": {
+          "count": 12
+        },
+        "RESIDENT": {
+          "count": 46
+        }
+      }
+    },
+    {
+      "date": "2025-11-24",
+      "online": 41,
+      "offline": 61,
+      "total": 102,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 25,
+          "feeRate": 10
+        },
+        "주식회사브이패스VPASS_일반채널입장권": {
+          "count": 3,
+          "feeRate": 15
+        },
+        "놀유니버스레져_메이즈랜드입장권": {
+          "count": 4,
+          "feeRate": 12
+        },
+        "주식회사엘에스컴퍼니_메이즈랜드입장권단품": {
+          "count": 9,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 43
+        },
+        "TRAVEL_AGENCY": {
+          "count": 4
+        },
+        "RESIDENT": {
+          "count": 8
+        },
+        "ALL_PASS": {
+          "count": 6
+        }
+      }
+    },
+    {
+      "date": "2025-11-25",
+      "online": 23,
+      "offline": 25,
+      "total": 48,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 23,
+          "feeRate": 10
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 25
+        }
+      }
+    },
+    {
+      "date": "2025-11-26",
+      "online": 32,
+      "offline": 62,
+      "total": 94,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 32,
+          "feeRate": 10
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 40
+        },
+        "TRAVEL_AGENCY": {
+          "count": 17
+        },
+        "RESIDENT": {
+          "count": 2
+        },
+        "ALL_PASS": {
+          "count": 3
+        }
+      }
+    },
+    {
+      "date": "2025-11-27",
+      "online": 10,
+      "offline": 35,
+      "total": 45,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 10,
+          "feeRate": 10
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 30
+        },
+        "TRAVEL_AGENCY": {
+          "count": 5
+        }
+      }
+    },
+    {
+      "date": "2025-11-28",
+      "online": 21,
+      "offline": 44,
+      "total": 65,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 19,
+          "feeRate": 10
+        },
+        "주식회사엘에스컴퍼니_메이즈랜드입장권단품": {
+          "count": 2,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 39
+        },
+        "TRAVEL_AGENCY": {
+          "count": 2
+        },
+        "ALL_PASS": {
+          "count": 3
+        }
+      }
+    },
+    {
+      "date": "2025-11-29",
+      "online": 49,
+      "offline": 103,
+      "total": 152,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 46,
+          "feeRate": 10
+        },
+        "놀유니버스레져_메이즈랜드입장권": {
+          "count": 3,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 62
+        },
+        "TRAVEL_AGENCY": {
+          "count": 25
+        },
+        "RESIDENT": {
+          "count": 12
+        },
+        "ALL_PASS": {
+          "count": 4
+        }
+      }
+    },
+    {
+      "date": "2025-11-30",
+      "online": 28,
+      "offline": 97,
+      "total": 125,
+      "channelData": {
+        "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+          "count": 25,
+          "feeRate": 10
+        },
+        "놀유니버스레져_메이즈랜드입장권": {
+          "count": 3,
+          "feeRate": 12
+        }
+      },
+      "categoryData": {
+        "INDIVIDUAL": {
+          "count": 55
+        },
+        "TRAVEL_AGENCY": {
+          "count": 4
+        },
+        "TAXI": {
+          "count": 38
+        }
+      }
+    }
+  ],
+  "channels": {
+    "주식회사브이패스VPASS_네이버메이즈랜드25년": {
+      "name": "네이버  메이즈랜드25년",
+      "count": 677,
+      "feeRate": 10
+    },
+    "주식회사브이패스VPASS_일반채널입장권": {
+      "name": "일반채널  입장권",
+      "count": 76,
+      "feeRate": 15
+    },
+    "놀유니버스레져_메이즈랜드입장권": {
+      "name": "메이즈랜드  입장권",
+      "count": 30,
+      "feeRate": 12
+    },
+    "주식회사엘에스컴퍼니_메이즈랜드입장권단품": {
+      "name": "메이즈랜드  입장권 [단품]",
+      "count": 47,
+      "feeRate": 12
+    }
+  },
+  "categories": {
+    "INDIVIDUAL": {
+      "name": "개인",
+      "count": 1018
+    },
+    "TRAVEL_AGENCY": {
+      "name": "여행사",
+      "count": 163
+    },
+    "TAXI": {
+      "name": "택시",
+      "count": 38
+    },
+    "RESIDENT": {
+      "name": "도민",
+      "count": 183
+    },
+    "ALL_PASS": {
+      "name": "올패스",
+      "count": 55
+    }
+  },
+  "monthly": {
+    "onlineByChannel": {
+      "주식회사브이패스VPASS_네이버메이즈랜드25년": 677,
+      "주식회사브이패스VPASS_일반채널입장권": 76,
+      "놀유니버스레져_메이즈랜드입장권": 30,
+      "주식회사엘에스컴퍼니_메이즈랜드입장권단품": 47
+    },
+    "onlineByAge": {},
+    "offlineByCategory": {
+      "INDIVIDUAL": 1018,
+      "TRAVEL_AGENCY": 163,
+      "TAXI": 38,
+      "RESIDENT": 183,
+      "ALL_PASS": 55
+    },
+    "revenue": {
+      "online": 2490000,
+      "onlineFee": 265020,
+      "onlineNet": 2224980,
+      "offline": 4371000,
+      "total": 6861000,
+      "totalNet": 6595980
+    }
+  },
+  "settlement": {
+    "companies": [
+      {
+        "name": "SKP",
+        "code": "SKP",
+        "revenue": 6487500,
+        "income": 6920000,
+        "cost": 3892500,
+        "profit": 3027500,
+        "profitRate": 43.75
+      },
+      {
+        "name": "메이즈랜드",
+        "code": "MAZE",
+        "revenue": 2162500,
+        "income": 2162500,
+        "cost": 1081250,
+        "profit": 1081250,
+        "profitRate": 50
+      },
+      {
+        "name": "컬처커넥션",
+        "code": "CULTURE",
+        "revenue": 2162500,
+        "income": 2162500,
+        "cost": 432500,
+        "profit": 1730000,
+        "profitRate": 80
+      },
+      {
+        "name": "FMC",
+        "code": "AGENCY",
+        "revenue": 648750,
+        "income": 648750,
+        "cost": 0,
+        "profit": 648750,
+        "profitRate": 100
+      }
+    ]
+  }
+}
