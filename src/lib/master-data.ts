@@ -36,6 +36,11 @@ export function getMasterData(): MasterData {
     categories: CATEGORY_MASTER.filter(c => c.active).sort((a, b) => a.order - b.order),
   }
 }
+export function getActiveChannels() {
+  return CHANNEL_MASTER
+    .filter(c => c.active)
+    .sort((a, b) => a.order - b.order)
+}
 
 /**
  * 채널 코드로 채널 정보 조회
