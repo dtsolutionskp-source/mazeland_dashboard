@@ -1,60 +1,64 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { createToken } from '@/lib/auth'
+import fs from 'fs'
+import path from 'path'
 
-// 임시 사용자 데이터 (DB 없을 때 사용)
-const MOCK_USERS = [
+const DATA_DIR = path.join(process.cwd(), '.data')
+const ACCOUNTS_FILE = path.join(DATA_DIR, 'accounts.json')
+
+// 기본 사용자 데이터
+const DEFAULT_ACCOUNTS = [
   {
-    id: '1',
-    email: 'admin@mazeland.com',
-    password: '$2a$10$8K1p/a0dL1LXMIgoEDFrwOfMQHLVt5PGqXgk8kXJXgK8kXJXgK8kX', // password123
-    name: '시스템 관리자',
-    role: 'SUPER_ADMIN' as const,
-    companyId: null,
-    company: null,
-    isActive: true,
-  },
-  {
-    id: '2',
+    id: 'acc_skp',
     email: 'skp@mazeland.com',
-    password: '$2a$10$8K1p/a0dL1LXMIgoEDFrwOfMQHLVt5PGqXgk8kXJXgK8kXJXgK8kX',
-    name: 'SKP 담당자',
-    role: 'SKP_ADMIN' as const,
-    companyId: 'skp',
-    company: { id: 'skp', name: 'SKP', code: 'SKP' },
-    isActive: true,
+    password: 'password123',
+    name: 'SKP 관리자',
+    role: 'SKP_ADMIN',
+    companyCode: 'SKP',
+    companyName: 'SK플래닛',
   },
   {
-    id: '3',
+    id: 'acc_maze',
     email: 'maze@mazeland.com',
-    password: '$2a$10$8K1p/a0dL1LXMIgoEDFrwOfMQHLVt5PGqXgk8kXJXgK8kXJXgK8kX',
-    name: '메이즈랜드 담당자',
-    role: 'MAZE_ADMIN' as const,
-    companyId: 'maze',
-    company: { id: 'maze', name: '메이즈랜드', code: 'MAZE' },
-    isActive: true,
+    password: 'password123',
+    name: '메이즈랜드 관리자',
+    role: 'PARTNER_ADMIN',
+    companyCode: 'MAZE',
+    companyName: '메이즈랜드',
   },
   {
-    id: '4',
+    id: 'acc_culture',
     email: 'culture@mazeland.com',
-    password: '$2a$10$8K1p/a0dL1LXMIgoEDFrwOfMQHLVt5PGqXgk8kXJXgK8kXJXgK8kX',
-    name: '컬처커넥션 담당자',
-    role: 'CULTURE_ADMIN' as const,
-    companyId: 'culture',
-    company: { id: 'culture', name: '컬처커넥션', code: 'CULTURE' },
-    isActive: true,
+    password: 'password123',
+    name: '컬처커넥션 관리자',
+    role: 'PARTNER_ADMIN',
+    companyCode: 'CULTURE',
+    companyName: '컬처커넥션',
   },
   {
-    id: '5',
-    email: 'agency@mazeland.com',
-    password: '$2a$10$8K1p/a0dL1LXMIgoEDFrwOfMQHLVt5PGqXgk8kXJXgK8kXJXgK8kX',
-    name: '운영대행사 담당자',
-    role: 'AGENCY_ADMIN' as const,
-    companyId: 'agency',
-    company: { id: 'agency', name: '운영대행사', code: 'AGENCY' },
-    isActive: true,
+    id: 'acc_fmc',
+    email: 'fmc@mazeland.com',
+    password: 'password123',
+    name: 'FMC 관리자',
+    role: 'AGENCY_ADMIN',
+    companyCode: 'FMC',
+    companyName: 'FMC',
   },
 ]
+
+// 저장된 계정 목록 조회
+function getAccounts() {
+  try {
+    if (fs.existsSync(ACCOUNTS_FILE)) {
+      const data = fs.readFileSync(ACCOUNTS_FILE, 'utf-8')
+      return JSON.parse(data)
+    }
+  } catch (error) {
+    console.error('Read accounts error:', error)
+  }
+  return DEFAULT_ACCOUNTS
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -68,34 +72,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // DB에서 사용자 조회 시도, 실패하면 임시 데이터 사용
-    let user = null
+    // 저장된 계정에서 사용자 조회
+    const accounts = getAccounts()
+    const account = accounts.find((a: any) => a.email === email)
     
-    try {
-      const { prisma } = await import('@/lib/prisma')
-      user = await prisma.user.findUnique({
-        where: { email },
-        include: {
-          company: {
-            select: {
-              id: true,
-              name: true,
-              code: true,
-            },
-          },
-        },
-      })
-      
-      // DB에서 못 찾으면 MOCK_USERS에서 찾기
-      if (!user) {
-        console.log('DB에 사용자 없음, MOCK_USERS에서 조회:', email)
-        user = MOCK_USERS.find(u => u.email === email) || null
-      }
-    } catch (dbError) {
-      console.log('DB 연결 실패, 임시 데이터 사용:', email)
-      // 임시 사용자 데이터에서 조회
-      user = MOCK_USERS.find(u => u.email === email) || null
-    }
+    // 계정을 사용자 형식으로 변환
+    let user = account ? {
+      id: account.id,
+      email: account.email,
+      password: account.password,
+      name: account.name,
+      role: account.role,
+      companyId: account.companyCode?.toLowerCase(),
+      company: {
+        id: account.companyCode?.toLowerCase(),
+        name: account.companyName,
+        code: account.companyCode,
+      },
+      isActive: true,
+    } : null
 
     if (!user) {
       console.log('사용자를 찾을 수 없음:', email)
@@ -115,13 +110,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 비밀번호 검증 (임시 데이터는 password123으로 고정)
+    // 비밀번호 검증 (저장된 비밀번호와 직접 비교)
     let isPasswordValid = false
     
-    if (password === 'password123') {
-      // 테스트용 비밀번호
+    // 평문 비밀번호와 직접 비교 (accounts.json에 평문으로 저장)
+    if (password === user.password) {
       isPasswordValid = true
     } else {
+      // bcrypt 해시된 비밀번호와 비교 시도
       try {
         isPasswordValid = await bcrypt.compare(password, user.password)
       } catch {

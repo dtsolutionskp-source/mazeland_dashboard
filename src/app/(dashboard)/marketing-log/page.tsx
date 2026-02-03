@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { Header } from '@/components/dashboard/Header'
 import { Card, CardHeader, Button, Input, Select } from '@/components/ui'
 import { formatDate, formatNumber } from '@/lib/utils'
@@ -17,6 +17,8 @@ import {
   Megaphone,
   TrendingUp,
   FileText,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react'
 
 interface MarketingLog {
@@ -43,6 +45,9 @@ const LOG_TYPES = [
   { value: 'PERFORMANCE', label: '퍼포먼스', icon: TrendingUp, color: 'text-green-500 bg-green-500/20' },
 ]
 
+const MONTHS = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
+
 function calculateClickRate(clicks: number, impressions: number): string {
   if (impressions === 0) return '0.00'
   return ((clicks / impressions) * 100).toFixed(2)
@@ -56,6 +61,10 @@ export default function MarketingLogPage() {
   const [editingLog, setEditingLog] = useState<MarketingLog | null>(null)
   const [filter, setFilter] = useState('ALL')
   const [error, setError] = useState<string | null>(null)
+  
+  // 월별 필터 (캘린더와 연동)
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1)
   
   // 폼 상태
   const [formData, setFormData] = useState({
@@ -170,20 +179,159 @@ export default function MarketingLogPage() {
     }
   }
 
-  const filteredLogs = filter === 'ALL' 
-    ? logs 
-    : logs.filter(l => l.logType === filter)
+  // 월별 필터링
+  const filteredLogs = useMemo(() => {
+    let result = logs
+    
+    // 월별 필터
+    result = result.filter(log => {
+      const logStart = new Date(log.startDate)
+      const logEnd = new Date(log.endDate)
+      const filterStart = new Date(selectedYear, selectedMonth - 1, 1)
+      const filterEnd = new Date(selectedYear, selectedMonth, 0) // 해당 월의 마지막 날
+      
+      // 기간이 겹치는지 확인
+      return logStart <= filterEnd && logEnd >= filterStart
+    })
+    
+    // 유형 필터
+    if (filter !== 'ALL') {
+      result = result.filter(l => l.logType === filter)
+    }
+    
+    return result
+  }, [logs, selectedYear, selectedMonth, filter])
+  
+  // 사용 가능한 연도 목록
+  const availableYears = useMemo(() => {
+    const years = new Set<number>()
+    const currentYear = new Date().getFullYear()
+    years.add(currentYear)
+    
+    logs.forEach(log => {
+      const startYear = new Date(log.startDate).getFullYear()
+      const endYear = new Date(log.endDate).getFullYear()
+      years.add(startYear)
+      years.add(endYear)
+    })
+    
+    return Array.from(years).sort((a, b) => b - a)
+  }, [logs])
 
   const getLogTypeInfo = (type: string) => {
     return LOG_TYPES.find(t => t.value === type) || LOG_TYPES[0]
   }
+  
+  // 캘린더 데이터 (selectedYear, selectedMonth와 연동)
+  const calendarData = useMemo(() => {
+    const year = selectedYear
+    const month = selectedMonth
+    const firstDay = new Date(year, month - 1, 1)
+    const lastDay = new Date(year, month, 0)
+    const daysInMonth = lastDay.getDate()
+    const startWeekday = firstDay.getDay()
+    
+    // 해당 월의 로그들
+    const monthLogs = logs.filter(log => {
+      const logStart = new Date(log.startDate)
+      const logEnd = new Date(log.endDate)
+      const filterStart = new Date(year, month - 1, 1)
+      const filterEnd = lastDay
+      return logStart <= filterEnd && logEnd >= filterStart
+    })
+    
+    // 일정 띠 데이터 생성 (각 로그별 시작일~종료일 범위)
+    interface EventBar {
+      log: MarketingLog
+      startDay: number
+      endDay: number
+      row: number
+    }
+    
+    const eventBars: EventBar[] = []
+    const rowOccupancy: Map<number, number[]>[] = [] // 각 날짜별 행 점유 상태
+    
+    for (let d = 0; d <= daysInMonth; d++) {
+      rowOccupancy.push(new Map())
+    }
+    
+    monthLogs.forEach(log => {
+      const logStart = new Date(log.startDate)
+      const logEnd = new Date(log.endDate)
+      
+      // 해당 월 내에서의 시작/종료일 계산
+      let startDay = logStart.getFullYear() === year && logStart.getMonth() === month - 1
+        ? logStart.getDate()
+        : 1
+      let endDay = logEnd.getFullYear() === year && logEnd.getMonth() === month - 1
+        ? logEnd.getDate()
+        : daysInMonth
+      
+      // 빈 행 찾기
+      let row = 0
+      let found = false
+      while (!found) {
+        let canPlace = true
+        for (let d = startDay; d <= endDay; d++) {
+          const dayRows = rowOccupancy[d]?.get(row) || []
+          if (dayRows.length > 0) {
+            canPlace = false
+            break
+          }
+        }
+        if (canPlace) {
+          found = true
+        } else {
+          row++
+        }
+        if (row > 10) break // 최대 10행
+      }
+      
+      // 점유 표시
+      for (let d = startDay; d <= endDay; d++) {
+        if (!rowOccupancy[d]) rowOccupancy[d] = new Map()
+        rowOccupancy[d].set(row, [...(rowOccupancy[d].get(row) || []), 1])
+      }
+      
+      eventBars.push({ log, startDay, endDay, row })
+    })
+    
+    return { daysInMonth, startWeekday, eventBars, monthLogs }
+  }, [logs, selectedYear, selectedMonth])
+  
+  const handlePrevMonth = () => {
+    if (selectedMonth === 1) {
+      setSelectedMonth(12)
+      setSelectedYear(selectedYear - 1)
+    } else {
+      setSelectedMonth(selectedMonth - 1)
+    }
+  }
+  
+  const handleNextMonth = () => {
+    if (selectedMonth === 12) {
+      setSelectedMonth(1)
+      setSelectedYear(selectedYear + 1)
+    } else {
+      setSelectedMonth(selectedMonth + 1)
+    }
+  }
 
-  // 퍼포먼스 로그 통계
-  const performanceLogs = logs.filter(l => l.logType === 'PERFORMANCE')
-  const performanceStats = performanceLogs.reduce((acc, log) => ({
-    impressions: acc.impressions + (log.impressions || 0),
-    clicks: acc.clicks + (log.clicks || 0),
-  }), { impressions: 0, clicks: 0 })
+  // 선택한 월의 통계 (filteredLogs 기준)
+  const monthlyStats = useMemo(() => {
+    const campaigns = filteredLogs.filter(l => l.logType === 'CAMPAIGN')
+    const performances = filteredLogs.filter(l => l.logType === 'PERFORMANCE')
+    
+    const totalImpressions = performances.reduce((sum, log) => sum + (log.impressions || 0), 0)
+    const totalClicks = performances.reduce((sum, log) => sum + (log.clicks || 0), 0)
+    
+    return {
+      campaignCount: campaigns.length,
+      performanceCount: performances.length,
+      impressions: totalImpressions,
+      clicks: totalClicks,
+    }
+  }, [filteredLogs])
 
   return (
     <div className="min-h-screen">
@@ -200,7 +348,7 @@ export default function MarketingLogPage() {
           </div>
         )}
 
-        {/* 퍼포먼스 통계 */}
+        {/* 월별 통계 */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <div className="flex items-center gap-4">
@@ -208,9 +356,9 @@ export default function MarketingLogPage() {
                 <Megaphone className="w-6 h-6 text-blue-500" />
               </div>
               <div>
-                <p className="text-sm text-dashboard-muted">캠페인</p>
+                <p className="text-sm text-dashboard-muted">{selectedMonth}월 캠페인</p>
                 <p className="text-2xl font-bold text-dashboard-text">
-                  {logs.filter(l => l.logType === 'CAMPAIGN').length}건
+                  {monthlyStats.campaignCount}건
                 </p>
               </div>
             </div>
@@ -221,9 +369,9 @@ export default function MarketingLogPage() {
                 <Eye className="w-6 h-6 text-green-500" />
               </div>
               <div>
-                <p className="text-sm text-dashboard-muted">총 노출량</p>
+                <p className="text-sm text-dashboard-muted">{selectedMonth}월 노출량</p>
                 <p className="text-2xl font-bold text-dashboard-text">
-                  {formatNumber(performanceStats.impressions)}
+                  {formatNumber(monthlyStats.impressions)}
                 </p>
               </div>
             </div>
@@ -234,9 +382,9 @@ export default function MarketingLogPage() {
                 <MousePointer className="w-6 h-6 text-orange-500" />
               </div>
               <div>
-                <p className="text-sm text-dashboard-muted">총 클릭수</p>
+                <p className="text-sm text-dashboard-muted">{selectedMonth}월 클릭수</p>
                 <p className="text-2xl font-bold text-dashboard-text">
-                  {formatNumber(performanceStats.clicks)}
+                  {formatNumber(monthlyStats.clicks)}
                 </p>
               </div>
             </div>
@@ -247,32 +395,70 @@ export default function MarketingLogPage() {
                 <Percent className="w-6 h-6 text-purple-500" />
               </div>
               <div>
-                <p className="text-sm text-dashboard-muted">평균 클릭율</p>
+                <p className="text-sm text-dashboard-muted">{selectedMonth}월 클릭율</p>
                 <p className="text-2xl font-bold text-dashboard-text">
-                  {calculateClickRate(performanceStats.clicks, performanceStats.impressions)}%
+                  {calculateClickRate(monthlyStats.clicks, monthlyStats.impressions)}%
                 </p>
               </div>
             </div>
           </Card>
         </div>
 
-        {/* 필터 및 추가 버튼 */}
-        <div className="flex items-center justify-between">
+        {/* 월별 필터 및 추가 버튼 */}
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div className="flex items-center gap-3">
+            {/* 연도 선택 */}
+            <Select
+              value={selectedYear.toString()}
+              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+              options={availableYears.map(y => ({ value: y.toString(), label: `${y}년` }))}
+              className="w-28"
+            />
+            {/* 월 선택 */}
+            <div className="flex items-center gap-1">
+              {MONTHS.map((m, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setSelectedMonth(idx + 1)}
+                  className={cn(
+                    'px-3 py-2 text-sm rounded-lg transition-all',
+                    selectedMonth === idx + 1
+                      ? 'bg-emerald-600 text-white font-semibold'
+                      : 'bg-dashboard-card text-dashboard-muted hover:bg-dashboard-border hover:text-dashboard-text'
+                  )}
+                >
+                  {idx + 1}월
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="flex items-center gap-2">
+            {/* 유형 필터 */}
             <Select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
               options={[
-                { value: 'ALL', label: '전체 보기' },
+                { value: 'ALL', label: '전체 유형' },
                 ...LOG_TYPES.map(t => ({ value: t.value, label: t.label })),
               ]}
-              className="w-48"
+              className="w-36"
             />
+            <Button onClick={() => setShowModal(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              새 로그 등록
+            </Button>
           </div>
-          <Button onClick={() => setShowModal(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            새 로그 등록
-          </Button>
+        </div>
+        
+        {/* 선택 월 표시 */}
+        <div className="flex items-center gap-2">
+          <Calendar className="w-5 h-5 text-emerald-500" />
+          <span className="text-lg font-semibold text-dashboard-text">
+            {selectedYear}년 {selectedMonth}월 마케팅 로그
+          </span>
+          <span className="text-sm text-dashboard-muted">
+            ({filteredLogs.length}건)
+          </span>
         </div>
 
         {/* 로그 테이블 */}
@@ -396,6 +582,209 @@ export default function MarketingLogPage() {
               </table>
             </div>
           )}
+        </Card>
+        
+        {/* 캘린더 (띠 형태) */}
+        <Card>
+          <div className="p-4 border-b border-dashboard-border">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-dashboard-text flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-emerald-500" />
+                마케팅 일정 캘린더
+              </h3>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrevMonth}
+                  className="p-2 hover:bg-dashboard-border rounded-lg transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5 text-dashboard-muted" />
+                </button>
+                <span className="text-sm font-medium text-dashboard-text min-w-[100px] text-center">
+                  {selectedYear}년 {selectedMonth}월
+                </span>
+                <button
+                  onClick={handleNextMonth}
+                  className="p-2 hover:bg-dashboard-border rounded-lg transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5 text-dashboard-muted" />
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-4 overflow-x-auto">
+            {/* 요일 헤더 */}
+            <div className="grid grid-cols-7 gap-0 mb-1 min-w-[600px]">
+              {WEEKDAYS.map((day, idx) => (
+                <div
+                  key={day}
+                  className={cn(
+                    'text-center text-xs font-medium py-2 border-b border-dashboard-border',
+                    idx === 0 ? 'text-red-400' : idx === 6 ? 'text-blue-400' : 'text-dashboard-muted'
+                  )}
+                >
+                  {day}
+                </div>
+              ))}
+            </div>
+            
+            {/* 캘린더 그리드 (주 단위) */}
+            {(() => {
+              const weeks: number[][] = []
+              let currentWeek: number[] = []
+              
+              // 첫 주 빈칸 채우기
+              for (let i = 0; i < calendarData.startWeekday; i++) {
+                currentWeek.push(0)
+              }
+              
+              // 날짜 채우기
+              for (let day = 1; day <= calendarData.daysInMonth; day++) {
+                currentWeek.push(day)
+                if (currentWeek.length === 7) {
+                  weeks.push(currentWeek)
+                  currentWeek = []
+                }
+              }
+              
+              // 마지막 주 빈칸 채우기
+              if (currentWeek.length > 0) {
+                while (currentWeek.length < 7) {
+                  currentWeek.push(0)
+                }
+                weeks.push(currentWeek)
+              }
+              
+              return weeks.map((week, weekIdx) => {
+                // 이번 주에 해당하는 이벤트 바 찾기
+                const weekStartDay = week.find(d => d > 0) || 1
+                const weekEndDay = [...week].reverse().find(d => d > 0) || calendarData.daysInMonth
+                
+                const weekEvents = calendarData.eventBars.filter(bar => 
+                  bar.startDay <= weekEndDay && bar.endDay >= weekStartDay
+                )
+                
+                // 최대 행 수 계산
+                const maxRow = Math.max(0, ...weekEvents.map(e => e.row)) + 1
+                
+                return (
+                  <div key={weekIdx} className="min-w-[600px]">
+                    {/* 날짜 행 */}
+                    <div className="grid grid-cols-7 gap-0">
+                      {week.map((day, dayIdx) => {
+                        const isToday = day > 0 &&
+                          selectedYear === new Date().getFullYear() &&
+                          selectedMonth === new Date().getMonth() + 1 &&
+                          day === new Date().getDate()
+                        
+                        return (
+                          <div
+                            key={dayIdx}
+                            className={cn(
+                              'h-8 flex items-center justify-center border-b border-r border-dashboard-border/50',
+                              dayIdx === 0 && 'border-l',
+                              day === 0 && 'bg-dashboard-bg/30'
+                            )}
+                          >
+                            {day > 0 && (
+                              <span
+                                className={cn(
+                                  'text-xs font-medium w-6 h-6 flex items-center justify-center rounded-full',
+                                  isToday
+                                    ? 'bg-emerald-500 text-white'
+                                    : dayIdx === 0
+                                      ? 'text-red-400'
+                                      : dayIdx === 6
+                                        ? 'text-blue-400'
+                                        : 'text-dashboard-text'
+                                )}
+                              >
+                                {day}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                    
+                    {/* 이벤트 띠 영역 */}
+                    <div 
+                      className="relative grid grid-cols-7 gap-0 border-b border-dashboard-border/30"
+                      style={{ minHeight: maxRow > 0 ? `${maxRow * 24 + 8}px` : '32px' }}
+                    >
+                      {/* 배경 그리드 */}
+                      {week.map((day, dayIdx) => (
+                        <div
+                          key={dayIdx}
+                          className={cn(
+                            'border-r border-dashboard-border/30',
+                            dayIdx === 0 && 'border-l',
+                            day === 0 && 'bg-dashboard-bg/30'
+                          )}
+                        />
+                      ))}
+                      
+                      {/* 이벤트 바 */}
+                      {weekEvents.map((bar, barIdx) => {
+                        // 이번 주에서의 시작/끝 위치 계산
+                        const weekStartPos = week.findIndex(d => d > 0 && d >= bar.startDay)
+                        const weekEndPos = week.findLastIndex(d => d > 0 && d <= bar.endDay)
+                        
+                        if (weekStartPos === -1 || weekEndPos === -1) return null
+                        
+                        const isStart = bar.startDay >= weekStartDay
+                        const isEnd = bar.endDay <= weekEndDay
+                        
+                        const barColor = bar.log.logType === 'CAMPAIGN' 
+                          ? 'bg-blue-500' 
+                          : 'bg-green-500'
+                        
+                        const barLabel = bar.log.logType === 'CAMPAIGN'
+                          ? bar.log.title || '캠페인'
+                          : bar.log.subType || '퍼포먼스'
+                        
+                        return (
+                          <div
+                            key={barIdx}
+                            className={cn(
+                              'absolute h-5 flex items-center px-1 text-[10px] text-white font-medium overflow-hidden whitespace-nowrap',
+                              barColor,
+                              isStart ? 'rounded-l-md ml-0.5' : '',
+                              isEnd ? 'rounded-r-md mr-0.5' : ''
+                            )}
+                            style={{
+                              left: `calc(${(weekStartPos / 7) * 100}% + 2px)`,
+                              right: `calc(${((6 - weekEndPos) / 7) * 100}% + 2px)`,
+                              top: `${bar.row * 24 + 4}px`,
+                            }}
+                            title={`${barLabel} (${formatDate(bar.log.startDate)} ~ ${formatDate(bar.log.endDate)})`}
+                          >
+                            {isStart && barLabel}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })
+            })()}
+            
+            {/* 범례 */}
+            <div className="mt-4 pt-4 border-t border-dashboard-border flex items-center gap-6">
+              <div className="flex items-center gap-2 text-xs text-dashboard-muted">
+                <div className="w-8 h-4 rounded bg-blue-500" />
+                <span>캠페인</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-dashboard-muted">
+                <div className="w-8 h-4 rounded bg-green-500" />
+                <span>퍼포먼스</span>
+              </div>
+              <div className="flex items-center gap-2 text-xs text-dashboard-muted">
+                <div className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center text-[10px] text-white font-bold">1</div>
+                <span>오늘</span>
+              </div>
+            </div>
+          </div>
         </Card>
       </div>
 

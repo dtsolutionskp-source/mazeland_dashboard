@@ -106,34 +106,35 @@ export async function GET(request: NextRequest) {
     //    메이즈와 SKP 5:5 부담하여 SKP가 컬처에 전달
     const CULTURE_TO_SKP = total_1000
     
-    // 5. 메이즈랜드 → SKP (컬처 분담금): 500원 (수수료 차감)
-    //    컬처 1,000원의 50%를 메이즈가 SKP에 지급
-    const MAZE_TO_SKP_CULTURE_SHARE = total_500_maze
+    // 5. SKP → 메이즈랜드 (컬처 분담금): 500원 (수수료 차감)
+    //    SKP가 메이즈에 인보이스 청구 (세금계산서 아님, 수익 건)
+    //    컬처 1,000원의 50%를 메이즈가 부담
+    const SKP_TO_MAZE_CULTURE_SHARE = total_500_maze
     
-    // 6. SKP → FMC (운영대행 수수료): SKP 순이익의 20%
-    //    FMC는 SKP의 대행사이므로, SKP가 FMC에 대행수수료를 지급
-    //    SKP 순이익 = 총매출 수입 - 메이즈 지급 + 운영수수료 + 컬처분담금 + 플랫폼료 수입 - 컬처 지급
-    //    = 3,000 - 3,000 + 1,000 + 500 + 200 - 1,000 = 700원 (인당, 수수료 없을 시)
+    // 6. FMC → SKP (운영대행 수수료): SKP 수익의 20%
+    //    FMC는 SKP의 대행사이므로, FMC가 SKP에 대행수수료를 청구
+    //    SKP 수익 = SKP매출 - 메이즈R/S - 컬처R/S + 메이즈비용분담금
+    //    = 3,000 - 1,000 - 1,000 + 500 = 1,500원 (인당, 수수료 없을 시)
+    //    ※ 플랫폼 이용료(SKP→컬처)는 수수료 계산에 포함하지 않음
     
-    // 수수료 적용된 SKP 순이익 계산
+    // 수수료 적용된 SKP 수익 계산
     let skpProfit = 0
     Object.values(channels).forEach((ch: any) => {
       const count = ch.count || 0
       const feeRate = (ch.feeRate || 0) / 100
       
-      // 수수료 적용된 인당 순이익
-      const ticketRevenue = 3000 * (1 - feeRate)
-      const mazePayment = 3000 * (1 - feeRate)
-      const operationFee = 1000 * (1 - feeRate)
-      const cultureShare = 500 * (1 - feeRate)
-      const platformFeeIncome = 1000 * (1 - feeRate) * 0.2
-      const culturePayment = 1000 * (1 - feeRate)
+      // 수수료 적용된 인당 수익
+      // SKP매출(3000) - 메이즈R/S(1000) - 컬처R/S(1000) + 메이즈비용분담금(500)
+      const skpRevenue = 3000 * (1 - feeRate)           // SKP 매출
+      const mazeRS = 1000 * (1 - feeRate)               // 메이즈 R/S (운영수수료)
+      const cultureRS = 1000 * (1 - feeRate)            // 컬처 R/S (플랫폼 비용)
+      const mazeCultureShare = 500 * (1 - feeRate)      // 메이즈 비용분담금
       
-      const profitPerPerson = ticketRevenue - mazePayment + operationFee + cultureShare + platformFeeIncome - culturePayment
+      const profitPerPerson = skpRevenue - mazeRS - cultureRS + mazeCultureShare
       skpProfit += count * profitPerPerson
     })
-    // 오프라인
-    skpProfit += offlineCount * (3000 - 3000 + 1000 + 500 + 200 - 1000)
+    // 오프라인 (수수료 없음)
+    skpProfit += offlineCount * (3000 - 1000 - 1000 + 500)
     
     const FMC_TO_SKP_AGENCY = Math.round(skpProfit * 0.2)
     
@@ -145,7 +146,7 @@ export async function GET(request: NextRequest) {
       MAZE_TO_SKP_OPERATION,      // 메이즈 → SKP (운영수수료)
       CULTURE_TO_SKP,             // 컬처 → SKP (플랫폼 비용 1,000원)
       SKP_TO_CULTURE_PLATFORM,    // SKP → 컬처 (플랫폼 이용료 20%)
-      MAZE_TO_SKP_CULTURE_SHARE,  // 메이즈 → SKP (컬처 분담금)
+      SKP_TO_MAZE_CULTURE_SHARE,  // SKP → 메이즈 (컬처 분담금 인보이스)
       FMC_TO_SKP_AGENCY,          // FMC → SKP (대행 수수료)
     }
     
@@ -157,8 +158,10 @@ export async function GET(request: NextRequest) {
     // ============================================
     
     // SKP ↔ 메이즈랜드
-    const skpReceiveFromMaze = SKP_TO_MAZE_REVENUE  // SKP가 메이즈에서 받을 돈 (SKP 매출)
-    const mazeReceiveFromSkp = MAZE_TO_SKP_OPERATION + MAZE_TO_SKP_CULTURE_SHARE  // 메이즈가 SKP에서 받을 돈 (메이즈 매출)
+    // SKP가 메이즈에서 받을 돈: 총매출(세금계산서) + 컬처분담금(인보이스)
+    const skpReceiveFromMaze = SKP_TO_MAZE_REVENUE + SKP_TO_MAZE_CULTURE_SHARE
+    // 메이즈가 SKP에서 받을 돈: 운영수수료(세금계산서)
+    const mazeReceiveFromSkp = MAZE_TO_SKP_OPERATION
     const skpMazeNet = skpReceiveFromMaze - mazeReceiveFromSkp  // 양수면 메이즈가 SKP에 입금, 음수면 SKP가 메이즈에 입금
     
     // SKP ↔ 컬처커넥션
@@ -212,8 +215,8 @@ export async function GET(request: NextRequest) {
         total_1000,
         total_500_maze,
         skpProfit,
-        skpToMazeTotal,
-        mazeToSkpTotal,
+        skpReceiveFromMaze,
+        mazeReceiveFromSkp,
         skpMazeNet,
       }
     })

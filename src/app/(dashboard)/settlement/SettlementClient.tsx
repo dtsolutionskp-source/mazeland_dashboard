@@ -13,6 +13,9 @@ import {
   RefreshCw,
   Wallet,
   ArrowDownUp,
+  TrendingUp,
+  Calendar,
+  BarChart3,
 } from 'lucide-react'
 import { Role } from '@prisma/client'
 
@@ -28,7 +31,7 @@ type SettlementItemId =
   | 'MAZE_TO_SKP_OPERATION'
   | 'SKP_TO_CULTURE_PLATFORM'
   | 'CULTURE_TO_SKP'
-  | 'MAZE_TO_SKP_CULTURE_SHARE'
+  | 'SKP_TO_MAZE_CULTURE_SHARE'
   | 'FMC_TO_SKP_AGENCY'
 
 interface SettlementItem {
@@ -38,6 +41,8 @@ interface SettlementItem {
   fromCode: string
   toCode: string
   description: string
+  isInvoice?: boolean  // 세금계산서가 아닌 인보이스 청구 건
+  isNonRevenue?: boolean  // 매출이 아닌 수익 건
 }
 
 interface CheckState {
@@ -52,6 +57,31 @@ interface NetTransfer {
   to: string
   amount: number
   description: string
+}
+
+interface CompanySummary {
+  revenue: number
+  expense: number
+  profit: number
+}
+
+interface MonthlyDataItem {
+  year: number
+  month: number
+  amounts: Record<string, number>
+  visitors: number
+}
+
+interface CumulativeData {
+  type: 'yearly' | 'total'
+  year: number | null
+  period: string
+  monthCount: number
+  totalVisitors: number
+  companySummary: Record<string, CompanySummary>
+  amounts: Record<string, number>
+  availableYears: number[]
+  monthlyData: MonthlyDataItem[]
 }
 
 // 정산 항목 정의 (수정된 설명)
@@ -89,12 +119,14 @@ const SETTLEMENT_ITEMS: SettlementItem[] = [
     description: '플랫폼 이용료 (1,000원의 20%, 수수료 차감)',
   },
   {
-    id: 'MAZE_TO_SKP_CULTURE_SHARE',
-    from: '메이즈랜드',
-    to: 'SKP',
-    fromCode: 'MAZE',
-    toCode: 'SKP',
-    description: '컬처 분담금 (인당 500원, 메이즈 부담분)',
+    id: 'SKP_TO_MAZE_CULTURE_SHARE',
+    from: 'SKP',
+    to: '메이즈랜드',
+    fromCode: 'SKP',
+    toCode: 'MAZE',
+    description: '컬처 분담금 (인당 500원, 인보이스 청구)',
+    isInvoice: true,
+    isNonRevenue: true,
   },
   {
     id: 'FMC_TO_SKP_AGENCY',
@@ -128,10 +160,34 @@ const COMPANY_NAMES: Record<string, string> = {
   FMC: 'FMC',
 }
 
-const TABS = ['SKP', 'MAZE', 'CULTURE', 'FMC'] as const
+const ALL_TABS = ['SKP', 'MAZE', 'CULTURE', 'FMC'] as const
+
+// 역할별 접근 가능한 탭 매핑
+const ROLE_TO_TAB: Record<string, string> = {
+  SUPER_ADMIN: 'SKP',  // 전체 접근 가능
+  SKP_ADMIN: 'SKP',    // 전체 접근 가능
+  MAZE_ADMIN: 'MAZE',
+  CULTURE_ADMIN: 'CULTURE',
+  AGENCY_ADMIN: 'FMC',
+}
+
+// 역할별 접근 가능한 탭 목록
+function getAccessibleTabs(role: Role): readonly string[] {
+  // SKP_ADMIN 또는 SUPER_ADMIN은 전체 탭 접근 가능
+  if (role === 'SUPER_ADMIN' || role === 'SKP_ADMIN') {
+    return ALL_TABS
+  }
+  // 그 외는 자기 탭만 접근 가능
+  const tab = ROLE_TO_TAB[role]
+  return tab ? [tab] : []
+}
 
 export function SettlementClient({ userRole, showAllData, userName }: SettlementClientProps) {
-  const [activeTab, setActiveTab] = useState<string>('SKP')
+  // 접근 가능한 탭 계산
+  const accessibleTabs = getAccessibleTabs(userRole)
+  const defaultTab = ROLE_TO_TAB[userRole] || 'SKP'
+  
+  const [activeTab, setActiveTab] = useState<string>(defaultTab)
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null)
   const [checks, setChecks] = useState<Record<string, CheckState>>({})
@@ -144,6 +200,13 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
   const [dataInfo, setDataInfo] = useState<{totalVisitors: number, onlineCount: number, offlineCount: number}>({
     totalVisitors: 0, onlineCount: 0, offlineCount: 0
   })
+  
+  // 누적 현황 관련 상태
+  const [cumulativeTab, setCumulativeTab] = useState<'yearly' | 'total'>('yearly')
+  const [cumulativeYear, setCumulativeYear] = useState<number>(new Date().getFullYear())
+  const [cumulativeData, setCumulativeData] = useState<CumulativeData | null>(null)
+  const [isLoadingCumulative, setIsLoadingCumulative] = useState(false)
+  const [availableYears, setAvailableYears] = useState<number[]>([])
 
   // 초기 데이터 로드 (사용 가능한 월 목록만)
   useEffect(() => {
@@ -238,6 +301,44 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
       loadData()
     }
   }, [isInitialized, selectedYear, selectedMonth, loadData])
+
+  // 누적 데이터 로드
+  const loadCumulativeData = useCallback(async () => {
+    setIsLoadingCumulative(true)
+    try {
+      const res = await fetch(
+        `/api/settlement-cumulative?type=${cumulativeTab}&year=${cumulativeYear}`
+      )
+      if (res.ok) {
+        const data = await res.json()
+        setCumulativeData(data)
+        if (data.availableYears && data.availableYears.length > 0) {
+          setAvailableYears(data.availableYears)
+        }
+      }
+    } catch (error) {
+      console.error('Load cumulative data error:', error)
+    } finally {
+      setIsLoadingCumulative(false)
+    }
+  }, [cumulativeTab, cumulativeYear])
+
+  useEffect(() => {
+    if (isInitialized) {
+      loadCumulativeData()
+    }
+  }, [isInitialized, cumulativeTab, cumulativeYear, loadCumulativeData])
+
+  useEffect(() => {
+    // 초기 연도 설정
+    if (availableMonths.length > 0 && availableYears.length === 0) {
+      const years = [...new Set(availableMonths.map(m => m.year))].sort((a, b) => b - a)
+      setAvailableYears(years)
+      if (years.length > 0) {
+        setCumulativeYear(years[0])
+      }
+    }
+  }, [availableMonths, availableYears.length])
 
   // 체크 상태 토글
   const handleToggleCheck = async (itemId: SettlementItemId) => {
@@ -383,9 +484,9 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
           </div>
         </div>
 
-        {/* 회사별 탭 */}
+        {/* 회사별 탭 - 접근 가능한 탭만 표시 */}
         <div className="flex gap-2 border-b border-dashboard-border">
-          {TABS.map(tab => {
+          {accessibleTabs.map(tab => {
             const completionRate = getCompletionRate(tab)
             const isComplete = completionRate === 100
             
@@ -525,7 +626,14 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                           </div>
                         </td>
                         <td className="py-3 px-4 text-dashboard-muted">
-                          {item.description}
+                          <div className="flex items-center gap-2">
+                            {item.description}
+                            {item.isInvoice && (
+                              <span className="px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-500/20 text-yellow-400">
+                                인보이스
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className={cn(
                           'py-3 px-4 text-right font-medium',
@@ -536,11 +644,13 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                         <td className="py-3 px-4 text-center">
                           <span className={cn(
                             'px-2 py-1 rounded text-xs font-medium',
-                            isRevenue 
-                              ? 'bg-green-500/20 text-green-400' 
-                              : 'bg-red-500/20 text-red-400'
+                            item.isNonRevenue && isRevenue
+                              ? 'bg-yellow-500/20 text-yellow-400'
+                              : isRevenue 
+                                ? 'bg-green-500/20 text-green-400' 
+                                : 'bg-red-500/20 text-red-400'
                           )}>
-                            {isRevenue ? '매출' : '비용'}
+                            {item.isNonRevenue && isRevenue ? '수익' : isRevenue ? '매출' : '비용'}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
@@ -610,11 +720,14 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                       {activeTab === 'MAZE' ? '+' : '-'}{formatCurrency(amounts['MAZE_TO_SKP_OPERATION'] || 0)}
                     </span>
                   </div>
-                  {/* 메이즈 → SKP (컬처분담): 메이즈가 SKP에 청구 = 메이즈 매출, SKP 비용 */}
+                  {/* SKP → 메이즈 (컬처분담 인보이스): SKP가 메이즈에 청구 = SKP 수익, 메이즈 비용 */}
                   <div className="flex justify-between">
-                    <span className="text-dashboard-muted">메이즈 → SKP (컬처분담)</span>
-                    <span className={activeTab === 'MAZE' ? 'text-green-400' : 'text-red-400'}>
-                      {activeTab === 'MAZE' ? '+' : '-'}{formatCurrency(amounts['MAZE_TO_SKP_CULTURE_SHARE'] || 0)}
+                    <span className="text-dashboard-muted">
+                      SKP → 메이즈 (컬처분담)
+                      <span className="ml-1 text-xs text-yellow-500">[인보이스]</span>
+                    </span>
+                    <span className={activeTab === 'SKP' ? 'text-green-400' : 'text-red-400'}>
+                      {activeTab === 'SKP' ? '+' : '-'}{formatCurrency(amounts['SKP_TO_MAZE_CULTURE_SHARE'] || 0)}
                     </span>
                   </div>
                   <div className="border-t border-dashboard-border pt-2 mt-2">
@@ -721,6 +834,259 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
               </div>
             )}
           </div>
+        </Card>
+
+        {/* 누적 현황 섹션 */}
+        <Card className="bg-gradient-to-r from-emerald-500/5 to-teal-500/5 border-emerald-500/20">
+          <CardHeader 
+            title={
+              <div className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-emerald-500" />
+                <span>누적 현황</span>
+              </div>
+            }
+            description="연간 및 전체 기간 매출/비용/수익 누적 합계"
+          />
+          
+          {/* 누적 탭 */}
+          <div className="flex gap-2 mb-4">
+            <button
+              onClick={() => setCumulativeTab('yearly')}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all',
+                cumulativeTab === 'yearly'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-dashboard-border text-dashboard-muted hover:bg-dashboard-border/80'
+              )}
+            >
+              <Calendar className="w-4 h-4" />
+              연간 누적
+            </button>
+            <button
+              onClick={() => setCumulativeTab('total')}
+              className={cn(
+                'flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all',
+                cumulativeTab === 'total'
+                  ? 'bg-emerald-500 text-white'
+                  : 'bg-dashboard-border text-dashboard-muted hover:bg-dashboard-border/80'
+              )}
+            >
+              <TrendingUp className="w-4 h-4" />
+              전체 누적
+            </button>
+            
+            {cumulativeTab === 'yearly' && availableYears.length > 0 && (
+              <select
+                value={cumulativeYear}
+                onChange={(e) => setCumulativeYear(parseInt(e.target.value))}
+                className="ml-4 px-4 py-2 bg-dashboard-card border border-dashboard-border rounded-lg text-dashboard-text"
+              >
+                {availableYears.map(year => (
+                  <option key={year} value={year}>{year}년</option>
+                ))}
+              </select>
+            )}
+            
+            <button
+              onClick={loadCumulativeData}
+              disabled={isLoadingCumulative}
+              className="ml-auto p-2 text-dashboard-muted hover:text-dashboard-text rounded-lg hover:bg-dashboard-border transition-colors"
+            >
+              <RefreshCw className={cn('w-5 h-5', isLoadingCumulative && 'animate-spin')} />
+            </button>
+          </div>
+
+          {/* 기간 정보 */}
+          {cumulativeData && (
+            <div className="mb-4 p-3 bg-dashboard-bg rounded-lg flex items-center justify-between">
+              <div className="text-sm">
+                <span className="text-dashboard-muted">조회 기간: </span>
+                <span className="text-dashboard-text font-medium">{cumulativeData.period}</span>
+                <span className="text-dashboard-muted ml-4">({cumulativeData.monthCount}개월)</span>
+              </div>
+              <div className="text-sm">
+                <span className="text-dashboard-muted">총 방문객: </span>
+                <span className="text-dashboard-text font-bold">{cumulativeData.totalVisitors.toLocaleString()}명</span>
+              </div>
+            </div>
+          )}
+
+          {/* 누적 현황 콘텐츠 */}
+          {isLoadingCumulative ? (
+            <div className="flex items-center justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-500" />
+            </div>
+          ) : cumulativeData?.monthlyData && cumulativeData.monthlyData.length > 0 ? (
+            <div className="space-y-6">
+              {/* 월별 정산 현황 테이블 */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-dashboard-border">
+                      <th className="text-left py-2 px-3 font-semibold text-dashboard-muted">월</th>
+                      <th className="text-right py-2 px-3 font-semibold text-dashboard-muted">방문객</th>
+                      {activeTab === 'MAZE' ? (
+                        <th className="text-right py-2 px-3 font-semibold text-green-400">매출</th>
+                      ) : (
+                        <>
+                          <th className="text-right py-2 px-3 font-semibold text-green-400">매출</th>
+                          <th className="text-right py-2 px-3 font-semibold text-red-400">비용</th>
+                          <th className="text-right py-2 px-3 font-semibold text-emerald-400">순이익</th>
+                        </>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {cumulativeData.monthlyData
+                      .sort((a, b) => a.year - b.year || a.month - b.month)
+                      .map((monthData, idx) => {
+                        // 회사별 매출/비용 계산
+                        const getCompanyData = (code: string) => {
+                          let revenue = 0
+                          let expense = 0
+                          let profit = 0
+                          
+                          if (code === 'SKP') {
+                            revenue = (monthData.amounts.SKP_TO_MAZE_REVENUE || 0) + 
+                                     (monthData.amounts.SKP_TO_CULTURE_PLATFORM || 0)
+                            profit = monthData.amounts.SKP_TO_MAZE_CULTURE_SHARE || 0
+                            expense = (monthData.amounts.MAZE_TO_SKP_OPERATION || 0) + 
+                                     (monthData.amounts.CULTURE_TO_SKP || 0) +
+                                     (monthData.amounts.FMC_TO_SKP_AGENCY || 0)
+                          } else if (code === 'MAZE') {
+                            revenue = monthData.amounts.MAZE_TO_SKP_OPERATION || 0
+                            expense = (monthData.amounts.SKP_TO_MAZE_REVENUE || 0) + 
+                                     (monthData.amounts.SKP_TO_MAZE_CULTURE_SHARE || 0)
+                          } else if (code === 'CULTURE') {
+                            revenue = monthData.amounts.CULTURE_TO_SKP || 0
+                            expense = monthData.amounts.SKP_TO_CULTURE_PLATFORM || 0
+                          } else if (code === 'FMC') {
+                            revenue = monthData.amounts.FMC_TO_SKP_AGENCY || 0
+                            expense = 0
+                          }
+                          
+                          return { revenue, expense, profit, net: revenue + profit - expense }
+                        }
+                        
+                        const data = getCompanyData(activeTab)
+                        
+                        return (
+                          <tr key={idx} className="border-b border-dashboard-border/50 hover:bg-dashboard-border/20">
+                            <td className="py-2 px-3 text-dashboard-text">
+                              {monthData.year}년 {monthData.month}월
+                            </td>
+                            <td className="py-2 px-3 text-right text-dashboard-muted">
+                              {monthData.visitors.toLocaleString()}명
+                            </td>
+                            {activeTab === 'MAZE' ? (
+                              <td className="py-2 px-3 text-right text-green-400 font-medium">
+                                +{formatCurrency(data.revenue)}
+                              </td>
+                            ) : (
+                              <>
+                                <td className="py-2 px-3 text-right text-green-400">
+                                  +{formatCurrency(data.revenue + data.profit)}
+                                </td>
+                                <td className="py-2 px-3 text-right text-red-400">
+                                  -{formatCurrency(data.expense)}
+                                </td>
+                                <td className={cn(
+                                  'py-2 px-3 text-right font-medium',
+                                  data.net >= 0 ? 'text-emerald-400' : 'text-red-400'
+                                )}>
+                                  {data.net >= 0 ? '+' : ''}{formatCurrency(data.net)}
+                                </td>
+                              </>
+                            )}
+                          </tr>
+                        )
+                      })}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* 총 합계 */}
+              <div className={cn(
+                'p-4 rounded-lg border-2',
+                COMPANY_BG_COLORS[activeTab]
+              )}>
+                <div className="flex items-center gap-2 mb-3">
+                  <div className={cn('w-4 h-4 rounded-full', COMPANY_COLORS[activeTab])} />
+                  <span className="font-bold text-lg text-dashboard-text">
+                    {COMPANY_NAMES[activeTab]} 총 합계
+                  </span>
+                  <span className="text-dashboard-muted text-sm ml-2">
+                    ({cumulativeData.period})
+                  </span>
+                </div>
+                
+                {(() => {
+                  const summary = cumulativeData.companySummary[activeTab]
+                  if (!summary) return null
+                  
+                  const netAmount = summary.revenue + summary.profit - summary.expense
+                  
+                  // 메이즈랜드는 매출만 표시
+                  if (activeTab === 'MAZE') {
+                    return (
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-dashboard-bg rounded-lg">
+                          <div className="text-sm text-dashboard-muted mb-1">총 매출</div>
+                          <div className="text-2xl font-bold text-green-400">
+                            +{formatCurrency(summary.revenue)}
+                          </div>
+                        </div>
+                        <div className="p-3 bg-dashboard-bg rounded-lg">
+                          <div className="text-sm text-dashboard-muted mb-1">총 방문객</div>
+                          <div className="text-2xl font-bold text-dashboard-text">
+                            {cumulativeData.totalVisitors.toLocaleString()}명
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+                  
+                  return (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="p-3 bg-dashboard-bg rounded-lg">
+                        <div className="text-sm text-dashboard-muted mb-1">총 매출</div>
+                        <div className="text-xl font-bold text-green-400">
+                          +{formatCurrency(summary.revenue)}
+                        </div>
+                      </div>
+                      {summary.profit > 0 && (
+                        <div className="p-3 bg-dashboard-bg rounded-lg">
+                          <div className="text-sm text-dashboard-muted mb-1">총 수익 (인보이스)</div>
+                          <div className="text-xl font-bold text-yellow-400">
+                            +{formatCurrency(summary.profit)}
+                          </div>
+                        </div>
+                      )}
+                      <div className="p-3 bg-dashboard-bg rounded-lg">
+                        <div className="text-sm text-dashboard-muted mb-1">총 비용</div>
+                        <div className="text-xl font-bold text-red-400">
+                          -{formatCurrency(summary.expense)}
+                        </div>
+                      </div>
+                      <div className="p-3 bg-dashboard-bg rounded-lg">
+                        <div className="text-sm text-dashboard-muted mb-1">순이익</div>
+                        <div className={cn(
+                          'text-2xl font-bold',
+                          netAmount >= 0 ? 'text-emerald-400' : 'text-red-400'
+                        )}>
+                          {netAmount >= 0 ? '+' : ''}{formatCurrency(netAmount)}
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })()}
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-dashboard-muted">
+              누적 데이터가 없습니다.
+            </div>
+          )}
         </Card>
       </div>
     </div>

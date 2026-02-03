@@ -101,15 +101,11 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Test Account Info */}
-          <div className="mt-8 p-4 bg-dashboard-bg rounded-lg">
-            <p className="text-xs text-dashboard-muted text-center mb-2">테스트 계정</p>
-            <div className="text-xs text-dashboard-muted space-y-1">
-              <p>• admin@mazeland.com (최고 관리자)</p>
-              <p>• skp@mazeland.com (SKP 관리자)</p>
-              <p>• maze@mazeland.com (메이즈랜드)</p>
-              <p className="text-center mt-2">비밀번호: password123</p>
-            </div>
+          {/* Footer */}
+          <div className="mt-8 text-center">
+            <p className="text-xs text-dashboard-muted">
+              계정이 없으신가요? 관리자에게 문의하세요.
+            </p>
           </div>
         </div>
       </div>

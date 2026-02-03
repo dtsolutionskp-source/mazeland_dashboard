@@ -75,6 +75,11 @@ export function getCategoryName(code: string): string {
   return category?.name ?? code
 }
 
+// 활성(사용) 카테고리만 반환
+export function getActiveCategories() {
+  return CATEGORY_MASTER.filter((c: any) => c?.isActive !== false && c?.active !== false && c?.enabled !== false)
+}
+
 // 상수 내보내기
 export const BASE_PRICE = 3000  // 기본 티켓 가격
 export const MAZE_UNIT = 1000   // 메이즈랜드 단가

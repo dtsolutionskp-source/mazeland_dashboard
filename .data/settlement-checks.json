@@ -15,8 +15,46 @@
       "SKP_TO_FMC_AGENCY": {
         "checked": false,
         "amount": 0
+      },
+      "SKP_TO_MAZE_REVENUE": {
+        "checked": false,
+        "amount": 9262200
+      },
+      "SKP_TO_CULTURE_PLATFORM": {
+        "checked": false,
+        "amount": 617480
+      },
+      "CULTURE_TO_SKP": {
+        "checked": true,
+        "checkedAt": "2026-02-03T00:12:40.622Z",
+        "checkedBy": "SKP 담당자",
+        "amount": 3087400
+      },
+      "FMC_TO_SKP_AGENCY": {
+        "checked": true,
+        "checkedAt": "2026-02-03T00:12:34.701Z",
+        "checkedBy": "SKP 담당자",
+        "amount": 926220
       }
     },
-    "updatedAt": "2026-01-12T05:10:27.899Z"
+    "updatedAt": "2026-02-03T00:12:40.622Z"
+  },
+  "2025-11": {
+    "yearMonth": "2025-11",
+    "checks": {
+      "CULTURE_TO_SKP": {
+        "checked": true,
+        "checkedAt": "2026-02-03T00:13:34.076Z",
+        "checkedBy": "SKP 담당자",
+        "amount": 2198660
+      },
+      "FMC_TO_SKP_AGENCY": {
+        "checked": true,
+        "checkedAt": "2026-02-03T00:13:41.935Z",
+        "checkedBy": "SKP 담당자",
+        "amount": 659598
+      }
+    },
+    "updatedAt": "2026-02-03T00:13:41.935Z"
   }
 }
