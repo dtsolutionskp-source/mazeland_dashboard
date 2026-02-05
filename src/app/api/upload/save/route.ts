@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 모든 로그인된 사용자가 데이터 입력 가능
-    console.log('[Upload Save] User:', user.username, 'Role:', user.role)
+    console.log('[Upload Save] User:', user.email, 'Role:', user.role)
 
     const body = await request.json()
     const { dailyData, channels, categories, summary, year, month, mergeMode } = body
