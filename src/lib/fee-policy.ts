@@ -14,8 +14,12 @@ import {
 } from '@/types/sales-data'
 import { CHANNEL_MASTER } from './master-data'
 
+// Vercel 환경 감지 - 서버리스에서는 /tmp만 쓰기 가능
+const isVercel = process.env.VERCEL === '1'
+const BASE_DATA_PATH = isVercel ? '/tmp' : process.cwd()
+
 // 데이터 저장 경로
-const DATA_DIR = path.join(process.cwd(), '.data')
+const DATA_DIR = path.join(BASE_DATA_PATH, '.data')
 const FEE_POLICY_DIR = path.join(DATA_DIR, 'fee-policy')
 
 /**

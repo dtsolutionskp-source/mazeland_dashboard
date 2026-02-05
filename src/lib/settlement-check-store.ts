@@ -1,7 +1,10 @@
 import fs from 'fs'
 import path from 'path'
 
-const DATA_DIR = path.join(process.cwd(), '.data')
+// Vercel 환경 감지 - 서버리스에서는 /tmp만 쓰기 가능
+const isVercel = process.env.VERCEL === '1'
+const BASE_DATA_PATH = isVercel ? '/tmp' : process.cwd()
+const DATA_DIR = path.join(BASE_DATA_PATH, '.data')
 const SETTLEMENT_CHECK_FILE = path.join(DATA_DIR, 'settlement-checks.json')
 
 // 정산 항목 ID

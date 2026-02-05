@@ -20,8 +20,12 @@ import {
 import { getMonthlyFeeSettings, getFeeRateForDate, createDefaultFeeSettings } from './fee-policy'
 import { CHANNEL_MASTER, CATEGORY_MASTER, BASE_PRICE } from './master-data'
 
+// Vercel 환경 감지 - 서버리스에서는 /tmp만 쓰기 가능
+const isVercel = process.env.VERCEL === '1'
+const BASE_DATA_PATH = isVercel ? '/tmp' : process.cwd()
+
 // 데이터 저장 경로
-const DATA_DIR = path.join(process.cwd(), '.data')
+const DATA_DIR = path.join(BASE_DATA_PATH, '.data')
 const DAILY_DATA_DIR = path.join(DATA_DIR, 'daily')
 const MONTHLY_DATA_DIR = path.join(DATA_DIR, 'monthly-v2')
 

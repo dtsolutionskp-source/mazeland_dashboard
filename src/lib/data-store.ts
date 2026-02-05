@@ -8,8 +8,12 @@ import path from 'path'
 import { MonthlyAggData, DataSource, ChannelSalesData, CategorySalesData } from '@/types/sales-input'
 import { getMasterData, getChannelFeeRate, BASE_PRICE } from './master-data'
 
+// Vercel 환경 감지 - 서버리스에서는 /tmp만 쓰기 가능
+const isVercel = process.env.VERCEL === '1'
+const BASE_DATA_PATH = isVercel ? '/tmp' : process.cwd()
+
 // 데이터 저장 경로
-const DATA_DIR = path.join(process.cwd(), '.data')
+const DATA_DIR = path.join(BASE_DATA_PATH, '.data')
 const UPLOAD_DATA_FILE = path.join(DATA_DIR, 'upload-data.json')  // 레거시 (단일 파일)
 const UPLOAD_DATA_DIR = path.join(DATA_DIR, 'uploads')  // 월별 분리 저장
 const MONTHLY_DATA_DIR = path.join(DATA_DIR, 'monthly')
