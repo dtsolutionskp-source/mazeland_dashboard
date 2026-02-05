@@ -5,6 +5,7 @@ import { Header } from '@/components/dashboard/Header'
 import { Card, CardHeader } from '@/components/ui'
 import { formatCurrency } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import type { ReactNode } from 'react'
 import { 
   Check, 
   ArrowRight, 
@@ -332,7 +333,9 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
   useEffect(() => {
     // 초기 연도 설정
     if (availableMonths.length > 0 && availableYears.length === 0) {
-      const years = [...new Set(availableMonths.map(m => m.year))].sort((a, b) => b - a)
+      const years = Array.from(
+        availableMonths.reduce((acc, m) => acc.add(m.year), new Set<number>())
+      ).sort((a, b) => b - a)
       setAvailableYears(years)
       if (years.length > 0) {
         setCumulativeYear(years[0])
@@ -985,7 +988,7 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                             ) : (
                               <>
                                 <td className="py-2 px-3 text-right text-green-400">
-                                  +{formatCurrency(data.revenue + data.profit)}
+                                  +{formatCurrency(data.revenue)}
                                 </td>
                                 <td className="py-2 px-3 text-right text-red-400">
                                   -{formatCurrency(data.expense)}

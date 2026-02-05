@@ -1020,14 +1020,6 @@ export default function DataInputPage() {
                       <p className="text-sm text-dashboard-muted">총 판매</p>
                       <p className="text-2xl font-bold text-dashboard-text">{formatNumber(totals.total)}명</p>
                     </div>
-                    <div className="text-center p-4 bg-orange-500/10 rounded-lg">
-                      <p className="text-sm text-dashboard-muted">채널 수수료</p>
-                      <p className="text-2xl font-bold text-orange-500">-{formatCurrency(totalFee)}</p>
-                    </div>
-                    <div className="text-center p-4 bg-green-500/10 rounded-lg">
-                      <p className="text-sm text-dashboard-muted">SKP 매출</p>
-                      <p className="text-2xl font-bold text-green-500">{formatCurrency(calculateSkpRevenue)}</p>
-                    </div>
                   </div>
                 </Card>
 

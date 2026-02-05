@@ -202,12 +202,17 @@ export default function MarketingLogPage() {
     return result
   }, [logs, selectedYear, selectedMonth, filter])
   
-  // 사용 가능한 연도 목록
+  // 사용 가능한 연도 목록 (현재 연도 기준 ±2년 + 로그에 있는 연도)
   const availableYears = useMemo(() => {
     const years = new Set<number>()
     const currentYear = new Date().getFullYear()
-    years.add(currentYear)
     
+    // 현재 연도 기준 ±2년 추가
+    for (let y = currentYear - 2; y <= currentYear + 1; y++) {
+      years.add(y)
+    }
+    
+    // 로그에 있는 연도도 추가
     logs.forEach(log => {
       const startYear = new Date(log.startDate).getFullYear()
       const endYear = new Date(log.endDate).getFullYear()
