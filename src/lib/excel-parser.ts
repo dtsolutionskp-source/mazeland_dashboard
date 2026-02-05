@@ -44,6 +44,19 @@ export interface MonthlySummaryData {
   totalNet: number
 }
 
+export interface DataValidation {
+  // 엑셀 "계" 행에 표시된 값
+  excelOnlineTotal: number
+  excelOfflineTotal: number
+  // 개별 행 합산 값
+  calculatedOnlineTotal: number
+  calculatedOfflineTotal: number
+  // 불일치 여부
+  hasOnlineMismatch: boolean
+  hasOfflineMismatch: boolean
+  hasMismatch: boolean
+}
+
 export interface ParseResult {
   success: boolean
   periodStart: Date
@@ -56,6 +69,8 @@ export interface ParseResult {
   channelFeeRates: Record<string, number>
   categoryNames: Record<string, string>
   errors: string[]
+  // 데이터 검증 결과
+  validation?: DataValidation
 }
 
 // ==========================================
@@ -185,6 +200,10 @@ export function parseExcelFile(buffer: ArrayBuffer): ParseResult {
   // 월계 (가장 마지막 시트에서만 읽음)
   const monthlyOnlineByChannel: Record<string, number> = {}
   const monthlyOfflineByCategory: Record<string, number> = {}
+  
+  // 엑셀 "계" 행의 월계 값 (검증용)
+  let excelOnlineTotal = 0
+  let excelOfflineTotal = 0
   
   // 채널명 저장 (코드 -> 이름)
   const channelNames: Record<string, string> = {}
@@ -331,8 +350,18 @@ export function parseExcelFile(buffer: ArrayBuffer): ParseResult {
           continue
         }
         
-        // 합계 행 스킵
+        // 합계 행 처리 - 월계 값 추출 (가장 마지막 시트에서만)
         if (firstCell === '계' || firstCell === '합계' || firstCell.includes('소계')) {
+          if (isLatestSheet && monthlyTotalCol >= 0) {
+            const totalVal = typeof row[monthlyTotalCol] === 'number' ? row[monthlyTotalCol] : 0
+            if (currentSection === 'online') {
+              excelOnlineTotal = totalVal
+              console.log(`[Excel Parser] 인터넷 판매 "계" 행 월계: ${totalVal}`)
+            } else if (currentSection === 'offline') {
+              excelOfflineTotal = totalVal
+              console.log(`[Excel Parser] 현장 판매 "계" 행 월계: ${totalVal}`)
+            }
+          }
           continue
         }
         
@@ -561,6 +590,30 @@ export function parseExcelFile(buffer: ArrayBuffer): ParseResult {
 
     const success = finalOnlineTotal > 0 || finalOfflineTotal > 0
 
+    // 데이터 검증 - 엑셀 "계" 행과 개별 행 합산 비교
+    const calculatedOnlineTotal = Object.values(monthlyOnlineByChannel).reduce((sum, v) => sum + v, 0)
+    const calculatedOfflineTotal = Object.values(monthlyOfflineByCategory).reduce((sum, v) => sum + v, 0)
+    
+    const hasOnlineMismatch = excelOnlineTotal > 0 && calculatedOnlineTotal !== excelOnlineTotal
+    const hasOfflineMismatch = excelOfflineTotal > 0 && calculatedOfflineTotal !== excelOfflineTotal
+    const hasMismatch = hasOnlineMismatch || hasOfflineMismatch
+    
+    if (hasMismatch) {
+      console.log(`[Excel Parser] ⚠️ 데이터 불일치 감지!`)
+      console.log(`  인터넷: 계행=${excelOnlineTotal}, 합산=${calculatedOnlineTotal}, 불일치=${hasOnlineMismatch}`)
+      console.log(`  현장: 계행=${excelOfflineTotal}, 합산=${calculatedOfflineTotal}, 불일치=${hasOfflineMismatch}`)
+    }
+    
+    const validation = {
+      excelOnlineTotal,
+      excelOfflineTotal,
+      calculatedOnlineTotal,
+      calculatedOfflineTotal,
+      hasOnlineMismatch,
+      hasOfflineMismatch,
+      hasMismatch,
+    }
+
     return {
       success,
       periodStart,
@@ -572,6 +625,7 @@ export function parseExcelFile(buffer: ArrayBuffer): ParseResult {
       channelFeeRates,
       categoryNames,
       errors: success ? [] : ['데이터를 파싱하지 못했습니다. 파일 형식을 확인하세요.'],
+      validation,
     }
   } catch (error) {
     console.error('[Excel Parser] Error:', error)

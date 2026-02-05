@@ -44,10 +44,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 })
     }
 
-    // 관리자만 저장 가능
-    if (!['SUPER_ADMIN', 'SKP_ADMIN'].includes(user.role)) {
-      return NextResponse.json({ error: '권한이 없습니다.' }, { status: 403 })
-    }
+    // 모든 로그인된 사용자가 데이터 입력 가능
+    console.log('[Upload Save] User:', user.username, 'Role:', user.role)
 
     const body = await request.json()
     const { dailyData, channels, categories, summary, year, month, mergeMode } = body
@@ -312,10 +310,14 @@ export async function POST(request: NextRequest) {
     })
 
     // 일자별 데이터 저장 (월별 재집계는 하지 않음 - 원본 총계 유지)
-    // saveBulkDailyData 대신 직접 저장하여 recalculateMonthlyAgg 호출 방지
-    const { saveDailyDataWithoutRecalc } = await import('@/lib/daily-data-store')
-    await saveDailyDataWithoutRecalc(year, month, dailyAggDataList)
-    console.log('[Upload Save] Saved to daily data store:', dailyAggDataList.length, 'days')
+    try {
+      const { saveDailyDataWithoutRecalc } = await import('@/lib/daily-data-store')
+      await saveDailyDataWithoutRecalc(year, month, dailyAggDataList)
+      console.log('[Upload Save] Saved to daily data store:', dailyAggDataList.length, 'days')
+    } catch (dailyError) {
+      console.error('[Upload Save] Daily data store error:', dailyError)
+      // daily-data-store 저장 실패해도 upload-data는 이미 저장됨 - 경고만 출력
+    }
 
     return NextResponse.json({
       success: true,
@@ -327,6 +329,20 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('[Upload Save] Error:', error)
-    return NextResponse.json({ error: '데이터 저장 중 오류가 발생했습니다.' }, { status: 500 })
+    console.error('[Upload Save] Error details:', error instanceof Error ? error.stack : String(error))
+    
+    // 더 구체적인 에러 메시지 반환
+    let errorMessage = '데이터 저장 중 오류가 발생했습니다.'
+    if (error instanceof Error) {
+      if (error.message.includes('ENOENT')) {
+        errorMessage = '저장 경로를 찾을 수 없습니다. 서버 관리자에게 문의하세요.'
+      } else if (error.message.includes('EACCES')) {
+        errorMessage = '파일 쓰기 권한이 없습니다. 서버 관리자에게 문의하세요.'
+      } else {
+        errorMessage = `저장 오류: ${error.message}`
+      }
+    }
+    
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }

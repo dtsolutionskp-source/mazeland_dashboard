@@ -95,6 +95,16 @@ interface CategoryData {
   count: number
 }
 
+interface DataValidation {
+  excelOnlineTotal: number
+  excelOfflineTotal: number
+  calculatedOnlineTotal: number
+  calculatedOfflineTotal: number
+  hasOnlineMismatch: boolean
+  hasOfflineMismatch: boolean
+  hasMismatch: boolean
+}
+
 interface UploadResult {
   success: boolean
   uploadId?: string
@@ -122,6 +132,8 @@ interface UploadResult {
   }
   overlappingDates?: string[]
   hasOverlap?: boolean
+  // 데이터 검증 결과
+  validation?: DataValidation
 }
 
 export default function DataInputPage() {
@@ -474,6 +486,23 @@ export default function DataInputPage() {
         if (data.summary?.periodStart) {
           const date = new Date(data.summary.periodStart)
           setYearMonth(date.getFullYear(), date.getMonth() + 1)
+        }
+        
+        // 데이터 검증 경고 표시
+        if (data.validation?.hasMismatch) {
+          const v = data.validation
+          let message = '⚠️ 엑셀 데이터 검증 필요!\n\n엑셀 "계" 행 값과 개별 행 합계가 다릅니다.\n업로드된 데이터를 확인해주세요.\n\n'
+          
+          if (v.hasOnlineMismatch) {
+            message += `[인터넷 판매]\n- 엑셀 계 행: ${formatNumber(v.excelOnlineTotal)}명\n- 개별 행 합산: ${formatNumber(v.calculatedOnlineTotal)}명\n- 차이: ${formatNumber(Math.abs(v.excelOnlineTotal - v.calculatedOnlineTotal))}명\n\n`
+          }
+          if (v.hasOfflineMismatch) {
+            message += `[현장 판매]\n- 엑셀 계 행: ${formatNumber(v.excelOfflineTotal)}명\n- 개별 행 합산: ${formatNumber(v.calculatedOfflineTotal)}명\n- 차이: ${formatNumber(Math.abs(v.excelOfflineTotal - v.calculatedOfflineTotal))}명\n\n`
+          }
+          
+          message += '※ 현재 개별 행 합산 값으로 저장됩니다.\n원본 엑셀 파일의 수식/데이터를 확인하세요.'
+          
+          alert(message)
         }
       } else {
         setUploadResult({ success: false, error: data.error || '업로드 실패' })

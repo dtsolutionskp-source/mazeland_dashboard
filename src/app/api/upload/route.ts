@@ -381,6 +381,9 @@ export async function POST(request: NextRequest) {
       overlappingDates,
       hasOverlap: overlappingDates.length > 0,
       
+      // 데이터 검증 결과
+      validation: parseResult.validation,
+      
       message: overlappingDates.length > 0
         ? `파싱 완료 - ${monthlySummary.grandTotal}명. ⚠️ 기존 데이터와 ${overlappingDates.length}일 겹침`
         : `파싱 완료 - 인터넷 ${monthlySummary.onlineTotal}명, 현장 ${monthlySummary.offlineTotal}명, 총 ${monthlySummary.grandTotal}명`,
