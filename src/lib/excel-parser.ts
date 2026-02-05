@@ -210,6 +210,9 @@ export function parseExcelFile(buffer: ArrayBuffer): ParseResult {
         onlineSales: [],
         offlineSales: [],
         monthlySummary: getEmptySummary(),
+        channelNames: {},
+        channelFeeRates: {},
+        categoryNames: {},
         errors: ['엑셀 파일에 시트가 없습니다.'],
       }
     }

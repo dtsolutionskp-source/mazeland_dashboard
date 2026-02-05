@@ -59,16 +59,25 @@ export interface SettlementDetails {
   // 메이즈랜드 전용
   skpIncome?: number;           // SKP로부터 받는 금액
   culturePayout?: number;       // 컬처커넥션 지급액
+  fromSkp?: number;             // SKP에서 받는 총액
+  toCulture?: number;           // 컬처커넥션 지급액
+  onlineFromSkp?: number;       // 인터넷 판매분 SKP 수입
+  offlineFromSkp?: number;      // 현장 판매분 SKP 수입
   
   // 컬처커넥션 전용
   skpIncome2?: number;          // SKP로부터 받는 금액
   mazeIncome?: number;          // 메이즈랜드로부터 받는 금액
   platformFeePayout?: number;   // 플랫폼 이용료 지급액
+  fromMaze?: number;            // 메이즈랜드에서 받는 금액
+  toSkp?: number;               // SKP에 지급하는 금액
+  onlineFromMaze?: number;      // 인터넷 판매분 메이즈랜드 수입
+  offlineFromMaze?: number;     // 현장 판매분 메이즈랜드 수입
   
   // 운영대행사 전용
   agencyFeeRate?: number;       // 수수료율
   basedOn?: string;             // 계산 기준
   skpTicketProfit?: number;     // SKP 티켓 순이익 (수수료 계산 베이스)
+  calculation?: string;         // 계산식 설명
 }
 
 // 전체 정산 결과
@@ -90,9 +99,13 @@ export interface SettlementResult {
     channelCode: ChannelCode;
     channelName: string;
     count: number;
-    revenue: number;
-    fee: number;
-    netRevenue: number;
+    feeRate: number;
+    multiplier: number;
+    skpRevenue: number;
+    skpToMaze: number;
+    skpToCulture: number;
+    mazeToCulture: number;
+    platformFee: number;
   }[];
   
   // 계산 시점

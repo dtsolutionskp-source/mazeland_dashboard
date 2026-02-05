@@ -34,18 +34,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
-    const logType = searchParams.get('logType') as 'CAMPAIGN' | 'PERFORMANCE' | null
+    const logTypeParam = searchParams.get('logType')
+    const logType = (logTypeParam === 'CAMPAIGN' || logTypeParam === 'PERFORMANCE') ? logTypeParam : null
 
     let logs
     if (startDate && endDate) {
       logs = await getMarketingLogsByDateRange(
         new Date(startDate),
         new Date(endDate),
-        logType && logType !== 'ALL' ? logType : undefined
+        logType ?? undefined
       )
     } else {
       logs = await getMarketingLogs()
-      if (logType && logType !== 'ALL') {
+      if (logType) {
         logs = logs.filter(l => l.logType === logType)
       }
     }

@@ -2,25 +2,21 @@
  * 판매 데이터 입력 관련 타입 정의
  */
 
-// 입력 방식
-export type InputMode = 'file' | 'manual' | 'mixed'
-
-// 데이터 소스
+// 데이터 소스 (입력 방식)
 export type DataSource = 'file' | 'manual' | 'mixed'
 
-// 채널 마스터 데이터
-export interface ChannelMaster {
-  code: string
-  name: string
-  feeRate: number  // 수수료율 (%)
-  order: number    // 정렬 순서
-  active: boolean  // 활성화 여부
-}
+// InputMode는 DataSource의 별칭 (하위 호환성)
+export type InputMode = DataSource
 
-// 카테고리 마스터 데이터
-export interface CategoryMaster {
+// 마스터 데이터 타입은 sales-data.ts에서 re-export
+export type { ChannelMaster, CategoryMaster, MasterData as MasterDataBase } from './sales-data'
+
+// 확장된 ChannelMaster (feeRate 별칭 지원)
+export interface ChannelMasterWithFeeRate {
   code: string
   name: string
+  feeRate: number        // 수수료율 (%)
+  defaultFeeRate?: number // 기본 수수료율 (하위 호환성)
   order: number
   active: boolean
 }
@@ -82,11 +78,9 @@ export interface MonthlyAggData {
   }[]
 }
 
-// 마스터 데이터 전체
-export interface MasterData {
-  channels: ChannelMaster[]
-  categories: CategoryMaster[]
-}
+// 마스터 데이터 전체 (sales-data.ts에서 re-export)
+import type { MasterData as MasterDataType } from './sales-data'
+export type { MasterData } from './sales-data'
 
 // API 요청/응답 타입
 export interface SaveSalesDataRequest {
@@ -107,7 +101,7 @@ export interface SaveSalesDataResponse {
 export interface GetSalesDataResponse {
   success: boolean
   data?: MonthlyAggData
-  masterData: MasterData
+  masterData: MasterDataType
   error?: string
 }
 

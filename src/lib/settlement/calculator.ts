@@ -152,9 +152,10 @@ export function calculateSettlement(
     profit: skpProfit,
     profitRate: skpTotalIncome > 0 ? Math.round((skpProfit / skpTotalIncome) * 10000) / 100 : 0,
     details: {
-      ticketRevenue: totalSkpRevenue,
+      onlineRevenue: onlineSkpRevenue,
+      offlineRevenue: offlineSkpRevenue,
       platformFeeIncome: totalPlatformFee,
-      mazePayment: totalSkpToMaze,
+      mazeLandPayment: totalSkpToMaze,
       culturePayment: totalSkpToCulture,
       agencyPayment: agencyRevenue,
     },
@@ -187,7 +188,7 @@ export function calculateSettlement(
     details: {
       fromSkp: totalSkpToCulture,
       fromMaze: totalMazeToCulture,
-      platformFeeCost: cultureCost,
+      platformFeePayout: cultureCost,
       onlineFromSkp: onlineSkpToCulture,
       offlineFromSkp: offlineSkpToCulture,
       onlineFromMaze: onlineMazeToCulture,
@@ -204,8 +205,9 @@ export function calculateSettlement(
     profit: fmcProfit,
     profitRate: 100,
     details: {
-      feeRate: AGENCY_FEE_RATE * 100,
-      basedOn: skpNetBeforeAgency,
+      agencyFeeRate: AGENCY_FEE_RATE * 100,
+      basedOn: `SKP 티켓 순이익: ${skpNetBeforeAgency.toLocaleString()}원`,
+      skpTicketProfit: skpNetBeforeAgency,
       calculation: `(${totalSkpRevenue} - ${totalSkpToMaze} - ${totalSkpToCulture}) × 20%`,
     },
   };

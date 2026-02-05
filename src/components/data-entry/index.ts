@@ -1,2 +1,2 @@
-export * from './ManualInputForm'
+export * from './DataEntryManualInputForm'
 

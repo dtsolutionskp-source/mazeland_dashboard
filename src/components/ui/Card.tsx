@@ -1,9 +1,10 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 
 interface CardProps {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
   hover?: boolean
 }
@@ -23,9 +24,9 @@ export function Card({ children, className, hover = false }: CardProps) {
 }
 
 interface CardHeaderProps {
-  title: string
-  description?: string
-  action?: React.ReactNode
+  title: ReactNode
+  description?: ReactNode
+  action?: ReactNode
   className?: string
 }
 
@@ -35,7 +36,7 @@ export function CardHeader({ title, description, action, className }: CardHeader
       <div>
         <h3 className="text-lg font-semibold text-dashboard-text">{title}</h3>
         {description && (
-          <p className="text-sm text-dashboard-muted mt-1">{description}</p>
+          <div className="text-sm text-dashboard-muted mt-1">{description}</div>
         )}
       </div>
       {action && <div>{action}</div>}
@@ -50,7 +51,7 @@ interface StatCardProps {
     value: number
     type: 'increase' | 'decrease' | 'neutral'
   }
-  icon?: React.ReactNode
+  icon?: ReactNode
   className?: string
 }
 
@@ -68,8 +69,8 @@ export function StatCard({ title, value, change, icon, className }: StatCardProp
               change.type === 'decrease' && 'text-red-500',
               change.type === 'neutral' && 'text-dashboard-muted'
             )}>
-              {change.type === 'increase' && '↑'}
-              {change.type === 'decrease' && '↓'}
+              {change.type === 'increase' && '▲'}
+              {change.type === 'decrease' && '▼'}
               <span className="ml-1">{Math.abs(change.value)}%</span>
               <span className="ml-1 text-dashboard-muted">전월 대비</span>
             </div>
@@ -81,11 +82,7 @@ export function StatCard({ title, value, change, icon, className }: StatCardProp
           </div>
         )}
       </div>
-      {/* Decorative gradient */}
       <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-maze-500/5 rounded-full blur-2xl" />
     </Card>
   )
 }
-
-
-

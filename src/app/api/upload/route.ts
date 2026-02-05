@@ -404,7 +404,7 @@ export async function POST(request: NextRequest) {
  */
 async function saveToDatabase(parseResult: ParseResult, file: File, userId: string) {
   // 트랜잭션으로 처리
-  const result = await prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx: typeof prisma) => {
     // 1. 업로드 기록 생성
     const uploadHistory = await tx.uploadHistory.create({
       data: {

@@ -217,7 +217,7 @@ function convertUploadDataToMonthlyAgg(
     return {
       channelCode: master.code,
       channelName: master.name,
-      feeRate: master.feeRate,
+      feeRate: master.defaultFeeRate,
       count: data?.count || 0,
     }
   })

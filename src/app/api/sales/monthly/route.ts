@@ -3,13 +3,22 @@ import { getCurrentUser, canUploadData } from '@/lib/auth'
 import { saveUploadData, getUploadData, StoredUploadData } from '@/lib/data-store'
 import { calculateSettlement } from '@/lib/settlement'
 import { 
-  ManualInputData, 
-  DataSource, 
   getChannelByCode, 
   getCategoryByCode,
   getActiveChannels,
   getActiveCategories,
 } from '@/lib/master-data'
+
+// 로컬 타입 정의
+type DataSource = 'file' | 'manual' | 'mixed' | 'FILE' | 'MANUAL' | 'MIXED'
+
+interface ManualInputData {
+  year: number
+  month: number
+  source: DataSource
+  internetSales: { channelCode: string; count: number }[]
+  onsiteSales: { categoryCode: string; count: number }[]
+}
 
 const BASE_PRICE = 3000
 const MAZE_UNIT = 1000
@@ -54,7 +63,7 @@ export async function GET(request: NextRequest) {
     const internetSales = channels.map(ch => ({
       channelCode: ch.code,
       channelName: ch.name,
-      feeRate: ch.feeRate,
+      feeRate: ch.defaultFeeRate,
       count: uploadedData.channels?.[ch.code]?.count || 0,
     }))
 
@@ -124,7 +133,7 @@ export async function POST(request: NextRequest) {
         channelsData[sale.channelCode] = {
           name: channel.name,
           count: sale.count || 0,
-          feeRate: channel.feeRate,
+          feeRate: channel.defaultFeeRate,
         }
       }
     }

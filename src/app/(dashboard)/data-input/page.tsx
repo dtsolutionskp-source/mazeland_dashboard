@@ -1068,14 +1068,29 @@ export default function DataInputPage() {
 
                 {/* 채널별 인터넷 판매 (수수료율 수정 가능) */}
                 <Card>
-                  <CardHeader 
-                    title="채널별 인터넷 판매" 
-                    description={
-                      channelMismatch ? 
-                        <span className="text-red-500">⚠️ 일별 합계({formatNumber(totals.online)})와 채널 합계({formatNumber(channelSum)})가 다릅니다</span> : 
-                        <span className="flex items-center gap-1"><Percent className="w-3 h-3" /> 수수료율도 수정 가능합니다</span>
-                    }
-                  />
+                <CardHeader
+                  title="채널별 인터넷 판매"
+                  description={
+                    channelMismatch
+                      ? `⚠️ 일별 합계(${formatNumber(totals.online)})와 채널 합계(${formatNumber(channelSum)})가 다릅니다`
+                      : `수수료율도 수정 가능합니다`
+                  }
+                />
+
+                <div className="mt-2">
+                  {channelMismatch ? (
+                    <span className="text-red-500">
+                      ⚠️ 일별 합계({formatNumber(totals.online)})와 채널 합계({formatNumber(channelSum)})가 다릅니다
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-dashboard-muted">
+                      <Percent className="w-3 h-3" />
+                      수수료율도 수정 가능합니다
+                    </span>
+                  )}
+                </div>
+
+                  
                   
                   {/* 채널 추가 버튼 */}
                   <div className="mb-4 flex justify-end">
@@ -1161,13 +1176,14 @@ export default function DataInputPage() {
 
                 {/* 구분별 현장 판매 */}
                 <Card>
-                  <CardHeader 
-                    title="구분별 현장 판매" 
-                    description={categoryMismatch ? 
-                      <span className="text-red-500">⚠️ 일별 합계({formatNumber(totals.offline)})와 구분 합계({formatNumber(categorySum)})가 다릅니다</span> : 
-                      undefined
-                    }
-                  />
+                <CardHeader
+                  title="구분별 현장 판매"
+                  description={
+                    categoryMismatch
+                      ? `⚠️ 일별 합계(${formatNumber(totals.offline)})와 구분 합계(${formatNumber(categorySum)})가 다릅니다`
+                      : '구분별 판매 건수를 입력/수정할 수 있습니다'
+                  }
+                />
                   
                   {/* 구분 추가 버튼 */}
                   <div className="mb-4 flex justify-end">
@@ -1310,23 +1326,23 @@ export default function DataInputPage() {
                 year={year}
                 month={month}
                 channels={
-                  // 업로드된 채널이 있으면 사용, 없으면 마스터 채널
                   Object.keys(editableChannels).length > 0
-                    ? Object.entries(editableChannels).map(([code, ch]) => ({
+                    ? Object.entries(editableChannels).map(([code, ch], idx) => ({
                         code,
                         name: ch.name || code,
                         defaultFeeRate: ch.feeRate ?? 0,
                         active: true,
+                        order: idx + 1,
                       }))
                     : masterData.channels
                 }
                 categories={
-                  // 업로드된 카테고리가 있으면 사용, 없으면 마스터 카테고리
                   Object.keys(editableCategories).length > 0
-                    ? Object.entries(editableCategories).map(([code, cat]) => ({
+                    ? Object.entries(editableCategories).map(([code, cat], idx) => ({
                         code,
                         name: cat.name || code,
                         active: true,
+                        order: idx + 1,
                       }))
                     : masterData.categories
                 }

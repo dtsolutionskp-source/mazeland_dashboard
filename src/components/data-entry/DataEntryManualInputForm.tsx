@@ -4,13 +4,6 @@ import { useState, useEffect, useMemo } from 'react'
 import { Card, CardHeader, Button } from '@/components/ui'
 import { formatNumber, formatCurrency } from '@/lib/utils'
 import { cn } from '@/lib/utils'
-import { 
-  ChannelMaster, 
-  CategoryMaster,
-  InternetSaleInput,
-  OnsiteSaleInput,
-  DataSource,
-} from '@/lib/master-data'
 import {
   Globe,
   MapPin,
@@ -22,6 +15,34 @@ import {
   AlertCircle,
   CheckCircle2,
 } from 'lucide-react'
+
+// 로컬 타입 정의
+type DataSource = 'file' | 'manual' | 'mixed'
+
+interface ChannelMaster {
+  code: string
+  name: string
+  feeRate: number
+  order: number
+  active: boolean
+}
+
+interface CategoryMaster {
+  code: string
+  name: string
+  order: number
+  active: boolean
+}
+
+interface InternetSaleInput {
+  channelCode: string
+  count: number
+}
+
+interface OnsiteSaleInput {
+  categoryCode: string
+  count: number
+}
 
 // ==========================================
 // 타입 정의
@@ -223,7 +244,7 @@ export function ManualInputForm({
       await onSave({
         internetSales,
         onsiteSales,
-        source: hasChanges && source === 'FILE' ? 'MIXED' : source,
+        source: hasChanges && source === 'file' ? 'mixed' : source,
       })
       setHasChanges(false)
     } finally {

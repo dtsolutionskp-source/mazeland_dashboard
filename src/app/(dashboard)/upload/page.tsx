@@ -6,13 +6,11 @@ import { Header } from '@/components/dashboard/Header'
 import { MonthSelector } from '@/components/dashboard/MonthSelector'
 import { ManualInputForm } from '@/components/sales/ManualInputForm'
 import { Card, CardHeader, Button } from '@/components/ui'
-import { formatNumber, formatCurrency } from '@/lib/utils'
-import { cn } from '@/lib/utils'
+import { formatNumber, cn } from '@/lib/utils'
 import { useDashboardStore } from '@/stores/dashboard-store'
-import { 
-  InputMode, 
-  DataSource, 
-  ChannelSalesData, 
+import type {
+  DataSource,
+  ChannelSalesData,
   CategorySalesData,
   MonthlyAggData,
   MasterData,
@@ -23,14 +21,7 @@ import {
   CheckCircle2,
   XCircle,
   Loader2,
-  AlertCircle,
   Database,
-  BarChart3,
-  Users,
-  DollarSign,
-  Edit3,
-  Save,
-  RefreshCw,
   Calendar,
   FileUp,
   PenLine,
@@ -39,11 +30,32 @@ import {
 
 const BASE_PRICE = 3000
 
-// 입력 모드 옵션
-const INPUT_MODES = [
-  { value: 'file' as InputMode, label: '엑셀 업로드', icon: FileUp, description: '엑셀 파일을 업로드하여 데이터 입력' },
-  { value: 'manual' as InputMode, label: '수기 입력', icon: PenLine, description: '채널별/구분별로 직접 입력' },
-  { value: 'mixed' as InputMode, label: '혼합(업로드+수기)', icon: Layers, description: '업로드 후 수기 수정' },
+type InputModeOption = {
+  value: DataSource
+  label: string
+  icon: React.ComponentType<any>
+  description: string
+}
+
+const INPUT_MODES: InputModeOption[] = [
+  {
+    value: 'file',
+    label: '엑셀 업로드',
+    icon: FileUp,
+    description: '엑셀 파일을 업로드하여 데이터 입력',
+  },
+  {
+    value: 'manual',
+    label: '수기 입력',
+    icon: PenLine,
+    description: '채널별/구분별로 직접 입력',
+  },
+  {
+    value: 'mixed',
+    label: '혼합',
+    icon: Layers,
+    description: '업로드 후 수기 수정',
+  },
 ]
 
 interface DailyData {
@@ -77,14 +89,14 @@ interface UploadResult {
 }
 
 export default function UploadPage() {
-  // 입력 모드
-  const [inputMode, setInputMode] = useState<InputMode>('file')
-  
+  // 입력 모드(DataSource로 통일)
+  const [inputMode, setInputMode] = useState<DataSource>('file')
+
   // 파일 업로드 관련
   const [file, setFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<UploadResult | null>(null)
-  
+
   // 수기 입력 관련
   const [masterData, setMasterData] = useState<MasterData | null>(null)
   const [existingData, setExistingData] = useState<MonthlyAggData | null>(null)
@@ -101,7 +113,8 @@ export default function UploadPage() {
 
   // 마스터 데이터 및 기존 데이터 로드
   useEffect(() => {
-    loadMasterAndData()
+    void loadMasterAndData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [year, month])
 
   const loadMasterAndData = async () => {
@@ -109,11 +122,11 @@ export default function UploadPage() {
     try {
       const response = await fetch(`/api/sales-data?year=${year}&month=${month}`)
       const result = await response.json()
-      
+
       if (result.masterData) {
         setMasterData(result.masterData)
       }
-      
+
       if (result.data) {
         setExistingData(result.data)
         // 혼합 모드용 데이터 초기화
@@ -149,6 +162,32 @@ export default function UploadPage() {
     maxFiles: 1,
   })
 
+  // 업로드 결과로 수정 가능 데이터 초기화
+  const initializeEditableDataFromUpload = (data: any) => {
+    if (!masterData) return
+
+    const channels: ChannelSalesData[] = masterData.channels.map((master: any) => {
+      const uploaded = data.channels?.[master.code]
+      return {
+        channelCode: master.code,
+        channelName: master.name,
+        feeRate: master.defaultFeeRate,
+        count: uploaded?.count || 0,
+      }
+    })
+    setEditableChannels(channels)
+
+    const categories: CategorySalesData[] = masterData.categories.map((master: any) => {
+      const uploaded = data.categories?.[master.code]
+      return {
+        categoryCode: master.code,
+        categoryName: master.name,
+        count: uploaded?.count || 0,
+      }
+    })
+    setEditableCategories(categories)
+  }
+
   // 파일 업로드 (파싱)
   const handleUpload = async () => {
     if (!file) return
@@ -169,12 +208,12 @@ export default function UploadPage() {
 
       if (response.ok) {
         setUploadResult({ success: true, ...data })
-        
+
         // 혼합 모드: 업로드 결과로 수정 가능 데이터 초기화
         if (inputMode === 'mixed' && masterData) {
           initializeEditableDataFromUpload(data)
         }
-        
+
         // 연/월 동기화
         if (data.summary?.periodStart) {
           const date = new Date(data.summary.periodStart)
@@ -188,32 +227,6 @@ export default function UploadPage() {
     } finally {
       setIsUploading(false)
     }
-  }
-
-  // 업로드 결과로 수정 가능 데이터 초기화
-  const initializeEditableDataFromUpload = (data: any) => {
-    if (!masterData) return
-
-    const channels: ChannelSalesData[] = masterData.channels.map(master => {
-      const uploaded = data.channels?.[master.code]
-      return {
-        channelCode: master.code,
-        channelName: master.name,
-        feeRate: master.feeRate,
-        count: uploaded?.count || 0,
-      }
-    })
-    setEditableChannels(channels)
-
-    const categories: CategorySalesData[] = masterData.categories.map(master => {
-      const uploaded = data.categories?.[master.code]
-      return {
-        categoryCode: master.code,
-        categoryName: master.name,
-        count: uploaded?.count || 0,
-      }
-    })
-    setEditableCategories(categories)
   }
 
   // 수기 입력/혼합 모드 저장
@@ -260,7 +273,7 @@ export default function UploadPage() {
     const MAZE_UNIT = 1000
     const CULTURE_UNIT = 1000
     const PLATFORM_FEE_UNIT = 200
-    const AGENCY_RATE = 0.20
+    const AGENCY_RATE = 0.2
 
     let skpOnlineNet = 0
     let mazeOnlineNet = 0
@@ -317,17 +330,14 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen">
-      <Header
-        title="데이터 입력"
-        description="판매 데이터를 업로드하거나 직접 입력합니다"
-      />
-      
+      <Header title="데이터 입력" description="판매 데이터를 업로드하거나 직접 입력합니다" />
+
       <div className="p-8 space-y-6">
         {/* 입력 모드 선택 */}
         <Card>
           <CardHeader title="입력 방식 선택" />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {INPUT_MODES.map(mode => {
+            {INPUT_MODES.map((mode) => {
               const Icon = mode.icon
               return (
                 <button
@@ -336,6 +346,7 @@ export default function UploadPage() {
                     setInputMode(mode.value)
                     setUploadResult(null)
                     setFile(null)
+                    setHasChanges(false)
                   }}
                   className={cn(
                     'flex flex-col items-center gap-3 p-6 rounded-xl border-2 transition-all',
@@ -344,19 +355,21 @@ export default function UploadPage() {
                       : 'border-dashboard-border hover:border-maze-500/50 hover:bg-dashboard-border/30'
                   )}
                 >
-                  <Icon className={cn(
-                    'w-8 h-8',
-                    inputMode === mode.value ? 'text-maze-500' : 'text-dashboard-muted'
-                  )} />
-                  <span className={cn(
-                    'font-medium',
-                    inputMode === mode.value ? 'text-maze-500' : 'text-dashboard-text'
-                  )}>
+                  <Icon
+                    className={cn(
+                      'w-8 h-8',
+                      inputMode === mode.value ? 'text-maze-500' : 'text-dashboard-muted'
+                    )}
+                  />
+                  <span
+                    className={cn(
+                      'font-medium',
+                      inputMode === mode.value ? 'text-maze-500' : 'text-dashboard-text'
+                    )}
+                  >
                     {mode.label}
                   </span>
-                  <span className="text-xs text-dashboard-muted text-center">
-                    {mode.description}
-                  </span>
+                  <span className="text-xs text-dashboard-muted text-center">{mode.description}</span>
                 </button>
               )
             })}
@@ -372,7 +385,13 @@ export default function UploadPage() {
             {existingData && (
               <span className="flex items-center gap-1 px-3 py-1 bg-blue-500/20 text-blue-500 text-xs rounded-full">
                 <Database className="w-3 h-3" />
-                기존 데이터 있음 ({existingData.source === 'manual' ? '수기' : existingData.source === 'file' ? '업로드' : '혼합'})
+                기존 데이터 있음 (
+                {existingData.source === 'manual'
+                  ? '수기'
+                  : existingData.source === 'file'
+                    ? '업로드'
+                    : '혼합'}
+                )
               </span>
             )}
           </div>
@@ -385,7 +404,7 @@ export default function UploadPage() {
               title="엑셀 파일 업로드"
               description="판매인원공유 형식의 엑셀 파일(.xlsx, .xls)을 업로드해주세요"
             />
-            
+
             <div
               {...getRootProps()}
               className={cn(
@@ -396,15 +415,13 @@ export default function UploadPage() {
               )}
             >
               <input {...getInputProps()} />
-              
+
               <div className="flex flex-col items-center">
                 {file ? (
                   <>
                     <FileSpreadsheet className="w-12 h-12 text-maze-500 mb-3" />
                     <p className="text-lg font-medium text-dashboard-text">{file.name}</p>
-                    <p className="text-sm text-dashboard-muted mt-1">
-                      {(file.size / 1024).toFixed(1)} KB
-                    </p>
+                    <p className="text-sm text-dashboard-muted mt-1">{(file.size / 1024).toFixed(1)} KB</p>
                   </>
                 ) : (
                   <>
@@ -412,9 +429,7 @@ export default function UploadPage() {
                     <p className="text-base font-medium text-dashboard-text">
                       {isDragActive ? '파일을 놓으세요' : '파일을 드래그하거나 클릭하여 선택'}
                     </p>
-                    <p className="text-sm text-dashboard-muted mt-1">
-                      .xlsx, .xls 파일 지원
-                    </p>
+                    <p className="text-sm text-dashboard-muted mt-1">.xlsx, .xls 파일 지원</p>
                   </>
                 )}
               </div>
@@ -422,17 +437,13 @@ export default function UploadPage() {
 
             {file && !uploadResult?.success && (
               <div className="mt-4 flex justify-end">
-                <Button
-                  onClick={handleUpload}
-                  isLoading={isUploading}
-                  disabled={isUploading}
-                >
+                <Button onClick={handleUpload} isLoading={isUploading} disabled={isUploading}>
                   {isUploading ? '파싱 중...' : '파일 분석'}
                 </Button>
               </div>
             )}
 
-            {/* 업로드 결과 */}
+            {/* 업로드 실패 */}
             {uploadResult && !uploadResult.success && (
               <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-3">
                 <XCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
@@ -443,15 +454,16 @@ export default function UploadPage() {
               </div>
             )}
 
+            {/* 업로드 성공(파일 모드일 때만 표시) */}
             {uploadResult?.success && inputMode === 'file' && (
               <div className="mt-4 p-4 bg-maze-500/10 border border-maze-500/30 rounded-lg flex items-start gap-3">
                 <CheckCircle2 className="w-5 h-5 text-maze-500 flex-shrink-0" />
                 <div>
                   <p className="text-sm font-medium text-maze-500">업로드 성공</p>
                   <p className="text-xs text-dashboard-muted mt-1">
-                    인터넷 {formatNumber(uploadResult.summary?.onlineCount || 0)}명, 
-                    현장 {formatNumber(uploadResult.summary?.offlineCount || 0)}명 
-                    (총 {formatNumber(uploadResult.summary?.totalCount || 0)}명)
+                    인터넷 {formatNumber(uploadResult.summary?.onlineCount || 0)}명, 현장{' '}
+                    {formatNumber(uploadResult.summary?.offlineCount || 0)}명 (총{' '}
+                    {formatNumber(uploadResult.summary?.totalCount || 0)}명)
                   </p>
                 </div>
               </div>
@@ -464,7 +476,7 @@ export default function UploadPage() {
           <ManualInputForm
             year={year}
             month={month}
-            mode="manual"
+            mode={inputMode}
             masterChannels={masterData.channels}
             masterCategories={masterData.categories}
             initialData={existingData}
@@ -473,7 +485,7 @@ export default function UploadPage() {
           />
         )}
 
-        {/* 혼합 모드: 업로드 후 수기 수정 */}
+        {/* 혼합 모드 */}
         {inputMode === 'mixed' && uploadResult?.success && masterData && (
           <div className="space-y-6">
             <div className="flex items-center gap-3 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg">
@@ -489,7 +501,7 @@ export default function UploadPage() {
             <ManualInputForm
               year={year}
               month={month}
-              mode="mixed"
+              mode={inputMode}
               masterChannels={masterData.channels}
               masterCategories={masterData.categories}
               initialData={{

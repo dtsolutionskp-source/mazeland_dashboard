@@ -7,3 +7,7 @@ dist
 .idea
 .vscode
 .DS_Store
+.env.local
+tsconfig.tsbuildinfo
+ChatGPT - *.html
+ChatGPT - *_files/

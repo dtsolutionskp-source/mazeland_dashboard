@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import { CHANNELS, getActiveChannels } from '@/lib/master-data'
+import { getActiveChannels } from '@/lib/master-data'
 
 /**
  * GET /api/master/channels
