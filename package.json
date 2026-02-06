@@ -4,6 +4,7 @@
   "description": "메이즈랜드 정산/마케팅 통합 대시보드",
   "private": true,
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
