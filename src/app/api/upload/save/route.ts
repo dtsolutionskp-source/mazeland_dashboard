@@ -205,13 +205,81 @@ export async function POST(request: NextRequest) {
       },
     }
 
-    // 월별 파일에 저장
-    await saveUploadDataByMonth(year, month, storedData)
-    console.log('[Upload Save] Saved to upload-data for', year, month)
+    // 월별 파일에 저장 (로컬 개발용)
+    try {
+      await saveUploadDataByMonth(year, month, storedData)
+      console.log('[Upload Save] Saved to file system for', year, month)
+      
+      // 레거시 파일에도 저장 (하위 호환성)
+      await saveUploadData(storedData)
+    } catch (fsError) {
+      console.log('[Upload Save] File system save failed (expected on Vercel):', fsError)
+    }
     
-    // 레거시 파일에도 저장 (하위 호환성)
-    await saveUploadData(storedData)
-    console.log('[Upload Save] Also saved to legacy upload-data.json')
+    // ============================================
+    // DB에 저장 (Vercel 서버리스 환경에서 필수)
+    // ============================================
+    try {
+      const prisma = (await import('@/lib/prisma')).default
+      
+      // 기존 데이터 삭제 (upsert 대신 delete + create)
+      const existingSummary = await prisma.monthlySummary.findFirst({
+        where: { year, month },
+      })
+      
+      if (existingSummary) {
+        // 관련 데이터 삭제
+        await prisma.onlineSale.deleteMany({
+          where: { uploadHistoryId: existingSummary.uploadHistoryId },
+        })
+        await prisma.offlineSale.deleteMany({
+          where: { uploadHistoryId: existingSummary.uploadHistoryId },
+        })
+        await prisma.monthlySummary.delete({
+          where: { id: existingSummary.id },
+        })
+        await prisma.uploadHistory.delete({
+          where: { id: existingSummary.uploadHistoryId },
+        })
+        console.log('[Upload Save] Deleted existing DB data for', year, month)
+      }
+      
+      // 새 UploadHistory 생성
+      const uploadHistory = await prisma.uploadHistory.create({
+        data: {
+          fileName: storedData.fileName,
+          periodStart: new Date(storedData.periodStart),
+          periodEnd: new Date(storedData.periodEnd),
+          uploadedById: user.id,
+        },
+      })
+      
+      // MonthlySummary 생성
+      await prisma.monthlySummary.create({
+        data: {
+          uploadHistoryId: uploadHistory.id,
+          year,
+          month,
+          onlineTotal: finalOnlineCount,
+          offlineTotal: finalOfflineCount,
+          grandTotal: finalTotalCount,
+          onlineRevenue: storedData.monthly.revenue.online,
+          onlineFee: storedData.monthly.revenue.onlineFee,
+          onlineNet: storedData.monthly.revenue.onlineNet,
+          offlineRevenue: storedData.monthly.revenue.offline,
+          totalRevenue: storedData.monthly.revenue.total,
+          totalNet: storedData.monthly.revenue.totalNet,
+          onlineByChannel: storedData.monthly.onlineByChannel,
+          onlineByAge: storedData.monthly.onlineByAge || {},
+          offlineByCategory: storedData.monthly.offlineByCategory,
+        },
+      })
+      
+      console.log('[Upload Save] Saved to DB for', year, month)
+    } catch (dbError) {
+      console.error('[Upload Save] DB save error:', dbError)
+      // DB 저장 실패해도 계속 진행 (파일 시스템에는 저장됨)
+    }
 
     // ============================================
     // 2. 일자별 데이터 저장소에도 저장 (daily 폴더)

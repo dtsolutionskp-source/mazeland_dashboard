@@ -128,23 +128,11 @@ export async function saveUploadDataByMonth(year: number, month: number, data: S
 }
 
 /**
- * 월별 업로드 데이터 조회 (파일 시스템 우선, DB 보조)
- * 파일 시스템을 우선시하여 최신 상태 반영
+ * 월별 업로드 데이터 조회 (DB 우선 - Vercel 서버리스 환경)
+ * Vercel에서는 파일 시스템이 일시적이므로 DB를 우선시
  */
 export async function getUploadDataByMonth(year: number, month: number): Promise<StoredUploadData | null> {
-  // 1. 파일 시스템에서 먼저 조회 (가장 최신 상태)
-  try {
-    await ensureUploadDataDir()
-    const filePath = getUploadDataPath(year, month)
-    const content = await fs.readFile(filePath, 'utf-8')
-    const data = JSON.parse(content)
-    console.log(`[DataStore] Found data in file system for ${year}-${month}`)
-    return data
-  } catch {
-    console.log(`[DataStore] No file system data for ${year}-${month}, checking DB...`)
-  }
-  
-  // 2. DB에서 조회 (파일 시스템에 없을 때만)
+  // 1. DB에서 먼저 조회 (Vercel 환경에서 신뢰할 수 있는 소스)
   try {
     const summary = await prisma.monthlySummary.findFirst({
       where: { year, month },
@@ -154,7 +142,11 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
     })
     
     if (summary) {
-      console.log(`[DataStore] Found data in DB for ${year}-${month}`)
+      console.log(`[DataStore] Found data in DB for ${year}-${month}:`, {
+        onlineTotal: summary.onlineTotal,
+        offlineTotal: summary.offlineTotal,
+        grandTotal: summary.grandTotal,
+      })
       
       // DB 데이터를 StoredUploadData 형식으로 변환
       const onlineByChannel = summary.onlineByChannel as Record<string, number> || {}
@@ -216,72 +208,87 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
     console.log('[DataStore] DB query failed:', error)
   }
   
+  // 2. 파일 시스템에서 조회 (DB에 없을 때 - 로컬 개발용)
+  if (!isVercel) {
+    try {
+      await ensureUploadDataDir()
+      const filePath = getUploadDataPath(year, month)
+      const content = await fs.readFile(filePath, 'utf-8')
+      const data = JSON.parse(content)
+      console.log(`[DataStore] Found data in file system for ${year}-${month}`)
+      return data
+    } catch {
+      // 파일 없음
+    }
+  }
+  
   console.log(`[DataStore] No data found for ${year}-${month}`)
   return null
 }
 
 /**
- * 사용 가능한 업로드 데이터 월 목록 조회 (파일 시스템 우선, DB 보조)
- * 파일 시스템을 우선시하여 최신 상태 반영
+ * 사용 가능한 업로드 데이터 월 목록 조회 (DB 우선 - Vercel 서버리스 환경)
+ * Vercel에서는 파일 시스템이 일시적이므로 DB를 우선시
  */
 export async function getAvailableUploadMonths(): Promise<{ year: number; month: number }[]> {
   const monthSet = new Set<string>()
   const result: { year: number; month: number }[] = []
   
-  // 1. 파일 시스템에서 먼저 조회 (가장 최신 상태)
-  try {
-    await ensureUploadDataDir()
-    const files = await fs.readdir(UPLOAD_DATA_DIR)
-    
-    for (const f of files) {
-      if (f.endsWith('.json')) {
-        const match = f.match(/(\d{4})-(\d{2})\.json/)
-        if (match) {
-          const year = parseInt(match[1])
-          const month = parseInt(match[2])
-          const key = `${year}-${String(month).padStart(2, '0')}`
-          
-          // 파일이 실제로 데이터를 가지고 있는지 확인
-          try {
-            const filePath = path.join(UPLOAD_DATA_DIR, f)
-            const content = await fs.readFile(filePath, 'utf-8')
-            const data = JSON.parse(content)
-            if (data.summary?.totalCount > 0 || data.summary?.onlineCount > 0 || data.summary?.offlineCount > 0) {
-              if (!monthSet.has(key)) {
-                monthSet.add(key)
-                result.push({ year, month })
-              }
-            }
-          } catch {
-            // 파일 읽기 실패 시 무시
-          }
-        }
-      }
-    }
-    
-    console.log('[DataStore] Available months from file system:', result.length)
-  } catch (err) {
-    console.log('[DataStore] File system read error:', err)
-  }
-  
-  // 2. DB에서도 조회하여 파일 시스템에 없는 것 추가 (백업용)
+  // 1. DB에서 먼저 조회 (Vercel 환경에서 신뢰할 수 있는 소스)
   try {
     const summaries = await prisma.monthlySummary.findMany({
-      select: { year: true, month: true },
+      select: { year: true, month: true, grandTotal: true },
       orderBy: [{ year: 'desc' }, { month: 'desc' }],
     })
     
+    console.log('[DataStore] DB summaries found:', summaries.length)
+    
     for (const s of summaries) {
-      const key = `${s.year}-${String(s.month).padStart(2, '0')}`
-      if (!monthSet.has(key)) {
-        // 파일 시스템에 없는 DB 데이터는 추가하지 않음 (삭제된 데이터일 수 있음)
-        // monthSet.add(key)
-        // result.push({ year: s.year, month: s.month })
-        console.log('[DataStore] DB has data not in file system (skipping):', key)
+      if (s.grandTotal > 0) {
+        const key = `${s.year}-${String(s.month).padStart(2, '0')}`
+        if (!monthSet.has(key)) {
+          monthSet.add(key)
+          result.push({ year: s.year, month: s.month })
+        }
       }
     }
   } catch (error) {
     console.log('[DataStore] DB query failed:', error)
+  }
+  
+  // 2. 파일 시스템에서도 조회 (DB에 없는 것 추가 - 로컬 개발용)
+  if (!isVercel) {
+    try {
+      await ensureUploadDataDir()
+      const files = await fs.readdir(UPLOAD_DATA_DIR)
+      
+      for (const f of files) {
+        if (f.endsWith('.json')) {
+          const match = f.match(/(\d{4})-(\d{2})\.json/)
+          if (match) {
+            const year = parseInt(match[1])
+            const month = parseInt(match[2])
+            const key = `${year}-${String(month).padStart(2, '0')}`
+            
+            if (!monthSet.has(key)) {
+              try {
+                const filePath = path.join(UPLOAD_DATA_DIR, f)
+                const content = await fs.readFile(filePath, 'utf-8')
+                const data = JSON.parse(content)
+                if (data.summary?.totalCount > 0 || data.summary?.onlineCount > 0 || data.summary?.offlineCount > 0) {
+                  monthSet.add(key)
+                  result.push({ year, month })
+                }
+              } catch {
+                // 파일 읽기 실패 시 무시
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.log('[DataStore] File system read error:', err)
+    }
   }
   
   // 정렬

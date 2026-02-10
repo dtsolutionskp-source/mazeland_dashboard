@@ -15,6 +15,7 @@ import {
   LogOut,
   ClipboardEdit,
   KeyRound,
+  Database,
 } from 'lucide-react'
 import { Role } from '@prisma/client'
 
@@ -66,6 +67,12 @@ const navItems: NavItem[] = [
     href: '/admin/accounts',
     label: '계정 관리',
     icon: <KeyRound size={20} />,
+    roles: ['SUPER_ADMIN', 'SKP_ADMIN'], // SKP만 접근 가능
+  },
+  {
+    href: '/debug',
+    label: 'DB 관리',
+    icon: <Database size={20} />,
     roles: ['SUPER_ADMIN', 'SKP_ADMIN'], // SKP만 접근 가능
   },
 ]
