@@ -19,6 +19,7 @@ import {
   BarChart3,
 } from 'lucide-react'
 import { Role } from '@prisma/client'
+import { useDashboardStore } from '@/stores/dashboard-store'
 
 interface SettlementClientProps {
   userRole: Role
@@ -188,6 +189,9 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
   const accessibleTabs = getAccessibleTabs(userRole)
   const defaultTab = ROLE_TO_TAB[userRole] || 'SKP'
   
+  // Dashboard store에서 전역 월/년 동기화용
+  const { setYearMonth } = useDashboardStore()
+  
   const [activeTab, setActiveTab] = useState<string>(defaultTab)
   const [selectedYear, setSelectedYear] = useState<number | null>(null)
   const [selectedMonth, setSelectedMonth] = useState<number | null>(null)
@@ -304,8 +308,10 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
   useEffect(() => {
     if (isInitialized && selectedYear !== null && selectedMonth !== null) {
       loadData()
+      // Header의 날짜와 동기화
+      setYearMonth(selectedYear, selectedMonth)
     }
-  }, [isInitialized, selectedYear, selectedMonth, loadData])
+  }, [isInitialized, selectedYear, selectedMonth, loadData, setYearMonth])
 
   // 누적 데이터 로드
   const loadCumulativeData = useCallback(async () => {

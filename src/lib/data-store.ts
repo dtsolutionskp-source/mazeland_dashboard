@@ -128,11 +128,24 @@ export async function saveUploadDataByMonth(year: number, month: number, data: S
 }
 
 /**
- * 월별 업로드 데이터 조회 (DB 우선)
+ * 월별 업로드 데이터 조회 (파일 시스템 우선, DB 보조)
+ * 파일 시스템을 우선시하여 최신 상태 반영
  */
 export async function getUploadDataByMonth(year: number, month: number): Promise<StoredUploadData | null> {
+  // 1. 파일 시스템에서 먼저 조회 (가장 최신 상태)
   try {
-    // DB에서 조회 시도
+    await ensureUploadDataDir()
+    const filePath = getUploadDataPath(year, month)
+    const content = await fs.readFile(filePath, 'utf-8')
+    const data = JSON.parse(content)
+    console.log(`[DataStore] Found data in file system for ${year}-${month}`)
+    return data
+  } catch {
+    console.log(`[DataStore] No file system data for ${year}-${month}, checking DB...`)
+  }
+  
+  // 2. DB에서 조회 (파일 시스템에 없을 때만)
+  try {
     const summary = await prisma.monthlySummary.findFirst({
       where: { year, month },
       include: {
@@ -141,6 +154,8 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
     })
     
     if (summary) {
+      console.log(`[DataStore] Found data in DB for ${year}-${month}`)
+      
       // DB 데이터를 StoredUploadData 형식으로 변환
       const onlineByChannel = summary.onlineByChannel as Record<string, number> || {}
       const offlineByCategory = summary.offlineByCategory as Record<string, number> || {}
@@ -198,70 +213,85 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
       }
     }
   } catch (error) {
-    console.log('[DataStore] DB query failed, falling back to file system:', error)
+    console.log('[DataStore] DB query failed:', error)
   }
   
-  // 파일 시스템 fallback
-  try {
-    await ensureUploadDataDir()
-    const filePath = getUploadDataPath(year, month)
-    const content = await fs.readFile(filePath, 'utf-8')
-    return JSON.parse(content)
-  } catch {
-    return null
-  }
+  console.log(`[DataStore] No data found for ${year}-${month}`)
+  return null
 }
 
 /**
- * 사용 가능한 업로드 데이터 월 목록 조회 (DB 우선)
+ * 사용 가능한 업로드 데이터 월 목록 조회 (파일 시스템 우선, DB 보조)
+ * 파일 시스템을 우선시하여 최신 상태 반영
  */
 export async function getAvailableUploadMonths(): Promise<{ year: number; month: number }[]> {
+  const monthSet = new Set<string>()
   const result: { year: number; month: number }[] = []
   
+  // 1. 파일 시스템에서 먼저 조회 (가장 최신 상태)
   try {
-    // DB에서 조회 시도
+    await ensureUploadDataDir()
+    const files = await fs.readdir(UPLOAD_DATA_DIR)
+    
+    for (const f of files) {
+      if (f.endsWith('.json')) {
+        const match = f.match(/(\d{4})-(\d{2})\.json/)
+        if (match) {
+          const year = parseInt(match[1])
+          const month = parseInt(match[2])
+          const key = `${year}-${String(month).padStart(2, '0')}`
+          
+          // 파일이 실제로 데이터를 가지고 있는지 확인
+          try {
+            const filePath = path.join(UPLOAD_DATA_DIR, f)
+            const content = await fs.readFile(filePath, 'utf-8')
+            const data = JSON.parse(content)
+            if (data.summary?.totalCount > 0 || data.summary?.onlineCount > 0 || data.summary?.offlineCount > 0) {
+              if (!monthSet.has(key)) {
+                monthSet.add(key)
+                result.push({ year, month })
+              }
+            }
+          } catch {
+            // 파일 읽기 실패 시 무시
+          }
+        }
+      }
+    }
+    
+    console.log('[DataStore] Available months from file system:', result.length)
+  } catch (err) {
+    console.log('[DataStore] File system read error:', err)
+  }
+  
+  // 2. DB에서도 조회하여 파일 시스템에 없는 것 추가 (백업용)
+  try {
     const summaries = await prisma.monthlySummary.findMany({
       select: { year: true, month: true },
       orderBy: [{ year: 'desc' }, { month: 'desc' }],
     })
     
-    console.log('[DataStore] Available months from DB:', summaries.length)
-    
-    if (summaries.length > 0) {
-      return summaries.map(s => ({ year: s.year, month: s.month }))
+    for (const s of summaries) {
+      const key = `${s.year}-${String(s.month).padStart(2, '0')}`
+      if (!monthSet.has(key)) {
+        // 파일 시스템에 없는 DB 데이터는 추가하지 않음 (삭제된 데이터일 수 있음)
+        // monthSet.add(key)
+        // result.push({ year: s.year, month: s.month })
+        console.log('[DataStore] DB has data not in file system (skipping):', key)
+      }
     }
   } catch (error) {
-    console.log('[DataStore] DB query failed, falling back to file system:', error)
+    console.log('[DataStore] DB query failed:', error)
   }
   
-  // 파일 시스템 fallback (DB에 데이터 없을 때만)
-  try {
-    await ensureUploadDataDir()
-    const files = await fs.readdir(UPLOAD_DATA_DIR)
-    
-    console.log('[DataStore] Files in uploads dir:', files)
-    
-    const months = files
-      .filter(f => f.endsWith('.json'))
-      .map(f => {
-        const match = f.match(/(\d{4})-(\d{2})\.json/)
-        if (match) {
-          return { year: parseInt(match[1]), month: parseInt(match[2]) }
-        }
-        return null
-      })
-      .filter((m): m is { year: number; month: number } => m !== null)
-      .sort((a, b) => {
-        if (a.year !== b.year) return b.year - a.year
-        return b.month - a.month
-      })
-    
-    console.log('[DataStore] Available months from file system:', months)
-    return months
-  } catch (err) {
-    console.log('[DataStore] File system read error:', err)
-    return []
-  }
+  // 정렬
+  result.sort((a, b) => {
+    if (a.year !== b.year) return b.year - a.year
+    return b.month - a.month
+  })
+  
+  console.log('[DataStore] Final available months:', result)
+  return result
 }
 
 // ==========================================
