@@ -346,3 +346,74 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }
+
+// 월별 업로드 데이터 삭제
+export async function DELETE(request: NextRequest) {
+  try {
+    const user = await getCurrentUser()
+    if (!user) {
+      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const year = parseInt(searchParams.get('year') || '')
+    const month = parseInt(searchParams.get('month') || '')
+
+    if (!year || !month || isNaN(year) || isNaN(month)) {
+      return NextResponse.json({ error: '연도와 월을 지정해주세요.' }, { status: 400 })
+    }
+
+    console.log('[Upload Delete] User:', user.email, 'Deleting:', year, month)
+
+    // DB에서 삭제 시도
+    try {
+      const { PrismaClient } = await import('@prisma/client')
+      const prisma = new PrismaClient()
+      
+      // MonthlySummary 삭제 (연관된 OnlineSale, OfflineSale도 cascade로 삭제됨)
+      const summary = await prisma.monthlySummary.findFirst({
+        where: { year, month },
+      })
+      
+      if (summary) {
+        // UploadHistory와 연관된 모든 데이터 삭제
+        await prisma.uploadHistory.delete({
+          where: { id: summary.uploadHistoryId },
+        })
+        console.log('[Upload Delete] Deleted from DB')
+      }
+      
+      await prisma.$disconnect()
+    } catch (dbError) {
+      console.log('[Upload Delete] DB delete failed (may not exist):', dbError)
+    }
+
+    // 파일 시스템에서도 삭제
+    try {
+      const { deleteMonthlyData } = await import('@/lib/data-store')
+      await deleteMonthlyData(year, month)
+      console.log('[Upload Delete] Deleted from file system')
+    } catch (fsError) {
+      console.log('[Upload Delete] File system delete failed (may not exist):', fsError)
+    }
+
+    // daily-data-store에서도 삭제
+    try {
+      const { deleteDailyDataForMonth } = await import('@/lib/daily-data-store')
+      await deleteDailyDataForMonth(year, month)
+      console.log('[Upload Delete] Deleted from daily data store')
+    } catch (dailyError) {
+      console.log('[Upload Delete] Daily data delete failed (may not exist):', dailyError)
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `${year}년 ${month}월 데이터가 삭제되었습니다.`,
+    })
+  } catch (error) {
+    console.error('[Upload Delete] Error:', error)
+    return NextResponse.json({ 
+      error: '데이터 삭제 중 오류가 발생했습니다.' 
+    }, { status: 500 })
+  }
+}

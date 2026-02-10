@@ -32,6 +32,7 @@ import {
   Percent,
   Plus,
   X,
+  Trash2,
 } from 'lucide-react'
 
 const BASE_PRICE = 3000
@@ -161,6 +162,7 @@ export default function DataInputPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [isSavingFee, setIsSavingFee] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   
   // 채널/카테고리 추가 모달
   const [showAddChannel, setShowAddChannel] = useState(false)
@@ -681,6 +683,52 @@ export default function DataInputPage() {
       alert('네트워크 오류가 발생했습니다.')
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  // 월별 데이터 삭제
+  const handleDeleteMonthData = async () => {
+    if (!uploadResult?.existingData && editableDailyData.length === 0) {
+      alert('삭제할 데이터가 없습니다.')
+      return
+    }
+
+    const confirmed = window.confirm(
+      `⚠️ ${year}년 ${month}월 데이터를 정말 삭제하시겠습니까?\n\n` +
+      `이 작업은 되돌릴 수 없습니다.\n` +
+      `대시보드, 정산현황 등 모든 관련 데이터가 삭제됩니다.`
+    )
+
+    if (!confirmed) return
+
+    setIsDeleting(true)
+
+    try {
+      const response = await fetch(`/api/upload/save?year=${year}&month=${month}`, {
+        method: 'DELETE',
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        alert(data.message || `${year}년 ${month}월 데이터가 삭제되었습니다.`)
+        
+        // 상태 초기화
+        setUploadResult(null)
+        setEditableDailyData([])
+        setEditableChannels({})
+        setEditableCategories({})
+        setHasChanges(false)
+        
+        // 데이터 새로고침
+        await loadExistingData()
+      } else {
+        alert(data.error || '삭제 실패')
+      }
+    } catch (error) {
+      alert('네트워크 오류가 발생했습니다.')
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -1300,19 +1348,31 @@ export default function DataInputPage() {
                     </div>
                     <div className="flex gap-2">
                       {uploadResult?.existingData && (
-                        <Button
-                          onClick={() => handleSaveUploadData(false)}
-                          disabled={isSaving}
-                          variant="outline"
-                          size="lg"
-                        >
-                          <X className="w-4 h-4 mr-2" />
-                          전체 덮어쓰기
-                        </Button>
+                        <>
+                          <Button
+                            onClick={handleDeleteMonthData}
+                            disabled={isSaving || isDeleting}
+                            isLoading={isDeleting}
+                            variant="danger"
+                            size="lg"
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            {isDeleting ? '삭제 중...' : '데이터 삭제'}
+                          </Button>
+                          <Button
+                            onClick={() => handleSaveUploadData(false)}
+                            disabled={isSaving || isDeleting}
+                            variant="outline"
+                            size="lg"
+                          >
+                            <X className="w-4 h-4 mr-2" />
+                            전체 덮어쓰기
+                          </Button>
+                        </>
                       )}
                       <Button
                         onClick={() => handleSaveUploadData()}
-                        disabled={isSaving}
+                        disabled={isSaving || isDeleting}
                         isLoading={isSaving}
                         size="lg"
                       >

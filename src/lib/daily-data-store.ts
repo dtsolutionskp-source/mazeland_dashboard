@@ -541,3 +541,43 @@ export async function getAvailableMonthsV2(): Promise<{ year: number; month: num
   }
 }
 
+/**
+ * 월별 일자 데이터 삭제
+ */
+export async function deleteDailyDataForMonth(year: number, month: number): Promise<void> {
+  const monthStr = String(month).padStart(2, '0')
+  
+  // 1. daily 폴더의 해당 월 폴더 삭제
+  try {
+    const monthDir = path.join(DAILY_DATA_DIR, `${year}-${monthStr}`)
+    const files = await fs.readdir(monthDir)
+    
+    for (const file of files) {
+      await fs.unlink(path.join(monthDir, file))
+    }
+    await fs.rmdir(monthDir)
+    console.log(`[DailyDataStore] Deleted daily folder for ${year}-${monthStr}`)
+  } catch (error) {
+    console.log('[DailyDataStore] Error deleting daily folder:', error)
+  }
+  
+  // 2. monthly-v2 폴더의 해당 월 데이터 삭제
+  try {
+    const monthlyFile = path.join(MONTHLY_DATA_DIR, `${year}-${monthStr}.json`)
+    await fs.unlink(monthlyFile)
+    console.log(`[DailyDataStore] Deleted monthly file for ${year}-${monthStr}`)
+  } catch (error) {
+    console.log('[DailyDataStore] Error deleting monthly file:', error)
+  }
+  
+  // 3. uploads 폴더의 해당 월 데이터 삭제
+  try {
+    const uploadsDir = path.join(DATA_DIR, 'uploads')
+    const uploadFile = path.join(uploadsDir, `${year}-${monthStr}.json`)
+    await fs.unlink(uploadFile)
+    console.log(`[DailyDataStore] Deleted upload file for ${year}-${monthStr}`)
+  } catch (error) {
+    console.log('[DailyDataStore] Error deleting upload file:', error)
+  }
+}
+
