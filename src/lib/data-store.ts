@@ -216,12 +216,16 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
  * 사용 가능한 업로드 데이터 월 목록 조회 (DB 우선)
  */
 export async function getAvailableUploadMonths(): Promise<{ year: number; month: number }[]> {
+  const result: { year: number; month: number }[] = []
+  
   try {
     // DB에서 조회 시도
     const summaries = await prisma.monthlySummary.findMany({
       select: { year: true, month: true },
       orderBy: [{ year: 'desc' }, { month: 'desc' }],
     })
+    
+    console.log('[DataStore] Available months from DB:', summaries.length)
     
     if (summaries.length > 0) {
       return summaries.map(s => ({ year: s.year, month: s.month }))
@@ -230,12 +234,14 @@ export async function getAvailableUploadMonths(): Promise<{ year: number; month:
     console.log('[DataStore] DB query failed, falling back to file system:', error)
   }
   
-  // 파일 시스템 fallback
+  // 파일 시스템 fallback (DB에 데이터 없을 때만)
   try {
     await ensureUploadDataDir()
     const files = await fs.readdir(UPLOAD_DATA_DIR)
     
-    return files
+    console.log('[DataStore] Files in uploads dir:', files)
+    
+    const months = files
       .filter(f => f.endsWith('.json'))
       .map(f => {
         const match = f.match(/(\d{4})-(\d{2})\.json/)
@@ -249,7 +255,11 @@ export async function getAvailableUploadMonths(): Promise<{ year: number; month:
         if (a.year !== b.year) return b.year - a.year
         return b.month - a.month
       })
-  } catch {
+    
+    console.log('[DataStore] Available months from file system:', months)
+    return months
+  } catch (err) {
+    console.log('[DataStore] File system read error:', err)
     return []
   }
 }

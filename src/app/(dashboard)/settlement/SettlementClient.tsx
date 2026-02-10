@@ -213,8 +213,10 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
   useEffect(() => {
     const initializeMonth = async () => {
       try {
-        // 먼저 사용 가능한 월 목록만 가져옴
-        const res = await fetch('/api/settlement-data?year=0&month=0')
+        // 먼저 사용 가능한 월 목록만 가져옴 (캐시 무효화)
+        const res = await fetch(`/api/settlement-data?year=0&month=0&_t=${Date.now()}`, {
+          cache: 'no-store',
+        })
         if (res.ok) {
           const data = await res.json()
           if (data.availableMonths && data.availableMonths.length > 0) {
@@ -250,9 +252,10 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
     
     setIsLoading(true)
     try {
-      // 정산 데이터 API 호출
+      // 정산 데이터 API 호출 (캐시 무효화)
       const settDataRes = await fetch(
-        `/api/settlement-data?year=${selectedYear}&month=${selectedMonth}`
+        `/api/settlement-data?year=${selectedYear}&month=${selectedMonth}&_t=${Date.now()}`,
+        { cache: 'no-store' }
       )
       if (settDataRes.ok) {
         const settData = await settDataRes.json()
@@ -282,9 +285,10 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
         })
       }
 
-      // 체크 상태 로드
+      // 체크 상태 로드 (캐시 무효화)
       const checkRes = await fetch(
-        `/api/settlement-check?year=${selectedYear}&month=${selectedMonth}`
+        `/api/settlement-check?year=${selectedYear}&month=${selectedMonth}&_t=${Date.now()}`,
+        { cache: 'no-store' }
       )
       if (checkRes.ok) {
         const checkData = await checkRes.json()
@@ -308,7 +312,8 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
     setIsLoadingCumulative(true)
     try {
       const res = await fetch(
-        `/api/settlement-cumulative?type=${cumulativeTab}&year=${cumulativeYear}`
+        `/api/settlement-cumulative?type=${cumulativeTab}&year=${cumulativeYear}&_t=${Date.now()}`,
+        { cache: 'no-store' }
       )
       if (res.ok) {
         const data = await res.json()
