@@ -1,81 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import fs from 'fs'
-import path from 'path'
+import bcrypt from 'bcryptjs'
+import prisma from '@/lib/prisma'
 
-// Vercel 환경 감지 - 서버리스에서는 /tmp만 쓰기 가능
-const isVercel = process.env.VERCEL === '1'
-const BASE_DATA_PATH = isVercel ? '/tmp' : process.cwd()
-const DATA_DIR = path.join(BASE_DATA_PATH, '.data')
-const ACCOUNTS_FILE = path.join(DATA_DIR, 'accounts.json')
-
-// 기본 계정 데이터
-const DEFAULT_ACCOUNTS = [
-  {
-    id: 'acc_skp',
-    email: 'skp@mazeland.com',
-    password: 'password123',
-    name: 'SKP 관리자',
-    role: 'SKP_ADMIN',
-    companyCode: 'SKP',
-    companyName: 'SK플래닛',
-    createdAt: '2024-01-01T00:00:00Z',
-  },
-  {
-    id: 'acc_maze',
-    email: 'maze@mazeland.com',
-    password: 'password123',
-    name: '메이즈랜드 관리자',
-    role: 'PARTNER_ADMIN',
-    companyCode: 'MAZE',
-    companyName: '메이즈랜드',
-    createdAt: '2024-01-01T00:00:00Z',
-  },
-  {
-    id: 'acc_culture',
-    email: 'culture@mazeland.com',
-    password: 'password123',
-    name: '컬처커넥션 관리자',
-    role: 'PARTNER_ADMIN',
-    companyCode: 'CULTURE',
-    companyName: '컬처커넥션',
-    createdAt: '2024-01-01T00:00:00Z',
-  },
-  {
-    id: 'acc_fmc',
-    email: 'fmc@mazeland.com',
-    password: 'password123',
-    name: 'FMC 관리자',
-    role: 'AGENCY_ADMIN',
-    companyCode: 'FMC',
-    companyName: 'FMC',
-    createdAt: '2024-01-01T00:00:00Z',
-  },
-]
-
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
-  }
+const COMPANY_NAMES: Record<string, string> = {
+  SKP: 'SK플래닛',
+  MAZE: '메이즈랜드',
+  CULTURE: '컬처커넥션',
+  FMC: 'FMC',
 }
 
-function getAccounts() {
-  ensureDataDir()
-  try {
-    if (fs.existsSync(ACCOUNTS_FILE)) {
-      const data = fs.readFileSync(ACCOUNTS_FILE, 'utf-8')
-      return JSON.parse(data)
-    }
-  } catch (error) {
-    console.error('Read accounts error:', error)
-  }
-  // 기본 계정 반환
-  return DEFAULT_ACCOUNTS
-}
-
-function saveAccounts(accounts: any[]) {
-  ensureDataDir()
-  fs.writeFileSync(ACCOUNTS_FILE, JSON.stringify(accounts, null, 2))
+const ROLE_MAP: Record<string, 'SKP_ADMIN' | 'MAZE_ADMIN' | 'CULTURE_ADMIN' | 'AGENCY_ADMIN' | 'SUPER_ADMIN'> = {
+  SKP: 'SKP_ADMIN',
+  MAZE: 'MAZE_ADMIN',
+  CULTURE: 'CULTURE_ADMIN',
+  FMC: 'AGENCY_ADMIN',
 }
 
 // 계정 목록 조회
@@ -85,14 +24,30 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 })
     }
-    
+
     // SKP 관리자만 접근 가능
     if (user.role !== 'SUPER_ADMIN' && user.role !== 'SKP_ADMIN') {
       return NextResponse.json({ error: '권한이 없습니다.' }, { status: 403 })
     }
-    
-    const accounts = getAccounts()
-    
+
+    const users = await prisma.user.findMany({
+      include: { company: true },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    // 기존 형식에 맞게 변환
+    const accounts = users.map(u => ({
+      id: u.id,
+      email: u.email,
+      password: '********', // 비밀번호는 숨김
+      name: u.name,
+      role: u.role,
+      companyCode: u.company?.code || '',
+      companyName: u.company?.name || '',
+      createdAt: u.createdAt.toISOString(),
+      isActive: u.isActive,
+    }))
+
     return NextResponse.json({ accounts })
   } catch (error) {
     console.error('Get accounts error:', error)
@@ -107,47 +62,64 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 })
     }
-    
+
     if (user.role !== 'SUPER_ADMIN' && user.role !== 'SKP_ADMIN') {
       return NextResponse.json({ error: '권한이 없습니다.' }, { status: 403 })
     }
-    
+
     const body = await request.json()
     const { email, password, name, role, companyCode } = body
-    
+
     if (!email || !password || !name) {
       return NextResponse.json({ error: '필수 정보를 입력해주세요.' }, { status: 400 })
     }
-    
-    const accounts = getAccounts()
-    
+
     // 이메일 중복 체크
-    if (accounts.some((a: any) => a.email === email)) {
+    const existingUser = await prisma.user.findUnique({ where: { email } })
+    if (existingUser) {
       return NextResponse.json({ error: '이미 사용 중인 이메일입니다.' }, { status: 400 })
     }
-    
-    const COMPANY_NAMES: Record<string, string> = {
-      SKP: 'SK플래닛',
-      MAZE: '메이즈랜드',
-      CULTURE: '컬처커넥션',
-      FMC: 'FMC',
+
+    // 회사 찾기 또는 생성
+    const code = companyCode || 'MAZE'
+    let company = await prisma.company.findUnique({ where: { code } })
+    if (!company) {
+      company = await prisma.company.create({
+        data: {
+          code,
+          name: COMPANY_NAMES[code] || code,
+        },
+      })
     }
-    
-    const newAccount = {
-      id: `acc_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-      email,
-      password,
-      name,
-      role: role || 'PARTNER_ADMIN',
-      companyCode: companyCode || 'MAZE',
-      companyName: COMPANY_NAMES[companyCode] || companyCode,
-      createdAt: new Date().toISOString(),
+
+    // 비밀번호 해시
+    const hashedPassword = await bcrypt.hash(password, 10)
+
+    // 사용자 생성
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+        role: role || ROLE_MAP[code] || 'MAZE_ADMIN',
+        companyId: company.id,
+        isActive: true,
+      },
+      include: { company: true },
+    })
+
+    const account = {
+      id: newUser.id,
+      email: newUser.email,
+      password: '********',
+      name: newUser.name,
+      role: newUser.role,
+      companyCode: newUser.company?.code || '',
+      companyName: newUser.company?.name || '',
+      createdAt: newUser.createdAt.toISOString(),
     }
-    
-    accounts.push(newAccount)
-    saveAccounts(accounts)
-    
-    return NextResponse.json({ account: newAccount })
+
+    return NextResponse.json({ account })
   } catch (error) {
     console.error('Create account error:', error)
     return NextResponse.json({ error: '계정 생성 중 오류가 발생했습니다.' }, { status: 500 })

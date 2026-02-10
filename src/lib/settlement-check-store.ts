@@ -1,11 +1,4 @@
-import fs from 'fs'
-import path from 'path'
-
-// Vercel 환경 감지 - 서버리스에서는 /tmp만 쓰기 가능
-const isVercel = process.env.VERCEL === '1'
-const BASE_DATA_PATH = isVercel ? '/tmp' : process.cwd()
-const DATA_DIR = path.join(BASE_DATA_PATH, '.data')
-const SETTLEMENT_CHECK_FILE = path.join(DATA_DIR, 'settlement-checks.json')
+import prisma from '@/lib/prisma'
 
 // 정산 항목 ID
 export type SettlementItemId = 
@@ -111,33 +104,42 @@ export function getItemsByCompany(companyCode: string): SettlementItem[] {
   )
 }
 
-// 디렉토리 확인 및 생성
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
-  }
-}
-
 // 정산 체크 데이터 조회
 export async function getSettlementChecks(): Promise<SettlementCheckData> {
-  ensureDataDir()
-  
   try {
-    if (fs.existsSync(SETTLEMENT_CHECK_FILE)) {
-      const data = fs.readFileSync(SETTLEMENT_CHECK_FILE, 'utf-8')
-      return JSON.parse(data) || {}
+    const checks = await prisma.settlementCheck.findMany()
+    
+    const result: SettlementCheckData = {}
+    
+    for (const check of checks) {
+      const yearMonth = `${check.year}-${check.month.toString().padStart(2, '0')}`
+      
+      if (!result[yearMonth]) {
+        result[yearMonth] = {
+          yearMonth,
+          checks: {},
+          updatedAt: check.updatedAt.toISOString(),
+        }
+      }
+      
+      result[yearMonth].checks[check.itemId as SettlementItemId] = {
+        checked: check.isChecked,
+        checkedAt: check.checkedAt?.toISOString(),
+        checkedBy: check.checkedById || undefined,
+        amount: 0, // amount는 별도 계산 필요
+      }
+      
+      // 가장 최신 업데이트 시간 사용
+      if (new Date(check.updatedAt) > new Date(result[yearMonth].updatedAt)) {
+        result[yearMonth].updatedAt = check.updatedAt.toISOString()
+      }
     }
+    
+    return result
   } catch (error) {
-    console.error('Read settlement checks error:', error)
+    console.error('Get settlement checks error:', error)
+    return {}
   }
-  
-  return {}
-}
-
-// 정산 체크 데이터 저장
-export async function saveSettlementChecks(data: SettlementCheckData): Promise<void> {
-  ensureDataDir()
-  fs.writeFileSync(SETTLEMENT_CHECK_FILE, JSON.stringify(data, null, 2))
 }
 
 // 특정 월의 정산 체크 조회
@@ -145,9 +147,38 @@ export async function getMonthlySettlementCheck(
   year: number, 
   month: number
 ): Promise<MonthlySettlementCheck | null> {
-  const yearMonth = `${year}-${month.toString().padStart(2, '0')}`
-  const allChecks = await getSettlementChecks()
-  return allChecks[yearMonth] || null
+  try {
+    const checks = await prisma.settlementCheck.findMany({
+      where: { year, month },
+    })
+    
+    if (checks.length === 0) return null
+    
+    const yearMonth = `${year}-${month.toString().padStart(2, '0')}`
+    const result: MonthlySettlementCheck = {
+      yearMonth,
+      checks: {},
+      updatedAt: new Date().toISOString(),
+    }
+    
+    for (const check of checks) {
+      result.checks[check.itemId as SettlementItemId] = {
+        checked: check.isChecked,
+        checkedAt: check.checkedAt?.toISOString(),
+        checkedBy: check.checkedById || undefined,
+        amount: 0,
+      }
+      
+      if (new Date(check.updatedAt) > new Date(result.updatedAt)) {
+        result.updatedAt = check.updatedAt.toISOString()
+      }
+    }
+    
+    return result
+  } catch (error) {
+    console.error('Get monthly settlement check error:', error)
+    return null
+  }
 }
 
 // 정산 항목 체크/해제
@@ -159,27 +190,59 @@ export async function toggleSettlementCheck(
   amount: number,
   userName: string
 ): Promise<MonthlySettlementCheck> {
-  const yearMonth = `${year}-${month.toString().padStart(2, '0')}`
-  const allChecks = await getSettlementChecks()
-  
-  if (!allChecks[yearMonth]) {
-    allChecks[yearMonth] = {
+  try {
+    await prisma.settlementCheck.upsert({
+      where: {
+        year_month_itemId: { year, month, itemId },
+      },
+      update: {
+        isChecked: checked,
+        checkedAt: checked ? new Date() : null,
+        checkedById: checked ? userName : null,
+      },
+      create: {
+        year,
+        month,
+        itemId,
+        isChecked: checked,
+        checkedAt: checked ? new Date() : null,
+        checkedById: checked ? userName : null,
+      },
+    })
+    
+    // 업데이트된 월 데이터 반환
+    const result = await getMonthlySettlementCheck(year, month)
+    
+    if (result) {
+      // amount 설정
+      if (result.checks[itemId]) {
+        result.checks[itemId]!.amount = amount
+      }
+      return result
+    }
+    
+    // 새로 생성된 경우
+    const yearMonth = `${year}-${month.toString().padStart(2, '0')}`
+    return {
       yearMonth,
-      checks: {},
+      checks: {
+        [itemId]: {
+          checked,
+          checkedAt: checked ? new Date().toISOString() : undefined,
+          checkedBy: checked ? userName : undefined,
+          amount,
+        },
+      },
       updatedAt: new Date().toISOString(),
     }
+  } catch (error) {
+    console.error('Toggle settlement check error:', error)
+    throw error
   }
-  
-  allChecks[yearMonth].checks[itemId] = {
-    checked,
-    checkedAt: checked ? new Date().toISOString() : undefined,
-    checkedBy: checked ? userName : undefined,
-    amount,
-  }
-  allChecks[yearMonth].updatedAt = new Date().toISOString()
-  
-  await saveSettlementChecks(allChecks)
-  
-  return allChecks[yearMonth]
 }
 
+// 레거시 함수 (호환성)
+export async function saveSettlementChecks(data: SettlementCheckData): Promise<void> {
+  // DB 기반에서는 개별 upsert로 처리됨
+  console.warn('saveSettlementChecks is deprecated, use toggleSettlementCheck instead')
+}

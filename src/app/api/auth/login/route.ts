@@ -1,66 +1,84 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { createToken } from '@/lib/auth'
-import fs from 'fs'
-import path from 'path'
+import prisma from '@/lib/prisma'
 
-// Vercel 환경 감지 - 서버리스에서는 /tmp만 쓰기 가능
-const isVercel = process.env.VERCEL === '1'
-const BASE_DATA_PATH = isVercel ? '/tmp' : process.cwd()
-const DATA_DIR = path.join(BASE_DATA_PATH, '.data')
-const ACCOUNTS_FILE = path.join(DATA_DIR, 'accounts.json')
-
-// 기본 사용자 데이터
+// 기본 계정 데이터 (DB에 없을 시 생성용)
 const DEFAULT_ACCOUNTS = [
   {
-    id: 'acc_skp',
     email: 'skp@mazeland.com',
     password: 'password123',
     name: 'SKP 관리자',
-    role: 'SKP_ADMIN',
+    role: 'SKP_ADMIN' as const,
     companyCode: 'SKP',
     companyName: 'SK플래닛',
   },
   {
-    id: 'acc_maze',
     email: 'maze@mazeland.com',
     password: 'password123',
     name: '메이즈랜드 관리자',
-    role: 'PARTNER_ADMIN',
+    role: 'MAZE_ADMIN' as const,
     companyCode: 'MAZE',
     companyName: '메이즈랜드',
   },
   {
-    id: 'acc_culture',
     email: 'culture@mazeland.com',
     password: 'password123',
     name: '컬처커넥션 관리자',
-    role: 'PARTNER_ADMIN',
+    role: 'CULTURE_ADMIN' as const,
     companyCode: 'CULTURE',
     companyName: '컬처커넥션',
   },
   {
-    id: 'acc_fmc',
     email: 'fmc@mazeland.com',
     password: 'password123',
     name: 'FMC 관리자',
-    role: 'AGENCY_ADMIN',
+    role: 'AGENCY_ADMIN' as const,
     companyCode: 'FMC',
     companyName: 'FMC',
   },
 ]
 
-// 저장된 계정 목록 조회
-function getAccounts() {
+// 기본 회사 및 계정 초기화 (DB에 없을 시)
+async function ensureDefaultAccounts() {
   try {
-    if (fs.existsSync(ACCOUNTS_FILE)) {
-      const data = fs.readFileSync(ACCOUNTS_FILE, 'utf-8')
-      return JSON.parse(data)
+    const userCount = await prisma.user.count()
+    if (userCount > 0) return // 이미 계정이 있으면 스킵
+
+    console.log('[Auth] Initializing default accounts...')
+
+    // 회사 생성
+    for (const acc of DEFAULT_ACCOUNTS) {
+      // 회사 upsert
+      const company = await prisma.company.upsert({
+        where: { code: acc.companyCode },
+        update: {},
+        create: {
+          code: acc.companyCode,
+          name: acc.companyName,
+        },
+      })
+
+      // 비밀번호 해시
+      const hashedPassword = await bcrypt.hash(acc.password, 10)
+
+      // 사용자 생성
+      await prisma.user.create({
+        data: {
+          email: acc.email,
+          password: hashedPassword,
+          name: acc.name,
+          role: acc.role,
+          companyId: company.id,
+          isActive: true,
+        },
+      })
     }
+
+    console.log('[Auth] Default accounts created successfully')
   } catch (error) {
-    console.error('Read accounts error:', error)
+    console.error('[Auth] Error creating default accounts:', error)
   }
-  return DEFAULT_ACCOUNTS
 }
 
 export async function POST(request: NextRequest) {
@@ -75,25 +93,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 저장된 계정에서 사용자 조회
-    const accounts = getAccounts()
-    const account = accounts.find((a: any) => a.email === email)
-    
-    // 계정을 사용자 형식으로 변환
-    let user = account ? {
-      id: account.id,
-      email: account.email,
-      password: account.password,
-      name: account.name,
-      role: account.role,
-      companyId: account.companyCode?.toLowerCase(),
-      company: {
-        id: account.companyCode?.toLowerCase(),
-        name: account.companyName,
-        code: account.companyCode,
-      },
-      isActive: true,
-    } : null
+    // 기본 계정 확인 및 생성
+    await ensureDefaultAccounts()
+
+    // DB에서 사용자 조회
+    const user = await prisma.user.findUnique({
+      where: { email },
+      include: { company: true },
+    })
 
     if (!user) {
       console.log('사용자를 찾을 수 없음:', email)
@@ -102,7 +109,7 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       )
     }
-    
+
     console.log('로그인 시도:', email, '사용자 찾음:', user.name)
 
     // 비활성화된 계정 체크
@@ -113,21 +120,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 비밀번호 검증 (저장된 비밀번호와 직접 비교)
+    // 비밀번호 검증
     let isPasswordValid = false
-    
-    // 평문 비밀번호와 직접 비교 (accounts.json에 평문으로 저장)
-    if (password === user.password) {
-      isPasswordValid = true
-    } else {
-      // bcrypt 해시된 비밀번호와 비교 시도
-      try {
-        isPasswordValid = await bcrypt.compare(password, user.password)
-      } catch {
-        isPasswordValid = false
-      }
+
+    // bcrypt 해시된 비밀번호와 비교
+    try {
+      isPasswordValid = await bcrypt.compare(password, user.password)
+    } catch {
+      isPasswordValid = false
     }
-    
+
+    // 평문 비밀번호와 직접 비교 (마이그레이션 호환성)
+    if (!isPasswordValid && password === user.password) {
+      isPasswordValid = true
+      // 평문 비밀번호를 해시로 업데이트
+      const hashedPassword = await bcrypt.hash(password, 10)
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { password: hashedPassword },
+      })
+    }
+
     if (!isPasswordValid) {
       return NextResponse.json(
         { error: '이메일 또는 비밀번호가 올바르지 않습니다.' },
@@ -150,7 +163,11 @@ export async function POST(request: NextRequest) {
         email: user.email,
         name: user.name,
         role: user.role,
-        company: user.company,
+        company: user.company ? {
+          id: user.company.id,
+          name: user.company.name,
+          code: user.company.code,
+        } : null,
       },
       message: '로그인 성공',
     })

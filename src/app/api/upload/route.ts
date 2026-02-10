@@ -405,25 +405,27 @@ export async function POST(request: NextRequest) {
 /**
  * 데이터베이스에 저장
  */
-async function saveToDatabase(parseResult: ParseResult, file: File, userId: string) {
-  // 트랜잭션으로 처리
-  const result = await prisma.$transaction(async (tx: typeof prisma) => {
-    // 1. 업로드 기록 생성
-    const uploadHistory = await tx.uploadHistory.create({
-      data: {
-        userId,
-        fileName: file.name,
-        fileSize: file.size,
-        periodStart: parseResult.periodStart,
-        periodEnd: parseResult.periodEnd,
-        status: 'PROCESSING',
-      },
-    })
+async function saveToDatabase(parseResult: ParseResult, file: File, userId: string): Promise<{ uploadHistoryId: string }> {
+  // 1. 업로드 기록 생성
+  const uploadHistory = await prisma.uploadHistory.create({
+    data: {
+      uploadedById: userId,
+      fileName: file.name,
+      fileSize: file.size,
+      periodStart: parseResult.periodStart,
+      periodEnd: parseResult.periodEnd,
+      onlineCount: parseResult.monthlySummary.onlineTotal,
+      offlineCount: parseResult.monthlySummary.offlineTotal,
+      totalCount: parseResult.monthlySummary.grandTotal,
+      status: 'PROCESSING',
+    },
+  })
 
+  try {
     // 2. 온라인 판매 데이터 저장 (청크 단위로)
     const onlineChunks = chunkArray(parseResult.onlineSales, CHUNK_SIZE)
     for (const chunk of onlineChunks) {
-      await tx.onlineSale.createMany({
+      await prisma.onlineSale.createMany({
         data: chunk.map(sale => ({
           uploadHistoryId: uploadHistory.id,
           saleDate: sale.saleDate,
@@ -445,7 +447,7 @@ async function saveToDatabase(parseResult: ParseResult, file: File, userId: stri
     // 3. 오프라인 판매 데이터 저장 (청크 단위로)
     const offlineChunks = chunkArray(parseResult.offlineSales, CHUNK_SIZE)
     for (const chunk of offlineChunks) {
-      await tx.offlineSale.createMany({
+      await prisma.offlineSale.createMany({
         data: chunk.map(sale => ({
           uploadHistoryId: uploadHistory.id,
           saleDate: sale.saleDate,
@@ -461,7 +463,7 @@ async function saveToDatabase(parseResult: ParseResult, file: File, userId: stri
 
     // 4. 월간 집계 저장
     const { monthlySummary } = parseResult
-    await tx.monthlySummary.create({
+    await prisma.monthlySummary.create({
       data: {
         uploadHistoryId: uploadHistory.id,
         year: monthlySummary.year,
@@ -482,18 +484,23 @@ async function saveToDatabase(parseResult: ParseResult, file: File, userId: stri
     })
 
     // 5. 업로드 상태 업데이트
-    await tx.uploadHistory.update({
+    await prisma.uploadHistory.update({
       where: { id: uploadHistory.id },
       data: {
         status: 'COMPLETED',
-        recordCount: parseResult.onlineSales.length + parseResult.offlineSales.length,
       },
     })
 
     return { uploadHistoryId: uploadHistory.id }
-  }, {
-    timeout: 60000, // 60초 타임아웃
-  })
-
-  return result
+  } catch (error) {
+    // 에러 발생 시 상태 업데이트
+    await prisma.uploadHistory.update({
+      where: { id: uploadHistory.id },
+      data: {
+        status: 'FAILED',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
+      },
+    })
+    throw error
+  }
 }

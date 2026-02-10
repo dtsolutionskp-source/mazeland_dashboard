@@ -1,11 +1,5 @@
-import fs from 'fs'
-import path from 'path'
-
-// Vercel 환경 감지 - 서버리스에서는 /tmp만 쓰기 가능
-const isVercel = process.env.VERCEL === '1'
-const BASE_DATA_PATH = isVercel ? '/tmp' : process.cwd()
-const DATA_DIR = path.join(BASE_DATA_PATH, '.data')
-const MARKETING_LOG_FILE = path.join(DATA_DIR, 'marketing-logs.json')
+import prisma from '@/lib/prisma'
+import { LogType } from '@prisma/client'
 
 export interface MarketingLog {
   id: string
@@ -26,33 +20,40 @@ export interface MarketingLog {
   updatedAt: string
 }
 
-// 디렉토리 확인 및 생성
-function ensureDataDir() {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true })
+// DB 모델을 인터페이스로 변환
+function toMarketingLog(dbLog: any): MarketingLog {
+  return {
+    id: dbLog.id,
+    logType: dbLog.logType as 'CAMPAIGN' | 'PERFORMANCE',
+    startDate: dbLog.startDate.toISOString(),
+    endDate: dbLog.endDate.toISOString(),
+    title: dbLog.title || undefined,
+    content: dbLog.content || undefined,
+    subType: dbLog.subType || undefined,
+    impressions: dbLog.impressions,
+    clicks: dbLog.clicks,
+    createdById: dbLog.createdById,
+    createdBy: dbLog.createdBy ? {
+      name: dbLog.createdBy.name,
+      email: dbLog.createdBy.email,
+    } : undefined,
+    createdAt: dbLog.createdAt.toISOString(),
+    updatedAt: dbLog.updatedAt.toISOString(),
   }
 }
 
 // 마케팅 로그 목록 조회
 export async function getMarketingLogs(): Promise<MarketingLog[]> {
-  ensureDataDir()
-  
   try {
-    if (fs.existsSync(MARKETING_LOG_FILE)) {
-      const data = fs.readFileSync(MARKETING_LOG_FILE, 'utf-8')
-      return JSON.parse(data) || []
-    }
+    const logs = await prisma.marketingLog.findMany({
+      include: { createdBy: true },
+      orderBy: { startDate: 'desc' },
+    })
+    return logs.map(toMarketingLog)
   } catch (error) {
-    console.error('Read marketing logs error:', error)
+    console.error('Get marketing logs error:', error)
+    return []
   }
-  
-  return []
-}
-
-// 마케팅 로그 저장
-export async function saveMarketingLogs(logs: MarketingLog[]): Promise<void> {
-  ensureDataDir()
-  fs.writeFileSync(MARKETING_LOG_FILE, JSON.stringify(logs, null, 2))
 }
 
 // 마케팅 로그 생성
@@ -60,21 +61,22 @@ export async function createMarketingLog(
   data: Omit<MarketingLog, 'id' | 'createdAt' | 'updatedAt'>,
   user: { id: string; name: string; email: string }
 ): Promise<MarketingLog> {
-  const logs = await getMarketingLogs()
+  const log = await prisma.marketingLog.create({
+    data: {
+      logType: data.logType as LogType,
+      startDate: new Date(data.startDate),
+      endDate: new Date(data.endDate),
+      title: data.title,
+      content: data.content,
+      subType: data.subType,
+      impressions: data.impressions || 0,
+      clicks: data.clicks || 0,
+      createdById: user.id,
+    },
+    include: { createdBy: true },
+  })
   
-  const newLog: MarketingLog = {
-    ...data,
-    id: `log_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-    createdById: user.id,
-    createdBy: { name: user.name, email: user.email },
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  }
-  
-  logs.unshift(newLog) // 최신 것을 앞에 추가
-  await saveMarketingLogs(logs)
-  
-  return newLog
+  return toMarketingLog(log)
 }
 
 // 마케팅 로그 수정
@@ -82,38 +84,51 @@ export async function updateMarketingLog(
   id: string,
   data: Partial<Omit<MarketingLog, 'id' | 'createdAt' | 'createdById' | 'createdBy'>>
 ): Promise<MarketingLog | null> {
-  const logs = await getMarketingLogs()
-  const index = logs.findIndex(log => log.id === id)
-  
-  if (index === -1) return null
-  
-  logs[index] = {
-    ...logs[index],
-    ...data,
-    updatedAt: new Date().toISOString(),
+  try {
+    const log = await prisma.marketingLog.update({
+      where: { id },
+      data: {
+        ...(data.logType && { logType: data.logType as LogType }),
+        ...(data.startDate && { startDate: new Date(data.startDate) }),
+        ...(data.endDate && { endDate: new Date(data.endDate) }),
+        ...(data.title !== undefined && { title: data.title }),
+        ...(data.content !== undefined && { content: data.content }),
+        ...(data.subType !== undefined && { subType: data.subType }),
+        ...(data.impressions !== undefined && { impressions: data.impressions }),
+        ...(data.clicks !== undefined && { clicks: data.clicks }),
+      },
+      include: { createdBy: true },
+    })
+    return toMarketingLog(log)
+  } catch (error) {
+    console.error('Update marketing log error:', error)
+    return null
   }
-  
-  await saveMarketingLogs(logs)
-  return logs[index]
 }
 
 // 마케팅 로그 삭제
 export async function deleteMarketingLog(id: string): Promise<boolean> {
-  const logs = await getMarketingLogs()
-  const index = logs.findIndex(log => log.id === id)
-  
-  if (index === -1) return false
-  
-  logs.splice(index, 1)
-  await saveMarketingLogs(logs)
-  
-  return true
+  try {
+    await prisma.marketingLog.delete({ where: { id } })
+    return true
+  } catch (error) {
+    console.error('Delete marketing log error:', error)
+    return false
+  }
 }
 
 // 마케팅 로그 단일 조회
 export async function getMarketingLogById(id: string): Promise<MarketingLog | null> {
-  const logs = await getMarketingLogs()
-  return logs.find(log => log.id === id) || null
+  try {
+    const log = await prisma.marketingLog.findUnique({
+      where: { id },
+      include: { createdBy: true },
+    })
+    return log ? toMarketingLog(log) : null
+  } catch (error) {
+    console.error('Get marketing log by id error:', error)
+    return null
+  }
 }
 
 // 기간별 마케팅 로그 조회
@@ -122,18 +137,21 @@ export async function getMarketingLogsByDateRange(
   endDate: Date,
   logType?: 'CAMPAIGN' | 'PERFORMANCE'
 ): Promise<MarketingLog[]> {
-  const logs = await getMarketingLogs()
-  
-  return logs.filter(log => {
-    const logStart = new Date(log.startDate)
-    const logEnd = new Date(log.endDate)
-    
-    // 기간이 겹치는지 확인
-    const overlaps = logStart <= endDate && logEnd >= startDate
-    
-    if (logType && logType !== log.logType) return false
-    
-    return overlaps
-  })
+  try {
+    const logs = await prisma.marketingLog.findMany({
+      where: {
+        AND: [
+          { startDate: { lte: endDate } },
+          { endDate: { gte: startDate } },
+          ...(logType ? [{ logType: logType as LogType }] : []),
+        ],
+      },
+      include: { createdBy: true },
+      orderBy: { startDate: 'desc' },
+    })
+    return logs.map(toMarketingLog)
+  } catch (error) {
+    console.error('Get marketing logs by date range error:', error)
+    return []
+  }
 }
-

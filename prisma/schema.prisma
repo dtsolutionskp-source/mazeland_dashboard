@@ -377,3 +377,46 @@ enum DataSource {
   MANUAL    // 수기 입력
   MIXED     // 혼합 (업로드 + 수기 수정)
 }
+
+// ==========================================
+// 정산 체크 상태
+// ==========================================
+model SettlementCheck {
+  id          String   @id @default(cuid())
+  
+  year        Int
+  month       Int
+  itemId      String   // SKP_TO_MAZE_REVENUE, MAZE_TO_SKP_OPERATION, etc.
+  
+  isChecked   Boolean  @default(false)
+  checkedAt   DateTime?
+  checkedById String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([year, month, itemId])
+  @@index([year, month])
+}
+
+// ==========================================
+// 수수료 정책 (채널별 월별)
+// ==========================================
+model FeePolicy {
+  id          String   @id @default(cuid())
+  
+  year        Int
+  month       Int
+  channelCode String   // 채널 코드
+  
+  baseFeeRate Decimal  @default(10) // 기본 수수료율 (%)
+  
+  // 기간별 예외 (JSON 배열)
+  overrides   Json?    // [{ startDate, endDate, feeRate }]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@unique([year, month, channelCode])
+  @@index([year, month])
+}
