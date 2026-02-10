@@ -1,30 +1,37 @@
 import { NextResponse } from "next/server";
-import { Client } from "pg";
+import prisma from "@/lib/prisma";
 
-export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const connectionString = process.env.DATABASE_URL;
+  const envInfo = {
+    DATABASE_URL: process.env.DATABASE_URL ? "SET (hidden)" : "NOT SET",
+    DATABASE_URL_LENGTH: process.env.DATABASE_URL?.length ?? 0,
+    DATABASE_URL_STARTS_WITH: process.env.DATABASE_URL?.substring(0, 30) + "..." ?? "N/A",
+    JWT_SECRET: process.env.JWT_SECRET ? "SET" : "NOT SET",
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY ? "SET" : "NOT SET",
+    NODE_ENV: process.env.NODE_ENV,
+  };
 
-  if (!connectionString) {
-    return NextResponse.json({ ok: false, error: "DATABASE_URL is missing" }, { status: 500 });
-  }
-
-  const client = new Client({
-    connectionString,
-    ssl: { rejectUnauthorized: false },
-  });
+  let dbTest = { ok: false, error: "Not tested yet" };
 
   try {
-    await client.connect();
-    const r = await client.query("select 1 as x");
-    await client.end();
-    return NextResponse.json({ ok: true, result: r.rows?.[0] ?? null });
+    // Prisma로 DB 연결 테스트
+    const result = await prisma.$queryRaw`SELECT 1 as test`;
+    dbTest = { ok: true, result: result as any };
   } catch (e: any) {
-    try { await client.end(); } catch {}
-    return NextResponse.json(
-      { ok: false, name: e?.name, message: e?.message, code: e?.code, stack: e?.stack?.slice?.(0, 400) },
-      { status: 500 }
-    );
+    dbTest = {
+      ok: false,
+      error: e?.message ?? "Unknown error",
+      name: e?.name,
+      code: e?.code,
+      stack: e?.stack?.slice?.(0, 500),
+    } as any;
   }
+
+  return NextResponse.json({
+    timestamp: new Date().toISOString(),
+    env: envInfo,
+    dbTest,
+  });
 }
