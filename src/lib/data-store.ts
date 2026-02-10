@@ -1,12 +1,12 @@
 /**
- * 파일 기반 데이터 저장소
- * DB 없이도 업로드된 데이터를 저장하고 대시보드에서 사용할 수 있도록 함
+ * 데이터 저장소 - Supabase/Prisma DB 우선, 파일 시스템 fallback
  */
 
 import { promises as fs } from 'fs'
 import path from 'path'
 import { MonthlyAggData, DataSource, ChannelSalesData, CategorySalesData } from '@/types/sales-input'
 import { getMasterData, getChannelFeeRate, BASE_PRICE } from './master-data'
+import prisma from '@/lib/prisma'
 
 // Vercel 환경 감지 - 서버리스에서는 /tmp만 쓰기 가능
 const isVercel = process.env.VERCEL === '1'
@@ -128,9 +128,80 @@ export async function saveUploadDataByMonth(year: number, month: number, data: S
 }
 
 /**
- * 월별 업로드 데이터 조회
+ * 월별 업로드 데이터 조회 (DB 우선)
  */
 export async function getUploadDataByMonth(year: number, month: number): Promise<StoredUploadData | null> {
+  try {
+    // DB에서 조회 시도
+    const summary = await prisma.monthlySummary.findFirst({
+      where: { year, month },
+      include: {
+        uploadHistory: true,
+      },
+    })
+    
+    if (summary) {
+      // DB 데이터를 StoredUploadData 형식으로 변환
+      const onlineByChannel = summary.onlineByChannel as Record<string, number> || {}
+      const offlineByCategory = summary.offlineByCategory as Record<string, number> || {}
+      const onlineByAge = summary.onlineByAge as Record<string, number> || {}
+      
+      // 채널 데이터 변환
+      const channels: Record<string, { name: string; count: number; feeRate: number }> = {}
+      for (const [code, count] of Object.entries(onlineByChannel)) {
+        channels[code] = {
+          name: code,
+          count: count as number,
+          feeRate: getChannelFeeRate(code),
+        }
+      }
+      
+      // 카테고리 데이터 변환
+      const categories: Record<string, { name: string; count: number }> = {}
+      for (const [code, count] of Object.entries(offlineByCategory)) {
+        categories[code] = {
+          name: code,
+          count: count as number,
+        }
+      }
+      
+      return {
+        uploadedAt: summary.createdAt.toISOString(),
+        fileName: summary.uploadHistory?.fileName || `${year}-${month} 데이터`,
+        periodStart: summary.uploadHistory?.periodStart.toISOString() || `${year}-${String(month).padStart(2, '0')}-01`,
+        periodEnd: summary.uploadHistory?.periodEnd.toISOString() || `${year}-${String(month).padStart(2, '0')}-31`,
+        source: 'file',
+        summary: {
+          onlineCount: summary.onlineTotal,
+          offlineCount: summary.offlineTotal,
+          totalCount: summary.grandTotal,
+        },
+        dailyData: [], // 일별 데이터는 별도 쿼리 필요
+        channels,
+        categories,
+        monthly: {
+          onlineByChannel,
+          onlineByAge,
+          offlineByCategory,
+          revenue: {
+            online: Number(summary.onlineRevenue),
+            onlineFee: Number(summary.onlineFee),
+            onlineNet: Number(summary.onlineNet),
+            offline: Number(summary.offlineRevenue),
+            total: Number(summary.totalRevenue),
+            totalNet: Number(summary.totalNet),
+          },
+        },
+        settlement: {
+          companies: [], // 정산 데이터는 별도 계산 필요
+        },
+      }
+    }
+  } catch (error) {
+    console.log('[DataStore] DB query failed, falling back to file system:', error)
+  }
+  
+  // 파일 시스템 fallback
   try {
     await ensureUploadDataDir()
     const filePath = getUploadDataPath(year, month)
@@ -142,9 +213,24 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
 }
 
 /**
- * 사용 가능한 업로드 데이터 월 목록 조회
+ * 사용 가능한 업로드 데이터 월 목록 조회 (DB 우선)
  */
 export async function getAvailableUploadMonths(): Promise<{ year: number; month: number }[]> {
+  try {
+    // DB에서 조회 시도
+    const summaries = await prisma.monthlySummary.findMany({
+      select: { year: true, month: true },
+      orderBy: [{ year: 'desc' }, { month: 'desc' }],
+    })
+    
+    if (summaries.length > 0) {
+      return summaries.map(s => ({ year: s.year, month: s.month }))
+    }
+  } catch (error) {
+    console.log('[DataStore] DB query failed, falling back to file system:', error)
+  }
+  
+  // 파일 시스템 fallback
   try {
     await ensureUploadDataDir()
     const files = await fs.readdir(UPLOAD_DATA_DIR)
@@ -249,30 +335,11 @@ export async function getMonthlyData(year: number, month: number): Promise<Month
 }
 
 /**
- * 사용 가능한 월 목록 조회
+ * 사용 가능한 월 목록 조회 (DB 우선)
  */
 export async function getAvailableMonths(): Promise<{ year: number; month: number }[]> {
-  try {
-    await ensureMonthlyDataDir()
-    const files = await fs.readdir(MONTHLY_DATA_DIR)
-    
-    return files
-      .filter(f => f.endsWith('.json'))
-      .map(f => {
-        const match = f.match(/(\d{4})-(\d{2})\.json/)
-        if (match) {
-          return { year: parseInt(match[1]), month: parseInt(match[2]) }
-        }
-        return null
-      })
-      .filter((m): m is { year: number; month: number } => m !== null)
-      .sort((a, b) => {
-        if (a.year !== b.year) return b.year - a.year
-        return b.month - a.month
-      })
-  } catch {
-    return []
-  }
+  // DB 조회는 getAvailableUploadMonths와 동일
+  return getAvailableUploadMonths()
 }
 
 /**

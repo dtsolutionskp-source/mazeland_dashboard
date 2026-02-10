@@ -1,5 +1,5 @@
 /**
- * 수수료 정책 관리 모듈
+ * 수수료 정책 관리 모듈 - Supabase/Prisma DB 우선
  * - 채널 × 월 기준 기본 수수료율
  * - 기간별 예외 (Override)
  * - 특정 일자의 실제 적용 수수료율 조회
@@ -13,6 +13,7 @@ import {
   MonthlyFeeSettings,
 } from '@/types/sales-data'
 import { CHANNEL_MASTER } from './master-data'
+import prisma from '@/lib/prisma'
 
 // Vercel 환경 감지 - 서버리스에서는 /tmp만 쓰기 가능
 const isVercel = process.env.VERCEL === '1'
@@ -45,12 +46,59 @@ function getFeeSettingsPath(year: number, month: number): string {
 // ==========================================
 
 /**
- * 월간 수수료 설정 조회
+ * 월간 수수료 설정 조회 (DB 우선)
  */
 export async function getMonthlyFeeSettings(
   year: number,
   month: number
 ): Promise<MonthlyFeeSettings> {
+  try {
+    // DB에서 조회 시도
+    const policies = await prisma.feePolicy.findMany({
+      where: { year, month },
+    })
+    
+    if (policies.length > 0) {
+      // DB 데이터를 MonthlyFeeSettings 형식으로 변환
+      const channels: ChannelMonthlyFee[] = policies.map(p => ({
+        channelCode: p.channelCode,
+        channelName: CHANNEL_MASTER.find(c => c.code === p.channelCode)?.name || p.channelCode,
+        year: p.year,
+        month: p.month,
+        feeRate: Number(p.baseFeeRate),
+        source: 'manual' as const,
+      }))
+      
+      // overrides 추출
+      const overrides: ChannelFeeOverride[] = []
+      for (const policy of policies) {
+        if (policy.overrides && Array.isArray(policy.overrides)) {
+          for (const override of policy.overrides as any[]) {
+            overrides.push({
+              id: override.id || `${policy.channelCode}-${override.startDate}`,
+              channelCode: policy.channelCode,
+              startDate: override.startDate,
+              endDate: override.endDate,
+              feeRate: override.feeRate,
+              reason: override.reason,
+            })
+          }
+        }
+      }
+      
+      return {
+        year,
+        month,
+        channels,
+        overrides,
+        updatedAt: policies[0]?.updatedAt.toISOString() || new Date().toISOString(),
+      }
+    }
+  } catch (error) {
+    console.log('[FeePolicy] DB query failed, falling back to file system:', error)
+  }
+  
+  // 파일 시스템 fallback
   try {
     await ensureFeePolicyDir()
     const filePath = getFeeSettingsPath(year, month)
@@ -63,14 +111,48 @@ export async function getMonthlyFeeSettings(
 }
 
 /**
- * 월간 수수료 설정 저장
+ * 월간 수수료 설정 저장 (DB 우선)
  */
 export async function saveMonthlyFeeSettings(
   settings: MonthlyFeeSettings
 ): Promise<void> {
-  await ensureFeePolicyDir()
-  const filePath = getFeeSettingsPath(settings.year, settings.month)
-  await fs.writeFile(filePath, JSON.stringify(settings, null, 2), 'utf-8')
+  try {
+    // DB에 저장
+    for (const channel of settings.channels) {
+      // 해당 채널의 overrides만 추출
+      const channelOverrides = settings.overrides.filter(
+        o => o.channelCode === channel.channelCode
+      )
+      
+      await prisma.feePolicy.upsert({
+        where: {
+          year_month_channelCode: {
+            year: settings.year,
+            month: settings.month,
+            channelCode: channel.channelCode,
+          },
+        },
+        update: {
+          baseFeeRate: channel.feeRate,
+          overrides: channelOverrides.length > 0 ? JSON.parse(JSON.stringify(channelOverrides)) : null,
+        },
+        create: {
+          year: settings.year,
+          month: settings.month,
+          channelCode: channel.channelCode,
+          baseFeeRate: channel.feeRate,
+          overrides: channelOverrides.length > 0 ? JSON.parse(JSON.stringify(channelOverrides)) : null,
+        },
+      })
+    }
+  } catch (error) {
+    console.log('[FeePolicy] DB save failed, falling back to file system:', error)
+    
+    // 파일 시스템 fallback
+    await ensureFeePolicyDir()
+    const filePath = getFeeSettingsPath(settings.year, settings.month)
+    await fs.writeFile(filePath, JSON.stringify(settings, null, 2), 'utf-8')
+  }
 }
 
 /**
