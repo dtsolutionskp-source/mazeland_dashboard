@@ -14,16 +14,17 @@ datasource db {
 // 사용자 및 인증
 // ==========================================
 model User {
-  id          String   @id @default(cuid())
-  email       String   @unique
-  password    String
-  name        String
-  role        Role     @default(MAZE_ADMIN)
-  companyId   String?
-  company     Company? @relation(fields: [companyId], references: [id])
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String   // 해시된 비밀번호 (로그인 검증용)
+  plainPassword String?  // 원본 비밀번호 (관리자 조회용)
+  name          String
+  role          Role     @default(MAZE_ADMIN)
+  companyId     String?
+  company       Company? @relation(fields: [companyId], references: [id])
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
   
   marketingLogs MarketingLog[]
   uploadHistory UploadHistory[]

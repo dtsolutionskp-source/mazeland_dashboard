@@ -62,11 +62,12 @@ async function ensureDefaultAccounts() {
       // 비밀번호 해시
       const hashedPassword = await bcrypt.hash(acc.password, 10)
 
-      // 사용자 생성
+      // 사용자 생성 (원본 비밀번호도 저장)
       await prisma.user.create({
         data: {
           email: acc.email,
           password: hashedPassword,
+          plainPassword: acc.password, // 원본 비밀번호 저장 (관리자 조회용)
           name: acc.name,
           role: acc.role,
           companyId: company.id,

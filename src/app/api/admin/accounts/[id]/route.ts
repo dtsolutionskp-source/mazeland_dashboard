@@ -64,8 +64,10 @@ export async function PUT(
 
     // 비밀번호 해시 (변경 시에만)
     let hashedPassword: string | undefined
+    let plainPassword: string | undefined
     if (password) {
       hashedPassword = await bcrypt.hash(password, 10)
+      plainPassword = password // 원본 비밀번호도 저장
     }
 
     // 업데이트
@@ -74,6 +76,7 @@ export async function PUT(
       data: {
         ...(email && { email }),
         ...(hashedPassword && { password: hashedPassword }),
+        ...(plainPassword && { plainPassword }), // 원본 비밀번호 업데이트
         ...(name && { name }),
         ...(role && { role }),
         ...(companyId && { companyId }),
@@ -84,7 +87,7 @@ export async function PUT(
     const account = {
       id: updatedUser.id,
       email: updatedUser.email,
-      password: '********',
+      password: updatedUser.plainPassword || password || '(암호화됨)', // 원본 비밀번호 반환
       name: updatedUser.name,
       role: updatedUser.role,
       companyCode: updatedUser.company?.code || '',

@@ -35,11 +35,11 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
-    // 기존 형식에 맞게 변환
+    // 기존 형식에 맞게 변환 - 원본 비밀번호 반환
     const accounts = users.map(u => ({
       id: u.id,
       email: u.email,
-      password: '********', // 비밀번호는 숨김
+      password: u.plainPassword || '(암호화됨)', // 원본 비밀번호 반환
       name: u.name,
       role: u.role,
       companyCode: u.company?.code || '',
@@ -95,11 +95,12 @@ export async function POST(request: NextRequest) {
     // 비밀번호 해시
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // 사용자 생성
+    // 사용자 생성 (원본 비밀번호도 저장)
     const newUser = await prisma.user.create({
       data: {
         email,
         password: hashedPassword,
+        plainPassword: password, // 원본 비밀번호 저장 (관리자 조회용)
         name,
         role: role || ROLE_MAP[code] || 'MAZE_ADMIN',
         companyId: company.id,
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
     const account = {
       id: newUser.id,
       email: newUser.email,
-      password: '********',
+      password: password, // 원본 비밀번호 반환
       name: newUser.name,
       role: newUser.role,
       companyCode: newUser.company?.code || '',
