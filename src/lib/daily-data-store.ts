@@ -580,4 +580,3 @@ export async function deleteDailyDataForMonth(year: number, month: number): Prom
     console.log('[DailyDataStore] Error deleting upload file:', error)
   }
 }
-

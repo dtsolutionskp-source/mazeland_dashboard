@@ -84,8 +84,12 @@ async function ensureDefaultAccounts() {
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('[Login] Request received')
+    
     const body = await request.json()
     const { email, password } = body
+
+    console.log('[Login] Email:', email)
 
     if (!email || !password) {
       return NextResponse.json(
@@ -94,14 +98,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 기본 계정 확인 및 생성
-    await ensureDefaultAccounts()
+    // 기본 계정 확인 및 생성 (에러가 발생해도 로그인 시도는 계속)
+    try {
+      await ensureDefaultAccounts()
+    } catch (initError) {
+      console.error('[Login] ensureDefaultAccounts error:', initError)
+      // 에러가 발생해도 계속 진행
+    }
+
+    console.log('[Login] Looking up user in DB...')
 
     // DB에서 사용자 조회
     const user = await prisma.user.findUnique({
       where: { email },
       include: { company: true },
     })
+
+    console.log('[Login] User found:', user ? user.name : 'null')
 
     if (!user) {
       console.log('사용자를 찾을 수 없음:', email)
@@ -174,19 +187,33 @@ export async function POST(request: NextRequest) {
     })
 
     // 쿠키에 토큰 저장 (보안 강화)
+    // 세션 타임아웃은 클라이언트에서 SessionTimeout 컴포넌트가 처리
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict', // 크로스 사이트 요청 차단
-      maxAge: 60 * 10, // 10분 (세션 타임아웃과 동일)
+      maxAge: 60 * 60 * 24, // 24시간 (실제 세션 관리는 클라이언트에서)
       path: '/',
     })
 
     return response
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('[Login] Error:', error)
+    console.error('[Login] Error details:', error instanceof Error ? error.message : String(error))
+    console.error('[Login] Error stack:', error instanceof Error ? error.stack : 'N/A')
+    
+    // 더 구체적인 에러 메시지 반환
+    let errorMessage = '로그인 처리 중 오류가 발생했습니다.'
+    if (error instanceof Error) {
+      if (error.message.includes('connect') || error.message.includes('Connection')) {
+        errorMessage = '데이터베이스 연결에 실패했습니다.'
+      } else if (error.message.includes('timeout')) {
+        errorMessage = '서버 응답 시간이 초과되었습니다.'
+      }
+    }
+    
     return NextResponse.json(
-      { error: '로그인 처리 중 오류가 발생했습니다.' },
+      { error: errorMessage },
       { status: 500 }
     )
   }

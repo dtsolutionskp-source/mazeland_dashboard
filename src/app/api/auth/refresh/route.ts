@@ -23,12 +23,12 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({ success: true })
 
-    // 쿠키 갱신 (10분 연장)
+    // 쿠키 갱신 (24시간 연장)
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 60 * 10, // 10분
+      maxAge: 60 * 60 * 24, // 24시간
       path: '/',
     })
 
