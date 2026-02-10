@@ -343,12 +343,23 @@ export async function getAvailableMonths(): Promise<{ year: number; month: numbe
 }
 
 /**
- * 월별 데이터 삭제
+ * 월별 데이터 삭제 (모든 관련 파일 삭제)
  */
 export async function deleteMonthlyData(year: number, month: number): Promise<void> {
+  // 1. monthly-data 폴더에서 삭제
   try {
-    const filePath = getMonthlyDataPath(year, month)
-    await fs.unlink(filePath)
+    const monthlyFilePath = getMonthlyDataPath(year, month)
+    await fs.unlink(monthlyFilePath)
+    console.log(`[DataStore] Deleted monthly-data file: ${year}-${month}`)
+  } catch {
+    // 파일이 없어도 에러 무시
+  }
+  
+  // 2. uploads 폴더에서도 삭제
+  try {
+    const uploadFilePath = getUploadDataPath(year, month)
+    await fs.unlink(uploadFilePath)
+    console.log(`[DataStore] Deleted uploads file: ${year}-${month}`)
   } catch {
     // 파일이 없어도 에러 무시
   }

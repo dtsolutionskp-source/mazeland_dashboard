@@ -365,50 +365,99 @@ export async function DELETE(request: NextRequest) {
 
     console.log('[Upload Delete] User:', user.email, 'Deleting:', year, month)
 
-    // DB에서 삭제 시도
+    let deletedFromDB = false
+    let deletedFromFS = false
+
+    // 1. DB에서 삭제 시도 (MonthlySummary 먼저 찾고 관련 데이터 모두 삭제)
     try {
-      const { PrismaClient } = await import('@prisma/client')
-      const prisma = new PrismaClient()
+      const prisma = (await import('@/lib/prisma')).default
       
-      // MonthlySummary 삭제 (연관된 OnlineSale, OfflineSale도 cascade로 삭제됨)
+      // MonthlySummary 찾기
       const summary = await prisma.monthlySummary.findFirst({
         where: { year, month },
       })
       
       if (summary) {
-        // UploadHistory와 연관된 모든 데이터 삭제
+        // 관련된 OnlineSale 삭제
+        await prisma.onlineSale.deleteMany({
+          where: { uploadHistoryId: summary.uploadHistoryId },
+        })
+        console.log('[Upload Delete] Deleted OnlineSales from DB')
+        
+        // 관련된 OfflineSale 삭제
+        await prisma.offlineSale.deleteMany({
+          where: { uploadHistoryId: summary.uploadHistoryId },
+        })
+        console.log('[Upload Delete] Deleted OfflineSales from DB')
+        
+        // MonthlySummary 삭제
+        await prisma.monthlySummary.delete({
+          where: { id: summary.id },
+        })
+        console.log('[Upload Delete] Deleted MonthlySummary from DB')
+        
+        // UploadHistory 삭제
         await prisma.uploadHistory.delete({
           where: { id: summary.uploadHistoryId },
         })
-        console.log('[Upload Delete] Deleted from DB')
+        console.log('[Upload Delete] Deleted UploadHistory from DB')
+        
+        deletedFromDB = true
+      } else {
+        console.log('[Upload Delete] No MonthlySummary found in DB for', year, month)
+      }
+    } catch (dbError) {
+      console.error('[Upload Delete] DB delete error:', dbError)
+    }
+
+    // 2. 파일 시스템에서 월별 파일 삭제
+    try {
+      const { deleteMonthlyData, clearUploadData, getUploadData } = await import('@/lib/data-store')
+      await deleteMonthlyData(year, month)
+      console.log('[Upload Delete] Deleted monthly file from file system')
+      
+      // 레거시 upload-data.json도 확인해서 해당 월이면 삭제
+      const legacyData = await getUploadData()
+      if (legacyData) {
+        const legacyDate = new Date(legacyData.periodStart)
+        if (legacyDate.getFullYear() === year && legacyDate.getMonth() + 1 === month) {
+          await clearUploadData()
+          console.log('[Upload Delete] Cleared legacy upload-data.json')
+        }
       }
       
-      await prisma.$disconnect()
-    } catch (dbError) {
-      console.log('[Upload Delete] DB delete failed (may not exist):', dbError)
-    }
-
-    // 파일 시스템에서도 삭제
-    try {
-      const { deleteMonthlyData } = await import('@/lib/data-store')
-      await deleteMonthlyData(year, month)
-      console.log('[Upload Delete] Deleted from file system')
+      deletedFromFS = true
     } catch (fsError) {
-      console.log('[Upload Delete] File system delete failed (may not exist):', fsError)
+      console.error('[Upload Delete] File system delete error:', fsError)
     }
 
-    // daily-data-store에서도 삭제
+    // 3. daily-data-store에서도 삭제
     try {
       const { deleteDailyDataForMonth } = await import('@/lib/daily-data-store')
       await deleteDailyDataForMonth(year, month)
       console.log('[Upload Delete] Deleted from daily data store')
     } catch (dailyError) {
-      console.log('[Upload Delete] Daily data delete failed (may not exist):', dailyError)
+      console.error('[Upload Delete] Daily data delete error:', dailyError)
+    }
+
+    // 4. MonthlyAgg 데이터도 삭제 (있다면)
+    try {
+      const prisma = (await import('@/lib/prisma')).default
+      await prisma.monthlyAgg.deleteMany({
+        where: { year, month },
+      })
+      console.log('[Upload Delete] Deleted MonthlyAgg from DB')
+    } catch (aggError) {
+      console.log('[Upload Delete] MonthlyAgg delete (may not exist):', aggError)
     }
 
     return NextResponse.json({
       success: true,
       message: `${year}년 ${month}월 데이터가 삭제되었습니다.`,
+      details: {
+        deletedFromDB,
+        deletedFromFS,
+      }
     })
   } catch (error) {
     console.error('[Upload Delete] Error:', error)
