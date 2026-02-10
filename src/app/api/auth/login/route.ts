@@ -173,12 +173,12 @@ export async function POST(request: NextRequest) {
       message: '로그인 성공',
     })
 
-    // 쿠키에 토큰 저장
+    // 쿠키에 토큰 저장 (보안 강화)
     response.cookies.set('auth-token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 7, // 7일
+      sameSite: 'strict', // 크로스 사이트 요청 차단
+      maxAge: 60 * 10, // 10분 (세션 타임아웃과 동일)
       path: '/',
     })
 

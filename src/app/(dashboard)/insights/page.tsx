@@ -15,11 +15,12 @@ import {
   ChevronRight,
 } from 'lucide-react'
 
-type InsightType = 'weekly' | 'monthly'
+type InsightType = 'weekly' | 'monthly' | 'ai'
 
 const INSIGHT_TYPES = [
   { id: 'weekly' as const, label: '주간 분석', icon: Calendar, description: '선택한 주의 핵심 지표와 전략' },
   { id: 'monthly' as const, label: '월간 분석', icon: TrendingUp, description: '선택한 월의 종합 분석' },
+  { id: 'ai' as const, label: 'AI 분석', icon: Sparkles, description: 'AI가 생성한 심층 인사이트' },
 ]
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
@@ -50,6 +51,10 @@ export default function InsightsPage() {
   const [insight, setInsight] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [showPaymentAlert, setShowPaymentAlert] = useState(false)
+  
+  // 결제 연동 상태 (실제로는 API에서 가져와야 함)
+  const [isPaymentConnected] = useState(false) // TODO: 실제 결제 상태 연동
   
   // 날짜 선택 상태
   const now = new Date()
@@ -94,7 +99,7 @@ export default function InsightsPage() {
   
   // 선택된 기간 라벨
   const selectedPeriodLabel = useMemo(() => {
-    if (selectedType === 'weekly') {
+    if (selectedType === 'weekly' || selectedType === 'ai') {
       const weekNum = getWeekNumber(selectedWeekStart)
       const endDate = new Date(selectedWeekStart)
       endDate.setDate(selectedWeekStart.getDate() + 6)
@@ -106,6 +111,12 @@ export default function InsightsPage() {
   }, [selectedType, selectedWeekStart, selectedYear, selectedMonth])
 
   const handleGenerate = async () => {
+    // AI 분석 선택 시 결제 상태 확인
+    if (selectedType === 'ai' && !isPaymentConnected) {
+      setShowPaymentAlert(true)
+      return
+    }
+    
     setIsLoading(true)
     setInsight('')
 
@@ -114,7 +125,7 @@ export default function InsightsPage() {
       let startDate: string | undefined
       let endDate: string | undefined
       
-      if (selectedType === 'weekly') {
+      if (selectedType === 'weekly' || selectedType === 'ai') {
         const { start, end } = getWeekRange(selectedWeekStart)
         startDate = start.toISOString()
         endDate = end.toISOString()
@@ -132,6 +143,7 @@ export default function InsightsPage() {
           type: selectedType,
           startDate,
           endDate,
+          useAI: selectedType === 'ai', // AI 사용 여부
         }),
       })
 
@@ -221,13 +233,13 @@ export default function InsightsPage() {
   return (
     <div className="min-h-screen">
       <Header
-        title="AI 인사이트"
+        title="인사이트"
         description="데이터 기반 마케팅 분석 및 전략 제안"
       />
       
       <div className="p-8 space-y-6">
         {/* 분석 유형 선택 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {INSIGHT_TYPES.map((type) => {
             const Icon = type.icon
             const isSelected = selectedType === type.id
@@ -260,11 +272,11 @@ export default function InsightsPage() {
         <Card className="animate-slide-up">
             <CardHeader
               title="분석 기간 선택"
-              description={selectedType === 'weekly' ? '분석할 주를 선택하세요' : '분석할 연월을 선택하세요'}
+              description={selectedType === 'weekly' || selectedType === 'ai' ? '분석할 주를 선택하세요' : '분석할 연월을 선택하세요'}
             />
             
-            {selectedType === 'weekly' ? (
-              // 주간 분석: 캘린더로 주 선택
+            {(selectedType === 'weekly' || selectedType === 'ai') ? (
+              // 주간/AI 분석: 캘린더로 주 선택
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
                   <button
@@ -405,7 +417,7 @@ export default function InsightsPage() {
                     <Sparkles className="w-5 h-5 text-maze-500" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-dashboard-text">AI 인사이트</h3>
+                    <h3 className="font-semibold text-dashboard-text">인사이트</h3>
                     <p className="text-xs text-dashboard-muted">
                       {INSIGHT_TYPES.find(t => t.id === selectedType)?.label} 분석 결과
                     </p>
@@ -480,6 +492,45 @@ export default function InsightsPage() {
               </div>
             </div>
           </Card>
+        )}
+
+        {/* 결제 연동 안내 모달 */}
+        {showPaymentAlert && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-dashboard-card border border-dashboard-border rounded-2xl p-6 max-w-md mx-4 animate-slide-up">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Sparkles className="w-8 h-8 text-yellow-500" />
+                </div>
+                <h2 className="text-xl font-semibold text-dashboard-text mb-2">
+                  AI 분석 사용 불가
+                </h2>
+                <p className="text-dashboard-muted mb-6">
+                  결제가 연동되지 않아 크레딧이 부족합니다.
+                  <br />
+                  AI 분석 기능을 사용하시려면 결제 연동이 필요합니다.
+                </p>
+                <div className="flex gap-3 justify-center">
+                  <button
+                    onClick={() => setShowPaymentAlert(false)}
+                    className="px-6 py-2 bg-dashboard-border text-dashboard-text rounded-lg hover:bg-dashboard-border/80 transition-colors"
+                  >
+                    닫기
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowPaymentAlert(false)
+                      // TODO: 결제 페이지로 이동
+                      alert('결제 연동 기능은 준비 중입니다.')
+                    }}
+                    className="px-6 py-2 bg-maze-500 text-white rounded-lg hover:bg-maze-600 transition-colors"
+                  >
+                    결제 연동하기
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

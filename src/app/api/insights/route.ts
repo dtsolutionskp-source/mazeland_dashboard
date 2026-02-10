@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getCurrentUser } from '@/lib/auth'
-import { getAllDailyDataForMonth, getAvailableMonthsV2 } from '@/lib/daily-data-store'
+import { getAllDailyDataForMonth } from '@/lib/daily-data-store'
 import { getMarketingLogs } from '@/lib/marketing-log-store'
+import prisma from '@/lib/prisma'
 import OpenAI from 'openai'
 
 // OpenAI 클라이언트 (API 키가 있는 경우에만 사용)
@@ -15,10 +16,11 @@ try {
 }
 
 interface InsightRequest {
-  type: 'weekly' | 'monthly' | 'channel' | 'custom'
+  type: 'weekly' | 'monthly' | 'channel' | 'custom' | 'ai'
   startDate?: string
   endDate?: string
   customPrompt?: string
+  useAI?: boolean
 }
 
 // AI 인사이트 생성
@@ -160,7 +162,7 @@ export async function POST(request: NextRequest) {
 
 // 클라이언트에서 전달한 날짜로 기간 라벨 생성
 function calculatePeriodLabel(type: string, startDate: Date, endDate: Date): string {
-  if (type === 'weekly') {
+  if (type === 'weekly' || type === 'ai') {
     const weekNum = Math.ceil((startDate.getDate() + new Date(startDate.getFullYear(), startDate.getMonth(), 1).getDay()) / 7)
     return `${startDate.getFullYear()}년 ${startDate.getMonth() + 1}월 ${weekNum}주차 (${startDate.getMonth() + 1}/${startDate.getDate()} ~ ${endDate.getMonth() + 1}/${endDate.getDate()})`
   } else if (type === 'monthly' || type === 'channel') {
@@ -211,8 +213,193 @@ function calculatePeriod(type: string): { startDate: Date; endDate: Date; period
   }
 }
 
-// 실제 판매 데이터 조회
+// 실제 판매 데이터 조회 (DB 우선, 파일 시스템 fallback)
 async function getSalesDataSummary(startDate: Date, endDate: Date, type: string) {
+  try {
+    // 먼저 DB에서 조회 시도
+    const dbResult = await getSalesDataFromDB(startDate, endDate)
+    if (dbResult && dbResult.totalVisitors > 0) {
+      console.log('[Insights] Data loaded from DB:', dbResult.totalVisitors, 'visitors')
+      return dbResult
+    }
+    
+    // DB에 없으면 파일 시스템에서 조회
+    console.log('[Insights] Trying file system fallback...')
+    return await getSalesDataFromFileSystem(startDate, endDate)
+  } catch (e) {
+    console.error('Failed to fetch sales data:', e)
+    return getEmptySalesData()
+  }
+}
+
+// DB에서 판매 데이터 조회
+async function getSalesDataFromDB(startDate: Date, endDate: Date) {
+  try {
+    // 해당 기간의 온라인 판매 데이터 조회
+    const onlineSales = await prisma.onlineSale.findMany({
+      where: {
+        saleDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        saleDate: true,
+        channel: true,
+        channelCode: true,
+        quantity: true,
+      },
+    })
+
+    // 해당 기간의 오프라인 판매 데이터 조회
+    const offlineSales = await prisma.offlineSale.findMany({
+      where: {
+        saleDate: {
+          gte: startDate,
+          lte: endDate,
+        },
+      },
+      select: {
+        saleDate: true,
+        category: true,
+        quantity: true,
+      },
+    })
+
+    if (onlineSales.length === 0 && offlineSales.length === 0) {
+      // MonthlySummary에서도 확인
+      const year = startDate.getFullYear()
+      const month = startDate.getMonth() + 1
+      const summary = await prisma.monthlySummary.findFirst({
+        where: { year, month },
+      })
+      
+      if (summary) {
+        const channelBreakdown = (summary.onlineByChannel as Record<string, number>) || {}
+        return {
+          totalVisitors: summary.grandTotal,
+          onlineCount: summary.onlineTotal,
+          offlineCount: summary.offlineTotal,
+          avgDaily: Math.round(summary.grandTotal / 30),
+          peakDay: { date: '-', count: 0 },
+          lowDay: { date: '-', count: 0 },
+          channelBreakdown: Object.entries(channelBreakdown)
+            .sort((a, b) => (b[1] as number) - (a[1] as number))
+            .slice(0, 5)
+            .map(([name, count]) => ({
+              name,
+              count: count as number,
+              ratio: summary.grandTotal > 0 ? Math.round(((count as number) / summary.grandTotal) * 1000) / 10 : 0,
+            })),
+          weekdayAvg: 0,
+          weekendAvg: 0,
+          growthRate: 0,
+          dataCount: 1,
+        }
+      }
+      
+      return null
+    }
+
+    // 일별 집계
+    const dailyData: Record<string, { online: number; offline: number; date: Date }> = {}
+    const channelCounts: Record<string, number> = {}
+
+    // 온라인 판매 집계
+    for (const sale of onlineSales) {
+      const dateKey = sale.saleDate.toISOString().split('T')[0]
+      if (!dailyData[dateKey]) {
+        dailyData[dateKey] = { online: 0, offline: 0, date: sale.saleDate }
+      }
+      dailyData[dateKey].online += sale.quantity
+      
+      const channelName = sale.channel || sale.channelCode
+      if (!channelCounts[channelName]) {
+        channelCounts[channelName] = 0
+      }
+      channelCounts[channelName] += sale.quantity
+    }
+
+    // 오프라인 판매 집계
+    for (const sale of offlineSales) {
+      const dateKey = sale.saleDate.toISOString().split('T')[0]
+      if (!dailyData[dateKey]) {
+        dailyData[dateKey] = { online: 0, offline: 0, date: sale.saleDate }
+      }
+      dailyData[dateKey].offline += sale.quantity
+    }
+
+    // 집계 계산
+    let totalOnline = 0
+    let totalOffline = 0
+    let peakDay = { date: '-', count: 0 }
+    let lowDay = { date: '-', count: Infinity }
+    let weekdayTotal = 0
+    let weekdayDays = 0
+    let weekendTotal = 0
+    let weekendDays = 0
+
+    for (const [dateKey, data] of Object.entries(dailyData)) {
+      const dayTotal = data.online + data.offline
+      totalOnline += data.online
+      totalOffline += data.offline
+
+      const dayOfWeek = data.date.getDay()
+      const dateStr = `${data.date.getMonth() + 1}/${data.date.getDate()}`
+
+      if (dayTotal > peakDay.count) {
+        peakDay = { date: dateStr, count: dayTotal }
+      }
+      if (dayTotal < lowDay.count && dayTotal > 0) {
+        lowDay = { date: dateStr, count: dayTotal }
+      }
+
+      if (dayOfWeek === 0 || dayOfWeek === 6) {
+        weekendTotal += dayTotal
+        weekendDays++
+      } else {
+        weekdayTotal += dayTotal
+        weekdayDays++
+      }
+    }
+
+    const totalVisitors = totalOnline + totalOffline
+    const dataCount = Object.keys(dailyData).length
+
+    if (lowDay.count === Infinity) {
+      lowDay = { date: '-', count: 0 }
+    }
+
+    const channelBreakdown = Object.entries(channelCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([name, count]) => ({
+        name,
+        count,
+        ratio: totalVisitors > 0 ? Math.round((count / totalVisitors) * 1000) / 10 : 0,
+      }))
+
+    return {
+      totalVisitors,
+      onlineCount: totalOnline,
+      offlineCount: totalOffline,
+      avgDaily: dataCount > 0 ? Math.round(totalVisitors / dataCount) : 0,
+      peakDay,
+      lowDay,
+      channelBreakdown,
+      weekdayAvg: weekdayDays > 0 ? Math.round(weekdayTotal / weekdayDays) : 0,
+      weekendAvg: weekendDays > 0 ? Math.round(weekendTotal / weekendDays) : 0,
+      growthRate: 0,
+      dataCount,
+    }
+  } catch (dbError) {
+    console.error('[Insights] DB query failed:', dbError)
+    return null
+  }
+}
+
+// 파일 시스템에서 판매 데이터 조회 (fallback)
+async function getSalesDataFromFileSystem(startDate: Date, endDate: Date) {
   try {
     // 조회해야 할 년월 목록 생성
     const monthsToQuery: { year: number; month: number }[] = []
@@ -238,23 +425,10 @@ async function getSalesDataSummary(startDate: Date, endDate: Date, type: string)
     })
     
     if (filteredData.length === 0) {
-      return {
-        totalVisitors: 0,
-        onlineCount: 0,
-        offlineCount: 0,
-        avgDaily: 0,
-        peakDay: { date: '-', count: 0 },
-        lowDay: { date: '-', count: 0 },
-        channelBreakdown: [],
-        weekdayAvg: 0,
-        weekendAvg: 0,
-        growthRate: 0,
-        dataCount: 0,
-      }
+      return getEmptySalesData()
     }
     
     // 집계
-    let totalVisitors = 0
     let onlineCount = 0
     let offlineCount = 0
     const channelCounts: Record<string, number> = {}
@@ -291,10 +465,6 @@ async function getSalesDataSummary(startDate: Date, endDate: Date, type: string)
         })
       }
       
-      // summary에서 직접 가져오기 (있는 경우)
-      const dailyTotal = item.summary?.totalCount || (onlineCount + offlineCount)
-      totalVisitors = onlineCount + offlineCount
-      
       // 일일 합계
       const dayTotal = item.summary?.totalCount || 0
       
@@ -316,7 +486,7 @@ async function getSalesDataSummary(startDate: Date, endDate: Date, type: string)
       }
     })
     
-    totalVisitors = onlineCount + offlineCount
+    const totalVisitors = onlineCount + offlineCount
     
     if (lowDay.count === Infinity) {
       lowDay = { date: '-', count: 0 }
@@ -346,20 +516,25 @@ async function getSalesDataSummary(startDate: Date, endDate: Date, type: string)
       dataCount: filteredData.length,
     }
   } catch (e) {
-    console.error('Failed to fetch sales data:', e)
-    return {
-      totalVisitors: 0,
-      onlineCount: 0,
-      offlineCount: 0,
-      avgDaily: 0,
-      peakDay: { date: '-', count: 0 },
-      lowDay: { date: '-', count: 0 },
-      channelBreakdown: [],
-      weekdayAvg: 0,
-      weekendAvg: 0,
-      growthRate: 0,
-      dataCount: 0,
-    }
+    console.error('File system fallback failed:', e)
+    return getEmptySalesData()
+  }
+}
+
+// 빈 데이터 반환
+function getEmptySalesData() {
+  return {
+    totalVisitors: 0,
+    onlineCount: 0,
+    offlineCount: 0,
+    avgDaily: 0,
+    peakDay: { date: '-', count: 0 },
+    lowDay: { date: '-', count: 0 },
+    channelBreakdown: [],
+    weekdayAvg: 0,
+    weekendAvg: 0,
+    growthRate: 0,
+    dataCount: 0,
   }
 }
 

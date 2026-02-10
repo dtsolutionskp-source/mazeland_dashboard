@@ -58,7 +58,7 @@ const navItems: NavItem[] = [
   },
   {
     href: '/insights',
-    label: 'AI 인사이트',
+    label: '인사이트',
     icon: <Lightbulb size={20} />,
     roles: 'all',
   },
