@@ -21,6 +21,17 @@ import {
 import { Role } from '@prisma/client'
 import { useDashboardStore } from '@/stores/dashboard-store'
 
+// 부가세 별도 금액 계산 (금액 / 1.1, 소수점 1자리 반올림 후 정수)
+const getVatExcluded = (amount: number): number => {
+  return Math.round(amount / 1.1)
+}
+
+// 부가세 별도 금액 포맷 (작은 글씨용)
+const formatVatExcluded = (amount: number): string => {
+  const vatExcluded = getVatExcluded(amount)
+  return `(VAT별도 ${vatExcluded.toLocaleString()}원)`
+}
+
 interface SettlementClientProps {
   userRole: Role
   showAllData: boolean
@@ -681,7 +692,8 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                           'py-3 px-4 text-right font-medium',
                           isRevenue ? 'text-green-400' : 'text-red-400'
                         )}>
-                          {isRevenue ? '+' : '-'}{formatCurrency(amount)}
+                          <div>{isRevenue ? '+' : '-'}{formatCurrency(amount)}</div>
+                          <div className="text-[10px] text-dashboard-muted font-normal">{formatVatExcluded(amount)}</div>
                         </td>
                         <td className="py-3 px-4 text-center">
                           <span className={cn(
@@ -751,16 +763,22 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                   {/* SKP → 메이즈 (총매출): SKP가 메이즈에 청구 = SKP 매출, 메이즈 비용 */}
                   <div className="flex justify-between">
                     <span className="text-dashboard-muted">SKP → 메이즈 (총매출)</span>
-                    <span className={activeTab === 'SKP' ? 'text-green-400' : 'text-red-400'}>
-                      {activeTab === 'SKP' ? '+' : '-'}{formatCurrency(amounts['SKP_TO_MAZE_REVENUE'] || 0)}
-                    </span>
+                    <div className="text-right">
+                      <span className={activeTab === 'SKP' ? 'text-green-400' : 'text-red-400'}>
+                        {activeTab === 'SKP' ? '+' : '-'}{formatCurrency(amounts['SKP_TO_MAZE_REVENUE'] || 0)}
+                      </span>
+                      <div className="text-[10px] text-dashboard-muted">{formatVatExcluded(amounts['SKP_TO_MAZE_REVENUE'] || 0)}</div>
+                    </div>
                   </div>
                   {/* 메이즈 → SKP (운영수수료): 메이즈가 SKP에 청구 = 메이즈 매출, SKP 비용 */}
                   <div className="flex justify-between">
                     <span className="text-dashboard-muted">메이즈 → SKP (운영수수료)</span>
-                    <span className={activeTab === 'MAZE' ? 'text-green-400' : 'text-red-400'}>
-                      {activeTab === 'MAZE' ? '+' : '-'}{formatCurrency(amounts['MAZE_TO_SKP_OPERATION'] || 0)}
-                    </span>
+                    <div className="text-right">
+                      <span className={activeTab === 'MAZE' ? 'text-green-400' : 'text-red-400'}>
+                        {activeTab === 'MAZE' ? '+' : '-'}{formatCurrency(amounts['MAZE_TO_SKP_OPERATION'] || 0)}
+                      </span>
+                      <div className="text-[10px] text-dashboard-muted">{formatVatExcluded(amounts['MAZE_TO_SKP_OPERATION'] || 0)}</div>
+                    </div>
                   </div>
                   {/* SKP → 메이즈 (컬처분담 인보이스): SKP가 메이즈에 청구 = SKP 수익, 메이즈 비용 */}
                   <div className="flex justify-between">
@@ -768,9 +786,12 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                       SKP → 메이즈 (컬처분담)
                       <span className="ml-1 text-xs text-yellow-500">[인보이스]</span>
                     </span>
-                    <span className={activeTab === 'SKP' ? 'text-green-400' : 'text-red-400'}>
-                      {activeTab === 'SKP' ? '+' : '-'}{formatCurrency(amounts['SKP_TO_MAZE_CULTURE_SHARE'] || 0)}
-                    </span>
+                    <div className="text-right">
+                      <span className={activeTab === 'SKP' ? 'text-green-400' : 'text-red-400'}>
+                        {activeTab === 'SKP' ? '+' : '-'}{formatCurrency(amounts['SKP_TO_MAZE_CULTURE_SHARE'] || 0)}
+                      </span>
+                      <div className="text-[10px] text-dashboard-muted">{formatVatExcluded(amounts['SKP_TO_MAZE_CULTURE_SHARE'] || 0)}</div>
+                    </div>
                   </div>
                   <div className="border-t border-dashboard-border pt-2 mt-2">
                     <div className="flex justify-between items-center">
@@ -779,6 +800,7 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                         <div className="text-right">
                           <div className="font-bold text-lg text-blue-400">
                             {formatCurrency(netTransfers.SKP_MAZE.amount)}
+                            <span className="text-[10px] text-dashboard-muted font-normal ml-1">{formatVatExcluded(netTransfers.SKP_MAZE.amount)}</span>
                           </div>
                           <div className="text-xs text-dashboard-muted">
                             {netTransfers.SKP_MAZE.description}
@@ -807,16 +829,22 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                   {/* 컬처 → SKP (플랫폼비용): 컬처가 SKP에 청구 = 컬처 매출, SKP 비용 */}
                   <div className="flex justify-between">
                     <span className="text-dashboard-muted">컬처 → SKP (플랫폼비용)</span>
-                    <span className={activeTab === 'CULTURE' ? 'text-green-400' : 'text-red-400'}>
-                      {activeTab === 'CULTURE' ? '+' : '-'}{formatCurrency(amounts['CULTURE_TO_SKP'] || 0)}
-                    </span>
+                    <div className="text-right">
+                      <span className={activeTab === 'CULTURE' ? 'text-green-400' : 'text-red-400'}>
+                        {activeTab === 'CULTURE' ? '+' : '-'}{formatCurrency(amounts['CULTURE_TO_SKP'] || 0)}
+                      </span>
+                      <div className="text-[10px] text-dashboard-muted">{formatVatExcluded(amounts['CULTURE_TO_SKP'] || 0)}</div>
+                    </div>
                   </div>
                   {/* SKP → 컬처 (이용료 20%): SKP가 컬처에 청구 = SKP 매출, 컬처 비용 */}
                   <div className="flex justify-between">
                     <span className="text-dashboard-muted">SKP → 컬처 (이용료 20%)</span>
-                    <span className={activeTab === 'SKP' ? 'text-green-400' : 'text-red-400'}>
-                      {activeTab === 'SKP' ? '+' : '-'}{formatCurrency(amounts['SKP_TO_CULTURE_PLATFORM'] || 0)}
-                    </span>
+                    <div className="text-right">
+                      <span className={activeTab === 'SKP' ? 'text-green-400' : 'text-red-400'}>
+                        {activeTab === 'SKP' ? '+' : '-'}{formatCurrency(amounts['SKP_TO_CULTURE_PLATFORM'] || 0)}
+                      </span>
+                      <div className="text-[10px] text-dashboard-muted">{formatVatExcluded(amounts['SKP_TO_CULTURE_PLATFORM'] || 0)}</div>
+                    </div>
                   </div>
                   <div className="border-t border-dashboard-border pt-2 mt-2">
                     <div className="flex justify-between items-center">
@@ -825,6 +853,7 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                         <div className="text-right">
                           <div className="font-bold text-lg text-purple-400">
                             {formatCurrency(netTransfers.SKP_CULTURE.amount)}
+                            <span className="text-[10px] text-dashboard-muted font-normal ml-1">{formatVatExcluded(netTransfers.SKP_CULTURE.amount)}</span>
                           </div>
                           <div className="text-xs text-dashboard-muted">
                             {netTransfers.SKP_CULTURE.description}
@@ -853,9 +882,12 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                   {/* FMC → SKP (대행수수료): FMC가 SKP에 청구 = FMC 매출, SKP 비용 */}
                   <div className="flex justify-between">
                     <span className="text-dashboard-muted">FMC → SKP (대행수수료)</span>
-                    <span className={activeTab === 'FMC' ? 'text-green-400' : 'text-red-400'}>
-                      {activeTab === 'FMC' ? '+' : '-'}{formatCurrency(amounts['FMC_TO_SKP_AGENCY'] || 0)}
-                    </span>
+                    <div className="text-right">
+                      <span className={activeTab === 'FMC' ? 'text-green-400' : 'text-red-400'}>
+                        {activeTab === 'FMC' ? '+' : '-'}{formatCurrency(amounts['FMC_TO_SKP_AGENCY'] || 0)}
+                      </span>
+                      <div className="text-[10px] text-dashboard-muted">{formatVatExcluded(amounts['FMC_TO_SKP_AGENCY'] || 0)}</div>
+                    </div>
                   </div>
                   <div className="border-t border-dashboard-border pt-2 mt-2">
                     <div className="flex justify-between items-center">
@@ -864,6 +896,7 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                         <div className="text-right">
                           <div className="font-bold text-lg text-orange-400">
                             {formatCurrency(netTransfers.SKP_FMC.amount)}
+                            <span className="text-[10px] text-dashboard-muted font-normal ml-1">{formatVatExcluded(netTransfers.SKP_FMC.amount)}</span>
                           </div>
                           <div className="text-xs text-dashboard-muted">
                             {netTransfers.SKP_FMC.description}
@@ -1022,21 +1055,25 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                             </td>
                             {activeTab === 'MAZE' ? (
                               <td className="py-2 px-3 text-right text-green-400 font-medium">
-                                +{formatCurrency(data.revenue)}
+                                <div>+{formatCurrency(data.revenue)}</div>
+                                <div className="text-[10px] text-dashboard-muted font-normal">{formatVatExcluded(data.revenue)}</div>
                               </td>
                             ) : (
                               <>
                                 <td className="py-2 px-3 text-right text-green-400">
-                                  +{formatCurrency(data.revenue)}
+                                  <div>+{formatCurrency(data.revenue)}</div>
+                                  <div className="text-[10px] text-dashboard-muted font-normal">{formatVatExcluded(data.revenue)}</div>
                                 </td>
                                 <td className="py-2 px-3 text-right text-red-400">
-                                  -{formatCurrency(data.expense)}
+                                  <div>-{formatCurrency(data.expense)}</div>
+                                  <div className="text-[10px] text-dashboard-muted font-normal">{formatVatExcluded(data.expense)}</div>
                                 </td>
                                 <td className={cn(
                                   'py-2 px-3 text-right font-medium',
                                   data.net >= 0 ? 'text-emerald-400' : 'text-red-400'
                                 )}>
-                                  {data.net >= 0 ? '+' : ''}{formatCurrency(data.net)}
+                                  <div>{data.net >= 0 ? '+' : ''}{formatCurrency(data.net)}</div>
+                                  <div className="text-[10px] text-dashboard-muted font-normal">{formatVatExcluded(Math.abs(data.net))}</div>
                                 </td>
                               </>
                             )}
@@ -1073,11 +1110,12 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                     return (
                       <div className="grid grid-cols-2 gap-4">
                         <div className="p-3 bg-dashboard-bg rounded-lg">
-                          <div className="text-sm text-dashboard-muted mb-1">총 매출</div>
-                          <div className="text-2xl font-bold text-green-400">
-                            +{formatCurrency(summary.revenue)}
-                          </div>
+                        <div className="text-sm text-dashboard-muted mb-1">총 매출</div>
+                        <div className="text-2xl font-bold text-green-400">
+                          +{formatCurrency(summary.revenue)}
                         </div>
+                        <div className="text-xs text-dashboard-muted">{formatVatExcluded(summary.revenue)}</div>
+                      </div>
                         <div className="p-3 bg-dashboard-bg rounded-lg">
                           <div className="text-sm text-dashboard-muted mb-1">총 방문객</div>
                           <div className="text-2xl font-bold text-dashboard-text">
@@ -1095,6 +1133,7 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                         <div className="text-xl font-bold text-green-400">
                           +{formatCurrency(summary.revenue)}
                         </div>
+                        <div className="text-xs text-dashboard-muted">{formatVatExcluded(summary.revenue)}</div>
                       </div>
                       {summary.profit > 0 && (
                         <div className="p-3 bg-dashboard-bg rounded-lg">
@@ -1102,6 +1141,7 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                           <div className="text-xl font-bold text-yellow-400">
                             +{formatCurrency(summary.profit)}
                           </div>
+                          <div className="text-xs text-dashboard-muted">{formatVatExcluded(summary.profit)}</div>
                         </div>
                       )}
                       <div className="p-3 bg-dashboard-bg rounded-lg">
@@ -1109,6 +1149,7 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                         <div className="text-xl font-bold text-red-400">
                           -{formatCurrency(summary.expense)}
                         </div>
+                        <div className="text-xs text-dashboard-muted">{formatVatExcluded(summary.expense)}</div>
                       </div>
                       <div className="p-3 bg-dashboard-bg rounded-lg">
                         <div className="text-sm text-dashboard-muted mb-1">순이익</div>
@@ -1118,6 +1159,7 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
                         )}>
                           {netAmount >= 0 ? '+' : ''}{formatCurrency(netAmount)}
                         </div>
+                        <div className="text-xs text-dashboard-muted">{formatVatExcluded(Math.abs(netAmount))}</div>
                       </div>
                     </div>
                   )
@@ -1174,6 +1216,7 @@ function SettlementItemCard({
           <p className="text-xs text-dashboard-muted">{item.description}</p>
           <p className="text-lg font-bold text-dashboard-text mt-2">
             {formatCurrency(amount)}
+            <span className="text-[10px] text-dashboard-muted font-normal ml-1">{formatVatExcluded(amount)}</span>
           </p>
           {isChecked && checkState?.checkedAt && (
             <p className="text-xs text-green-500 mt-1">
