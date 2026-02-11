@@ -275,6 +275,65 @@ export async function POST(request: NextRequest) {
         },
       })
       
+      // 일별 온라인/오프라인 판매 데이터 저장
+      const onlineSalesData: any[] = []
+      const offlineSalesData: any[] = []
+      
+      for (const dayData of finalDailyData) {
+        const saleDate = new Date(dayData.date)
+        
+        // 온라인 채널별 판매 (일별 비율로 배분)
+        const dayRatioOnline = finalOnlineCount > 0 ? dayData.online / finalOnlineCount : 0
+        for (const [channelCode, channelData] of Object.entries(finalChannels)) {
+          const count = Math.round((channelData.count || 0) * dayRatioOnline)
+          if (count > 0) {
+            const feeRate = channelData.feeRate || 10
+            onlineSalesData.push({
+              uploadHistoryId: uploadHistory.id,
+              saleDate,
+              vendor: channelData.name || channelCode,
+              channel: channelData.name || channelCode,
+              channelCode,
+              feeRate,
+              ageGroup: '성인',
+              quantity: count,
+              unitPrice: BASE_PRICE,
+              grossAmount: BASE_PRICE * count,
+              feeAmount: Math.round(BASE_PRICE * count * feeRate / 100),
+              netAmount: Math.round(BASE_PRICE * count * (1 - feeRate / 100)),
+            })
+          }
+        }
+        
+        // 오프라인 카테고리별 판매 (일별 비율로 배분)
+        const dayRatioOffline = finalOfflineCount > 0 ? dayData.offline / finalOfflineCount : 0
+        for (const [categoryCode, categoryData] of Object.entries(finalCategories)) {
+          const count = Math.round((categoryData.count || 0) * dayRatioOffline)
+          if (count > 0) {
+            offlineSalesData.push({
+              uploadHistoryId: uploadHistory.id,
+              saleDate,
+              category: categoryData.name || categoryCode,
+              categoryCode,
+              quantity: count,
+              unitPrice: BASE_PRICE,
+              totalAmount: BASE_PRICE * count,
+            })
+          }
+        }
+      }
+      
+      // 일괄 저장
+      if (onlineSalesData.length > 0) {
+        await prisma.onlineSale.createMany({ data: onlineSalesData })
+        console.log('[Upload Save] Saved', onlineSalesData.length, 'online sales to DB')
+      }
+      
+      if (offlineSalesData.length > 0) {
+        await prisma.offlineSale.createMany({ data: offlineSalesData })
+        console.log('[Upload Save] Saved', offlineSalesData.length, 'offline sales to DB')
+      }
+      
       console.log('[Upload Save] Saved to DB for', year, month)
     } catch (dbError) {
       console.error('[Upload Save] DB save error:', dbError)

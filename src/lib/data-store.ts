@@ -137,7 +137,12 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
     const summary = await prisma.monthlySummary.findFirst({
       where: { year, month },
       include: {
-        uploadHistory: true,
+        uploadHistory: {
+          include: {
+            onlineSales: true,
+            offlineSales: true,
+          }
+        },
       },
     })
     
@@ -172,6 +177,37 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
         }
       }
       
+      // 일별 데이터 재구성 (OnlineSale + OfflineSale에서)
+      const dailyDataMap = new Map<string, { date: string; online: number; offline: number; total: number }>()
+      
+      // 온라인 판매 데이터
+      if (summary.uploadHistory?.onlineSales) {
+        for (const sale of summary.uploadHistory.onlineSales) {
+          const dateKey = sale.saleDate.toISOString().split('T')[0]
+          const existing = dailyDataMap.get(dateKey) || { date: dateKey, online: 0, offline: 0, total: 0 }
+          existing.online += sale.quantity
+          existing.total = existing.online + existing.offline
+          dailyDataMap.set(dateKey, existing)
+        }
+      }
+      
+      // 오프라인 판매 데이터
+      if (summary.uploadHistory?.offlineSales) {
+        for (const sale of summary.uploadHistory.offlineSales) {
+          const dateKey = sale.saleDate.toISOString().split('T')[0]
+          const existing = dailyDataMap.get(dateKey) || { date: dateKey, online: 0, offline: 0, total: 0 }
+          existing.offline += sale.quantity
+          existing.total = existing.online + existing.offline
+          dailyDataMap.set(dateKey, existing)
+        }
+      }
+      
+      // 일별 데이터 배열로 변환 및 정렬
+      const dailyData = Array.from(dailyDataMap.values())
+        .sort((a, b) => a.date.localeCompare(b.date))
+      
+      console.log(`[DataStore] Daily data reconstructed: ${dailyData.length} days`)
+      
       return {
         uploadedAt: summary.createdAt.toISOString(),
         fileName: summary.uploadHistory?.fileName || `${year}-${month} 데이터`,
@@ -183,7 +219,7 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
           offlineCount: summary.offlineTotal,
           totalCount: summary.grandTotal,
         },
-        dailyData: [], // 일별 데이터는 별도 쿼리 필요
+        dailyData,
         channels,
         categories,
         monthly: {

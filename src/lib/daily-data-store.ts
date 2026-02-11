@@ -19,6 +19,7 @@ import {
 } from '@/types/sales-data'
 import { getMonthlyFeeSettings, getFeeRateForDate, createDefaultFeeSettings } from './fee-policy'
 import { CHANNEL_MASTER, CATEGORY_MASTER, BASE_PRICE } from './master-data'
+import prisma from '@/lib/prisma'
 
 // Vercel 환경 감지 - 서버리스에서는 /tmp만 쓰기 가능
 const isVercel = process.env.VERCEL === '1'
@@ -435,100 +436,69 @@ export function distributeMonthlyToDaily(
 }
 
 /**
- * 사용 가능한 월 목록 조회 (uploads 폴더 + monthly-v2 + upload-data.json 모두 확인)
+ * 사용 가능한 월 목록 조회 (DB 우선 - Vercel 서버리스 환경)
  */
 export async function getAvailableMonthsV2(): Promise<{ year: number; month: number }[]> {
   const months: { year: number; month: number }[] = []
   const monthSet = new Set<string>()
   
   try {
-    // 1. uploads 폴더에서 월 목록 조회 (가장 우선)
-    const uploadsDir = path.join(DATA_DIR, 'uploads')
+    // 1. DB에서 먼저 조회 (Vercel 환경에서 신뢰할 수 있는 소스)
     try {
-      const uploadFiles = await fs.readdir(uploadsDir)
+      const summaries = await prisma.monthlySummary.findMany({
+        select: { year: true, month: true, grandTotal: true },
+        orderBy: [{ year: 'desc' }, { month: 'desc' }],
+      })
       
-      for (const f of uploadFiles) {
-        if (f.endsWith('.json')) {
-          const match = f.match(/(\d{4})-(\d{2})\.json/)
-          if (match) {
-            const year = parseInt(match[1])
-            const month = parseInt(match[2])
-            const key = `${year}-${month}`
-            
-            if (!monthSet.has(key)) {
-              // 실제 데이터가 있는지 확인
-              try {
-                const filePath = path.join(uploadsDir, f)
-                const content = await fs.readFile(filePath, 'utf-8')
-                const data = JSON.parse(content)
-                if (data.summary?.totalCount > 0) {
-                  months.push({ year, month })
-                  monthSet.add(key)
-                }
-              } catch {
-                // 파일 읽기 실패 시 무시
-              }
-            }
+      console.log('[DailyDataStore] DB summaries found:', summaries.length)
+      
+      for (const s of summaries) {
+        if (s.grandTotal > 0) {
+          const key = `${s.year}-${s.month}`
+          if (!monthSet.has(key)) {
+            monthSet.add(key)
+            months.push({ year: s.year, month: s.month })
           }
         }
       }
-    } catch {
-      // uploads 폴더가 없으면 무시
+    } catch (dbError) {
+      console.log('[DailyDataStore] DB query failed:', dbError)
     }
     
-    // 2. monthly-v2 폴더에서 월 목록 조회
-    await ensureMonthlyDir()
-    try {
-      const files = await fs.readdir(MONTHLY_DATA_DIR)
-      
-      for (const f of files) {
-        if (f.endsWith('.json')) {
-          const match = f.match(/(\d{4})-(\d{2})\.json/)
-          if (match) {
-            const year = parseInt(match[1])
-            const month = parseInt(match[2])
-            const key = `${year}-${month}`
-            
-            if (!monthSet.has(key)) {
-              // 실제 데이터가 있는지 확인
-              try {
-                const filePath = path.join(MONTHLY_DATA_DIR, f)
-                const content = await fs.readFile(filePath, 'utf-8')
-                const data = JSON.parse(content)
-                if (data.summary?.totalCount > 0) {
-                  months.push({ year, month })
-                  monthSet.add(key)
-                }
-              } catch {
-                // 파일 읽기 실패 시 무시
-              }
-            }
-          }
-        }
-      }
-    } catch {
-      // monthly-v2 폴더가 없으면 무시
-    }
-    
-    // 3. upload-data.json에서도 확인
-    const uploadDataPath = path.join(DATA_DIR, 'upload-data.json')
-    try {
-      const content = await fs.readFile(uploadDataPath, 'utf-8')
-      const uploadData = JSON.parse(content)
-      
-      if (uploadData?.periodStart && uploadData?.summary?.totalCount > 0) {
-        const uploadDate = new Date(uploadData.periodStart)
-        const year = uploadDate.getFullYear()
-        const month = uploadDate.getMonth() + 1
-        const key = `${year}-${month}`
+    // 2. 로컬 개발 환경에서만 파일 시스템도 확인
+    if (!isVercel) {
+      // uploads 폴더에서 월 목록 조회
+      const uploadsDir = path.join(DATA_DIR, 'uploads')
+      try {
+        const uploadFiles = await fs.readdir(uploadsDir)
         
-        if (!monthSet.has(key)) {
-          months.push({ year, month })
-          monthSet.add(key)
+        for (const f of uploadFiles) {
+          if (f.endsWith('.json')) {
+            const match = f.match(/(\d{4})-(\d{2})\.json/)
+            if (match) {
+              const year = parseInt(match[1])
+              const month = parseInt(match[2])
+              const key = `${year}-${month}`
+              
+              if (!monthSet.has(key)) {
+                try {
+                  const filePath = path.join(uploadsDir, f)
+                  const content = await fs.readFile(filePath, 'utf-8')
+                  const data = JSON.parse(content)
+                  if (data.summary?.totalCount > 0) {
+                    months.push({ year, month })
+                    monthSet.add(key)
+                  }
+                } catch {
+                  // 파일 읽기 실패 시 무시
+                }
+              }
+            }
+          }
         }
+      } catch {
+        // uploads 폴더가 없으면 무시
       }
-    } catch {
-      // upload-data.json 없으면 무시
     }
     
     // 정렬 (최신순)
