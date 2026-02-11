@@ -704,14 +704,27 @@ export default function DataInputPage() {
     setIsDeleting(true)
 
     try {
-      const response = await fetch(`/api/upload/save?year=${year}&month=${month}`, {
+      // 1. 메인 삭제 API 호출
+      const response = await fetch(`/api/upload/save?year=${year}&month=${month}&_t=${Date.now()}`, {
         method: 'DELETE',
+        cache: 'no-store',
       })
+
+      // 2. debug-data API로도 삭제 (DB 직접 삭제 보장)
+      try {
+        await fetch(`/api/debug-data?year=${year}&month=${month}&_t=${Date.now()}`, {
+          method: 'DELETE',
+          cache: 'no-store',
+        })
+        console.log('[Delete] Debug data API called')
+      } catch (e) {
+        console.log('[Delete] Debug data API error (non-critical):', e)
+      }
 
       const data = await response.json()
 
       if (response.ok) {
-        alert(data.message || `${year}년 ${month}월 데이터가 삭제되었습니다.`)
+        alert(data.message || `${year}년 ${month}월 데이터가 삭제되었습니다.\n\n페이지를 새로고침합니다.`)
         
         // 상태 초기화
         setUploadResult(null)
@@ -720,8 +733,8 @@ export default function DataInputPage() {
         setEditableCategories({})
         setHasChanges(false)
         
-        // 데이터 새로고침
-        await loadExistingData()
+        // 강제 페이지 새로고침으로 캐시 완전 무효화
+        window.location.reload()
       } else {
         alert(data.error || '삭제 실패')
       }
