@@ -326,6 +326,10 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
         setCumulativeData(data)
         if (data.availableYears && data.availableYears.length > 0) {
           setAvailableYears(data.availableYears)
+          // 현재 선택된 연도가 가용 연도에 없으면 첫 번째 연도로 변경
+          if (!data.availableYears.includes(cumulativeYear)) {
+            setCumulativeYear(data.availableYears[0])
+          }
         }
       }
     } catch (error) {
@@ -342,17 +346,21 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
   }, [isInitialized, cumulativeTab, cumulativeYear, loadCumulativeData])
 
   useEffect(() => {
-    // 초기 연도 설정
-    if (availableMonths.length > 0 && availableYears.length === 0) {
+    // 초기 연도 설정 및 동기화
+    if (availableMonths.length > 0) {
       const years = Array.from(
         availableMonths.reduce((acc, m) => acc.add(m.year), new Set<number>())
       ).sort((a, b) => b - a)
-      setAvailableYears(years)
+      
       if (years.length > 0) {
-        setCumulativeYear(years[0])
+        setAvailableYears(years)
+        // 현재 선택된 연도가 가용 연도에 없으면 첫 번째 연도로 변경
+        if (!years.includes(cumulativeYear)) {
+          setCumulativeYear(years[0])
+        }
       }
     }
-  }, [availableMonths, availableYears.length])
+  }, [availableMonths, cumulativeYear])
 
   // 체크 상태 토글
   const handleToggleCheck = async (itemId: SettlementItemId) => {

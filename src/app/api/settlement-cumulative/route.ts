@@ -102,6 +102,8 @@ export async function GET(request: NextRequest) {
     const year = parseInt(searchParams.get('year') || new Date().getFullYear().toString())
 
     const availableMonths = await getAvailableUploadMonths()
+    console.log('[Settlement Cumulative] Available months:', availableMonths)
+    console.log('[Settlement Cumulative] Requested type:', type, 'year:', year)
     
     // 대상 월 필터링
     let targetMonths = availableMonths
