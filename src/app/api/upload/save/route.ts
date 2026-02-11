@@ -248,6 +248,7 @@ export async function POST(request: NextRequest) {
       const uploadHistory = await prisma.uploadHistory.create({
         data: {
           fileName: storedData.fileName,
+          fileSize: 0, // 파일 크기 (해당 시점에서 알 수 없음)
           periodStart: new Date(storedData.periodStart),
           periodEnd: new Date(storedData.periodEnd),
           uploadedById: user.id,
