@@ -208,7 +208,7 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
   
   // 누적 현황 관련 상태
   const [cumulativeTab, setCumulativeTab] = useState<'yearly' | 'total'>('yearly')
-  const [cumulativeYear, setCumulativeYear] = useState<number>(new Date().getFullYear())
+  const [cumulativeYear, setCumulativeYear] = useState<number | null>(null)
   const [cumulativeData, setCumulativeData] = useState<CumulativeData | null>(null)
   const [isLoadingCumulative, setIsLoadingCumulative] = useState(false)
   const [availableYears, setAvailableYears] = useState<number[]>([])
@@ -317,20 +317,40 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
   const loadCumulativeData = useCallback(async () => {
     setIsLoadingCumulative(true)
     try {
+      // 먼저 availableYears 확인을 위해 total 타입으로 조회
+      const availRes = await fetch(`/api/settlement-cumulative?type=total&_t=${Date.now()}`, { cache: 'no-store' })
+      let validYear = cumulativeYear
+      
+      if (availRes.ok) {
+        const availData = await availRes.json()
+        if (availData.availableYears && availData.availableYears.length > 0) {
+          setAvailableYears(availData.availableYears)
+          
+          // cumulativeYear가 null이거나 가용 연도에 없으면 첫 번째 연도로 설정
+          if (cumulativeYear === null || !availData.availableYears.includes(cumulativeYear)) {
+            validYear = availData.availableYears[0]
+            setCumulativeYear(validYear)
+            // 연도가 변경되면 다음 useEffect에서 다시 로드됨
+            setIsLoadingCumulative(false)
+            return
+          }
+        }
+      }
+      
+      // cumulativeYear가 설정되지 않았으면 로드 중단
+      if (validYear === null) {
+        setIsLoadingCumulative(false)
+        return
+      }
+      
+      // 선택된 탭에 맞는 데이터 로드
       const res = await fetch(
-        `/api/settlement-cumulative?type=${cumulativeTab}&year=${cumulativeYear}&_t=${Date.now()}`,
+        `/api/settlement-cumulative?type=${cumulativeTab}&year=${validYear}&_t=${Date.now()}`,
         { cache: 'no-store' }
       )
       if (res.ok) {
         const data = await res.json()
         setCumulativeData(data)
-        if (data.availableYears && data.availableYears.length > 0) {
-          setAvailableYears(data.availableYears)
-          // 현재 선택된 연도가 가용 연도에 없으면 첫 번째 연도로 변경
-          if (!data.availableYears.includes(cumulativeYear)) {
-            setCumulativeYear(data.availableYears[0])
-          }
-        }
       }
     } catch (error) {
       console.error('Load cumulative data error:', error)
@@ -354,8 +374,8 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
       
       if (years.length > 0) {
         setAvailableYears(years)
-        // 현재 선택된 연도가 가용 연도에 없으면 첫 번째 연도로 변경
-        if (!years.includes(cumulativeYear)) {
+        // cumulativeYear가 null이거나 가용 연도에 없으면 첫 번째 연도로 변경
+        if (cumulativeYear === null || !years.includes(cumulativeYear)) {
           setCumulativeYear(years[0])
         }
       }
@@ -897,7 +917,7 @@ export function SettlementClient({ userRole, showAllData, userName }: Settlement
               전체 누적
             </button>
             
-            {cumulativeTab === 'yearly' && availableYears.length > 0 && (
+            {cumulativeTab === 'yearly' && availableYears.length > 0 && cumulativeYear !== null && (
               <select
                 value={cumulativeYear}
                 onChange={(e) => setCumulativeYear(parseInt(e.target.value))}
