@@ -108,11 +108,32 @@ export async function POST(request: NextRequest) {
 
     console.log('[Login] Looking up user in DB...')
 
-    // DB에서 사용자 조회
-    const user = await prisma.user.findUnique({
-      where: { email },
-      include: { company: true },
-    })
+    // DB에서 사용자 조회 (재시도 로직 포함)
+    let user = null
+    let retries = 3
+    let lastError = null
+    
+    while (retries > 0 && !user) {
+      try {
+        user = await prisma.user.findUnique({
+          where: { email },
+          include: { company: true },
+        })
+        break
+      } catch (dbError) {
+        lastError = dbError
+        retries--
+        console.log(`[Login] DB query failed, retries left: ${retries}`, dbError)
+        if (retries > 0) {
+          await new Promise(resolve => setTimeout(resolve, 500)) // 500ms 대기 후 재시도
+        }
+      }
+    }
+    
+    if (lastError && !user) {
+      console.error('[Login] All DB retries failed:', lastError)
+      throw lastError
+    }
 
     console.log('[Login] User found:', user ? user.name : 'null')
 
