@@ -3,12 +3,36 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 export const maxDuration = 10; // 10초 타임아웃
 
+function parseDbUrl(url: string | undefined) {
+  if (!url) return null;
+  try {
+    // postgresql://user:pass@host:port/db?params
+    const match = url.match(/postgresql:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/([^?]+)(\?.*)?/);
+    if (match) {
+      return {
+        user: match[1],
+        password: match[2].substring(0, 4) + '****',
+        host: match[3],
+        port: match[4],
+        database: match[5],
+        params: match[6] || '',
+      };
+    }
+    return { raw: url.substring(0, 50) + '...' };
+  } catch {
+    return { error: 'Failed to parse' };
+  }
+}
+
 export async function GET() {
+  const dbUrlParsed = parseDbUrl(process.env.DATABASE_URL);
+  const directUrlParsed = parseDbUrl(process.env.DIRECT_URL);
+  
   const envInfo = {
-    DATABASE_URL: process.env.DATABASE_URL ? "SET (hidden)" : "NOT SET",
-    DATABASE_URL_LENGTH: process.env.DATABASE_URL?.length ?? 0,
-    DATABASE_URL_STARTS_WITH: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 30) + "..." : "N/A",
-    DIRECT_URL: process.env.DIRECT_URL ? "SET (hidden)" : "NOT SET",
+    DATABASE_URL: process.env.DATABASE_URL ? "SET" : "NOT SET",
+    DATABASE_URL_PARSED: dbUrlParsed,
+    DIRECT_URL: process.env.DIRECT_URL ? "SET" : "NOT SET",
+    DIRECT_URL_PARSED: directUrlParsed,
     JWT_SECRET: process.env.JWT_SECRET ? "SET" : "NOT SET",
     OPENAI_API_KEY: process.env.OPENAI_API_KEY ? "SET" : "NOT SET",
     NODE_ENV: process.env.NODE_ENV,
