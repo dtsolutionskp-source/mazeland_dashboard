@@ -3,6 +3,9 @@ import bcrypt from 'bcryptjs'
 import { createToken } from '@/lib/auth'
 import prisma from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+export const maxDuration = 15 // 15초 타임아웃
+
 // 기본 계정 데이터 (DB에 없을 시 생성용)
 const DEFAULT_ACCOUNTS = [
   {
