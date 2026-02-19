@@ -50,23 +50,28 @@ interface SalesChartProps {
   showPrevMonth?: boolean
   // 데이터 클릭 핸들러
   onDataClick?: (date: string) => void
+  // 주말/연휴 표시를 위한 년월 (예: "2026-02")
+  yearMonth?: string
 }
 
 const TYPE_COLORS: Record<string, string> = {
   CAMPAIGN: '#3b82f6',     // 캠페인 - 파란색
-  PERFORMANCE: '#22c55e',  // 퍼포먼스 - 초록색
+  PERFORMANCE: '#f59e0b',  // 퍼포먼스 - 주황색 (캠페인과 구분)
+  HOLIDAY: '#ef4444',      // 연휴 - 빨간색
   OTHER: '#6b7280',
 }
 
 const TYPE_ICONS: Record<string, string> = {
   CAMPAIGN: '📢',
   PERFORMANCE: '📈',
+  HOLIDAY: '🎌',
   OTHER: '📌',
 }
 
 const TYPE_NAMES: Record<string, string> = {
   CAMPAIGN: '캠페인',
   PERFORMANCE: '퍼포먼스',
+  HOLIDAY: '연휴',
   OTHER: '기타',
 }
 
@@ -80,6 +85,7 @@ export function SalesChart({
   showOffline: propShowOffline,
   showPrevMonth: propShowPrevMonth,
   onDataClick,
+  yearMonth,
 }: SalesChartProps) {
   // Store에서 상태 가져오기 (prop이 없으면 store 값 사용)
   const store = useDashboardStore()
@@ -88,6 +94,30 @@ export function SalesChart({
   const showOnline = propShowOnline ?? store.showOnline
   const showOffline = propShowOffline ?? store.showOffline
   const showPrevMonth = propShowPrevMonth ?? store.showPrevMonthLine
+
+  // 연휴 마커 날짜 집합 (빨간색 표시용)
+  const holidayDates = new Set(
+    markers.filter(m => m.type === 'HOLIDAY').map(m => m.date)
+  )
+
+  // 주말 여부 확인 (yearMonth가 있을 때만)
+  const isWeekend = (dateStr: string): boolean => {
+    if (!yearMonth) return false
+    // dateStr: "02/16" 또는 "2/16" 형식
+    const dayMatch = dateStr.match(/(\d+)\/(\d+)/)
+    if (!dayMatch) return false
+    const month = parseInt(dayMatch[1])
+    const day = parseInt(dayMatch[2])
+    const [year] = yearMonth.split('-').map(Number)
+    const date = new Date(year, month - 1, day)
+    const dayOfWeek = date.getDay()
+    return dayOfWeek === 0 || dayOfWeek === 6 // 일요일(0) 또는 토요일(6)
+  }
+
+  // 날짜가 빨간색이어야 하는지 확인 (주말 또는 연휴)
+  const isRedDate = (dateStr: string): boolean => {
+    return holidayDates.has(dateStr) || isWeekend(dateStr)
+  }
 
   // 전월 데이터를 현재 데이터에 병합 (날짜의 "일" 기준 매핑)
   // 예: 12/1은 11/1과 비교, 12/8은 11/8과 비교
@@ -249,7 +279,27 @@ export function SalesChart({
           <XAxis
             dataKey="date"
             stroke="#94a3b8"
-            tick={{ fill: '#94a3b8', fontSize: 12, cursor: onDataClick ? 'pointer' : 'default' }}
+            tick={(props: any) => {
+              const { x, y, payload } = props
+              const dateStr = payload?.value || ''
+              const isRed = isRedDate(dateStr)
+              return (
+                <g transform={`translate(${x},${y})`}>
+                  <text
+                    x={0}
+                    y={0}
+                    dy={16}
+                    textAnchor="middle"
+                    fill={isRed ? '#ef4444' : '#94a3b8'}
+                    fontSize={12}
+                    fontWeight={isRed ? 600 : 400}
+                    style={{ cursor: onDataClick ? 'pointer' : 'default' }}
+                  >
+                    {dateStr}
+                  </text>
+                </g>
+              )
+            }}
             tickLine={{ stroke: '#334155' }}
           />
           <YAxis

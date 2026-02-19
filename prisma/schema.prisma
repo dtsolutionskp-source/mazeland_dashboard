@@ -271,6 +271,7 @@ model MarketingLog {
 enum LogType {
   CAMPAIGN    // 캠페인 (제목+내용)
   PERFORMANCE // 퍼포먼스 (노출량/클릭수/클릭율)
+  HOLIDAY     // 연휴 (그래프에 빨간색 표시)
 }
 
 // ==========================================

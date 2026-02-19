@@ -109,7 +109,7 @@ export function DashboardClient({ userRole, companyCode }: DashboardClientProps)
       </div>
 
       {/* 단일 대시보드 뷰 - 모든 콘텐츠 통합 */}
-      <OverviewTab data={data} userRole={userRole} />
+      <OverviewTab data={data} userRole={userRole} year={year} month={month} />
     </div>
   )
 }
@@ -133,7 +133,9 @@ function getCompanyTabLabel(role: Role): string {
 // ==========================================
 // 전체 현황 (단일 대시보드)
 // ==========================================
-function OverviewTab({ data, userRole }: { data: any; userRole: Role }) {
+function OverviewTab({ data, userRole, year, month }: { data: any; userRole: Role; year: number; month: number }) {
+  // yearMonth 형식 생성 (예: "2026-02")
+  const yearMonth = `${year}-${String(month).padStart(2, '0')}`
   const rawData = data || {}
   const summary = {
     totalVisitors: 0,
@@ -317,6 +319,7 @@ function OverviewTab({ data, userRole }: { data: any; userRole: Role }) {
               }))}
               markers={markers}
               height={350}
+              yearMonth={yearMonth}
             />
           </div>
         </div>
@@ -897,6 +900,8 @@ function ChannelsTab({ data }: { data: any }) {
 // ==========================================
 function MarketingTab({ data }: { data: any }) {
   const { marketingLogs = [], dailyTrend = [], prevDailyTrend = [] } = data
+  const { year, month } = useDashboardStore()
+  const yearMonth = `${year}-${String(month).padStart(2, '0')}`
 
   // 날짜 문자열에서 MM/DD 형식으로 변환 (그래프 매칭용)
   const formatDateToMD = (dateStr: string): string => {
@@ -1006,6 +1011,7 @@ function MarketingTab({ data }: { data: any }) {
           }))}
           markers={markers}
           height={350}
+          yearMonth={yearMonth}
         />
       </Card>
 

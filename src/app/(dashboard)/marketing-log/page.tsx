@@ -23,7 +23,7 @@ import {
 
 interface MarketingLog {
   id: string
-  logType: 'CAMPAIGN' | 'PERFORMANCE'
+  logType: 'CAMPAIGN' | 'PERFORMANCE' | 'HOLIDAY'
   startDate: string
   endDate: string
   // 캠페인용
@@ -42,7 +42,8 @@ interface MarketingLog {
 
 const LOG_TYPES = [
   { value: 'CAMPAIGN', label: '캠페인', icon: Megaphone, color: 'text-blue-500 bg-blue-500/20' },
-  { value: 'PERFORMANCE', label: '퍼포먼스', icon: TrendingUp, color: 'text-green-500 bg-green-500/20' },
+  { value: 'PERFORMANCE', label: '퍼포먼스', icon: TrendingUp, color: 'text-orange-500 bg-orange-500/20' },
+  { value: 'HOLIDAY', label: '연휴', icon: Calendar, color: 'text-red-500 bg-red-500/20' },
 ]
 
 const MONTHS = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월']
@@ -68,7 +69,7 @@ export default function MarketingLogPage() {
   
   // 폼 상태
   const [formData, setFormData] = useState({
-    logType: 'CAMPAIGN' as 'CAMPAIGN' | 'PERFORMANCE',
+    logType: 'CAMPAIGN' as 'CAMPAIGN' | 'PERFORMANCE' | 'HOLIDAY',
     startDate: new Date().toISOString().split('T')[0],
     endDate: new Date().toISOString().split('T')[0],
     title: '',
@@ -326,6 +327,7 @@ export default function MarketingLogPage() {
   const monthlyStats = useMemo(() => {
     const campaigns = filteredLogs.filter(l => l.logType === 'CAMPAIGN')
     const performances = filteredLogs.filter(l => l.logType === 'PERFORMANCE')
+    const holidays = filteredLogs.filter(l => l.logType === 'HOLIDAY')
     
     const totalImpressions = performances.reduce((sum, log) => sum + (log.impressions || 0), 0)
     const totalClicks = performances.reduce((sum, log) => sum + (log.clicks || 0), 0)
@@ -333,6 +335,7 @@ export default function MarketingLogPage() {
     return {
       campaignCount: campaigns.length,
       performanceCount: performances.length,
+      holidayCount: holidays.length,
       impressions: totalImpressions,
       clicks: totalClicks,
     }
@@ -526,6 +529,8 @@ export default function MarketingLogPage() {
                                 <p className="text-sm font-medium text-dashboard-text">{log.title || '-'}</p>
                                 <p className="text-xs text-dashboard-muted line-clamp-1">{log.content || ''}</p>
                               </div>
+                            ) : log.logType === 'HOLIDAY' ? (
+                              <span className="text-sm font-medium text-red-500">{log.title || '연휴'}</span>
                             ) : (
                               <span className="text-sm text-dashboard-text">{log.subType || '-'}</span>
                             )}
@@ -742,10 +747,14 @@ export default function MarketingLogPage() {
                         
                         const barColor = bar.log.logType === 'CAMPAIGN' 
                           ? 'bg-blue-500' 
-                          : 'bg-green-500'
+                          : bar.log.logType === 'HOLIDAY'
+                          ? 'bg-red-500'
+                          : 'bg-orange-500'
                         
                         const barLabel = bar.log.logType === 'CAMPAIGN'
                           ? bar.log.title || '캠페인'
+                          : bar.log.logType === 'HOLIDAY'
+                          ? bar.log.title || '연휴'
                           : bar.log.subType || '퍼포먼스'
                         
                         return (
@@ -839,6 +848,17 @@ export default function MarketingLogPage() {
                   required
                 />
               </div>
+              
+              {/* 연휴용 필드 */}
+              {formData.logType === 'HOLIDAY' && (
+                <Input
+                  label="연휴명"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  placeholder="예: 설 연휴, 추석 연휴"
+                  required
+                />
+              )}
               
               {/* 캠페인용 필드 */}
               {formData.logType === 'CAMPAIGN' && (
