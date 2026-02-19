@@ -169,10 +169,10 @@ export function SalesChart({
                 <div>
                   <p className="text-xs text-dashboard-muted">
                     {TYPE_NAMES[marker.type] || '마케팅'}
-                    {marker.endDate && marker.endDate !== marker.date && ` (${marker.date}~${marker.endDate})`}
                   </p>
                   <p className="text-sm font-medium" style={{ color: TYPE_COLORS[marker.type] }}>
                     {marker.title || '마케팅 이벤트'}
+                    {marker.endDate && marker.endDate !== marker.date && ` (${marker.date}~${marker.endDate})`}
                   </p>
                 </div>
               </div>
@@ -362,55 +362,66 @@ export function SalesChart({
         </LineChart>
       </ResponsiveContainer>
       
-      {/* 마커 범례 - 컴팩트하게 표시, 호버 시 상세 정보 */}
+      {/* 마커 범례 - 제목 (날짜) 형식으로 표시 */}
       {markers.length > 0 && (
         <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-dashboard-border">
-          <span className="text-sm text-dashboard-muted">마케팅:</span>
-          {markers.map((marker, index) => (
-            <div 
-              key={index} 
-              className="group relative flex items-center gap-1 px-2 py-1 rounded-full text-xs cursor-pointer transition-all hover:ring-2 hover:ring-maze-500/50"
-              style={{ 
-                backgroundColor: `${TYPE_COLORS[marker.type]}20`,
-                color: TYPE_COLORS[marker.type] 
-              }}
-            >
-              <span>{TYPE_ICONS[marker.type] || '📌'}</span>
-              <span className="font-medium">
-                {marker.date}{marker.endDate && marker.endDate !== marker.date ? `~${marker.endDate}` : ''}
-              </span>
-              
-              {/* 호버 시 상세 정보 툴팁 */}
-              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
-                <div className="bg-dashboard-card border border-dashboard-border rounded-lg p-3 shadow-xl min-w-[180px] whitespace-nowrap">
-                  <p className="text-xs text-dashboard-muted mb-1">
-                    {TYPE_NAMES[marker.type] || '마케팅'}
-                  </p>
-                  <p className="text-sm font-semibold text-dashboard-text mb-2">
-                    {marker.title || '-'}
-                  </p>
-                  {marker.impressions !== undefined && marker.impressions > 0 && (
-                    <div className="grid grid-cols-3 gap-2 text-center border-t border-dashboard-border pt-2">
-                      <div>
-                        <p className="text-[9px] text-dashboard-muted">노출</p>
-                        <p className="text-xs font-bold">{formatNumber(marker.impressions)}</p>
+          {markers.map((marker, index) => {
+            // 날짜 형식: M/D~M/D
+            const dateRange = marker.endDate && marker.endDate !== marker.date 
+              ? `${marker.date}~${marker.endDate}` 
+              : marker.date
+            // 표시 형식: 제목 (날짜)
+            const displayText = marker.title 
+              ? `${marker.title} (${dateRange})`
+              : `${TYPE_NAMES[marker.type] || '마케팅'} (${dateRange})`
+            
+            return (
+              <div 
+                key={index} 
+                className="group relative flex items-center gap-1 px-3 py-1.5 rounded-full text-xs cursor-pointer transition-all hover:ring-2 hover:ring-maze-500/50"
+                style={{ 
+                  backgroundColor: `${TYPE_COLORS[marker.type]}20`,
+                  color: TYPE_COLORS[marker.type] 
+                }}
+              >
+                <span>{TYPE_ICONS[marker.type] || '📌'}</span>
+                <span className="font-medium">{displayText}</span>
+                
+                {/* 호버 시 상세 정보 툴팁 */}
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-50">
+                  <div className="bg-dashboard-card border border-dashboard-border rounded-lg p-3 shadow-xl min-w-[180px] whitespace-nowrap">
+                    <p className="text-xs text-dashboard-muted mb-1">
+                      {TYPE_NAMES[marker.type] || '마케팅'}
+                    </p>
+                    <p className="text-sm font-semibold text-dashboard-text mb-2">
+                      {marker.title || '-'}
+                    </p>
+                    <p className="text-xs text-dashboard-muted mb-2">
+                      {dateRange}
+                    </p>
+                    {marker.impressions !== undefined && marker.impressions > 0 && (
+                      <div className="grid grid-cols-3 gap-2 text-center border-t border-dashboard-border pt-2">
+                        <div>
+                          <p className="text-[9px] text-dashboard-muted">노출</p>
+                          <p className="text-xs font-bold">{formatNumber(marker.impressions)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-dashboard-muted">클릭</p>
+                          <p className="text-xs font-bold">{formatNumber(marker.clicks || 0)}</p>
+                        </div>
+                        <div>
+                          <p className="text-[9px] text-dashboard-muted">CTR</p>
+                          <p className="text-xs font-bold text-maze-500">{marker.clickRate}%</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-[9px] text-dashboard-muted">클릭</p>
-                        <p className="text-xs font-bold">{formatNumber(marker.clicks || 0)}</p>
-                      </div>
-                      <div>
-                        <p className="text-[9px] text-dashboard-muted">CTR</p>
-                        <p className="text-xs font-bold text-maze-500">{marker.clickRate}%</p>
-                      </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  {/* 툴팁 화살표 */}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-dashboard-card" />
                 </div>
-                {/* 툴팁 화살표 */}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-dashboard-card" />
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>
