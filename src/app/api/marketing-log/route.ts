@@ -8,10 +8,10 @@ import {
 import { z } from 'zod'
 
 const createLogSchema = z.object({
-  logType: z.enum(['CAMPAIGN', 'PERFORMANCE']),
+  logType: z.enum(['CAMPAIGN', 'PERFORMANCE', 'HOLIDAY']),
   startDate: z.string(),
   endDate: z.string(),
-  // 캠페인용
+  // 캠페인/연휴용
   title: z.string().optional(),
   content: z.string().optional(),
   // 퍼포먼스용
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     const startDate = searchParams.get('startDate')
     const endDate = searchParams.get('endDate')
     const logTypeParam = searchParams.get('logType')
-    const logType = (logTypeParam === 'CAMPAIGN' || logTypeParam === 'PERFORMANCE') ? logTypeParam : null
+    const logType = (logTypeParam === 'CAMPAIGN' || logTypeParam === 'PERFORMANCE' || logTypeParam === 'HOLIDAY') ? logTypeParam : null
 
     let logs
     if (startDate && endDate) {

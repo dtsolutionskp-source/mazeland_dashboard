@@ -8,7 +8,7 @@ import {
 import { z } from 'zod'
 
 const updateLogSchema = z.object({
-  logType: z.enum(['CAMPAIGN', 'PERFORMANCE']).optional(),
+  logType: z.enum(['CAMPAIGN', 'PERFORMANCE', 'HOLIDAY']).optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   title: z.string().optional(),
