@@ -3,7 +3,7 @@ import { LogType } from '@prisma/client'
 
 export interface MarketingLog {
   id: string
-  logType: 'CAMPAIGN' | 'PERFORMANCE'
+  logType: 'CAMPAIGN' | 'PERFORMANCE' | 'HOLIDAY'
   startDate: string
   endDate: string
   title?: string
@@ -24,7 +24,7 @@ export interface MarketingLog {
 function toMarketingLog(dbLog: any): MarketingLog {
   return {
     id: dbLog.id,
-    logType: dbLog.logType as 'CAMPAIGN' | 'PERFORMANCE',
+    logType: dbLog.logType as 'CAMPAIGN' | 'PERFORMANCE' | 'HOLIDAY',
     startDate: dbLog.startDate.toISOString(),
     endDate: dbLog.endDate.toISOString(),
     title: dbLog.title || undefined,
@@ -135,7 +135,7 @@ export async function getMarketingLogById(id: string): Promise<MarketingLog | nu
 export async function getMarketingLogsByDateRange(
   startDate: Date,
   endDate: Date,
-  logType?: 'CAMPAIGN' | 'PERFORMANCE'
+  logType?: 'CAMPAIGN' | 'PERFORMANCE' | 'HOLIDAY'
 ): Promise<MarketingLog[]> {
   try {
     const logs = await prisma.marketingLog.findMany({
