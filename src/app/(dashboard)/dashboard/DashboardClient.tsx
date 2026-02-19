@@ -154,15 +154,27 @@ function OverviewTab({ data, userRole }: { data: any; userRole: Role }) {
   const categories = rawData.categories || []
   const comparison = rawData.comparison || null
 
+  // 날짜 문자열에서 M/D 형식으로 변환 (시간 제외)
+  const formatDateToMD = (dateStr: string): string => {
+    if (!dateStr) return ''
+    // ISO 형식 "2026-02-16T00:00:00.000Z" 또는 "2026-02-16" 처리
+    const dateOnly = dateStr.split('T')[0] // 시간 부분 제거
+    const parts = dateOnly.split('-')
+    if (parts.length >= 3) {
+      const month = parseInt(parts[1], 10)
+      const day = parseInt(parts[2], 10)
+      return `${month}/${day}`
+    }
+    return dateStr.slice(5, 10).replace('-', '/')
+  }
+
   // 마케팅 로그를 차트 마커 형식으로 변환
   const markers = (marketingLogs || []).map((log: any) => {
-    const dateStr = log.startDate || ''
-    const endDateStr = log.endDate || ''
     const isCampaign = log.logType === 'CAMPAIGN'
     
     return {
-      date: dateStr.slice(5).replace('-', '/'),
-      endDate: endDateStr.slice(5).replace('-', '/'),
+      date: formatDateToMD(log.startDate || ''),
+      endDate: formatDateToMD(log.endDate || ''),
       type: log.logType || 'CAMPAIGN',
       // 캠페인은 제목, 퍼포먼스는 세부유형 표시
       title: isCampaign ? (log.title || '') : (log.subType || ''),
@@ -876,8 +888,22 @@ function ChannelsTab({ data }: { data: any }) {
 function MarketingTab({ data }: { data: any }) {
   const { marketingLogs = [], dailyTrend = [], prevDailyTrend = [] } = data
 
+  // 날짜 문자열에서 M/D 형식으로 변환 (시간 제외)
+  const formatDateToMD = (dateStr: string): string => {
+    if (!dateStr) return ''
+    const dateOnly = dateStr.split('T')[0]
+    const parts = dateOnly.split('-')
+    if (parts.length >= 3) {
+      const month = parseInt(parts[1], 10)
+      const day = parseInt(parts[2], 10)
+      return `${month}/${day}`
+    }
+    return dateStr.slice(5, 10).replace('-', '/')
+  }
+
   const markers = (marketingLogs || []).map((log: any) => ({
-    date: log.startDate ? log.startDate.slice(5).replace('-', '/') : log.date?.slice(5).replace('-', '/'),
+    date: formatDateToMD(log.startDate || log.date || ''),
+    endDate: formatDateToMD(log.endDate || ''),
     type: log.logType || log.type,
     title: log.subType || log.title,
   }))
@@ -1002,8 +1028,8 @@ function MarketingTab({ data }: { data: any }) {
                   <tr key={log.id} className="border-b border-dashboard-border/50 hover:bg-dashboard-border/30">
                     <td className="py-3 px-4 text-dashboard-text">
                       {log.startDate && log.endDate 
-                        ? `${log.startDate.slice(5)} ~ ${log.endDate.slice(5)}`
-                        : log.date?.slice(5) || '-'}
+                        ? `${formatDateToMD(log.startDate)} ~ ${formatDateToMD(log.endDate)}`
+                        : formatDateToMD(log.date) || '-'}
                     </td>
                     <td className="py-3 px-4">
                       <span className={cn(
