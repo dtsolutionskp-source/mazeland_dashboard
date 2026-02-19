@@ -28,22 +28,32 @@ function LoginForm() {
     setIsLoading(true)
 
     try {
+      // 이메일과 비밀번호 앞뒤 공백 제거
+      const trimmedEmail = email.trim()
+      const trimmedPassword = password.trim()
+      
+      console.log('[Login] Attempting login for:', trimmedEmail)
+      
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        credentials: 'include', // 쿠키 포함
+        body: JSON.stringify({ email: trimmedEmail, password: trimmedPassword }),
       })
 
       const data = await res.json()
+      console.log('[Login] Response:', res.status, data)
 
       if (!res.ok) {
         setError(data.error || '로그인에 실패했습니다.')
         return
       }
 
-      router.push('/dashboard')
-      router.refresh()
+      // 로그인 성공 - 페이지 새로고침으로 쿠키 적용
+      console.log('[Login] Success, redirecting...')
+      window.location.href = '/dashboard'
     } catch (err) {
+      console.error('[Login] Error:', err)
       setError('네트워크 오류가 발생했습니다.')
     } finally {
       setIsLoading(false)
