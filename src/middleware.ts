@@ -7,7 +7,7 @@ const JWT_SECRET = new TextEncoder().encode(
 )
 
 // 인증이 필요 없는 경로
-const publicPaths = ['/login', '/api/auth/login', '/api/debug-env', '/api/debug-login', '/api/fix-password']
+const publicPaths = ['/login', '/api/auth/login', '/api/debug-env', '/api/debug-login', '/api/fix-password', '/api/debug-data']
 
 // 정적 파일 경로
 const staticPaths = ['/_next', '/favicon.ico', '/images']
