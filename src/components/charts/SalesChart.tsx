@@ -26,8 +26,10 @@ interface SalesData {
 }
 
 interface MarketingMarker {
-  date: string
+  date: string // 그래프 매칭용 (02/16 형식)
   endDate?: string
+  displayDate?: string // 범례 표시용 (2/16 형식)
+  displayEndDate?: string
   type: string
   title: string
   // 새로운 마케팅 로그 구조
@@ -366,10 +368,13 @@ export function SalesChart({
       {markers.length > 0 && (
         <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-dashboard-border">
           {markers.map((marker, index) => {
+            // 표시용 날짜 (2/16 형식, 없으면 그래프용 날짜 사용)
+            const startDateDisplay = marker.displayDate || marker.date
+            const endDateDisplay = marker.displayEndDate || marker.endDate
             // 날짜 형식: M/D~M/D
-            const dateRange = marker.endDate && marker.endDate !== marker.date 
-              ? `${marker.date}~${marker.endDate}` 
-              : marker.date
+            const dateRange = endDateDisplay && endDateDisplay !== startDateDisplay 
+              ? `${startDateDisplay}~${endDateDisplay}` 
+              : startDateDisplay
             // 표시 형식: 제목 (날짜)
             const displayText = marker.title 
               ? `${marker.title} (${dateRange})`

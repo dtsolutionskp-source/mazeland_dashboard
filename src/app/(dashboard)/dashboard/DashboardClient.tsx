@@ -154,18 +154,26 @@ function OverviewTab({ data, userRole }: { data: any; userRole: Role }) {
   const categories = rawData.categories || []
   const comparison = rawData.comparison || null
 
-  // 날짜 문자열에서 M/D 형식으로 변환 (시간 제외)
+  // 날짜 문자열에서 MM/DD 형식으로 변환 (시간 제외, 그래프 dateLabel과 동일 형식)
   const formatDateToMD = (dateStr: string): string => {
     if (!dateStr) return ''
     // ISO 형식 "2026-02-16T00:00:00.000Z" 또는 "2026-02-16" 처리
     const dateOnly = dateStr.split('T')[0] // 시간 부분 제거
+    // "2026-02-16" -> "02/16" (그래프의 dateLabel과 동일 형식)
+    return dateOnly.slice(5).replace('-', '/')
+  }
+  
+  // 사용자 표시용 M/D 형식 (마케팅 범례에 표시)
+  const formatDateForDisplay = (dateStr: string): string => {
+    if (!dateStr) return ''
+    const dateOnly = dateStr.split('T')[0]
     const parts = dateOnly.split('-')
     if (parts.length >= 3) {
       const month = parseInt(parts[1], 10)
       const day = parseInt(parts[2], 10)
       return `${month}/${day}`
     }
-    return dateStr.slice(5, 10).replace('-', '/')
+    return dateOnly.slice(5).replace('-', '/')
   }
 
   // 마케팅 로그를 차트 마커 형식으로 변환
@@ -173,8 +181,10 @@ function OverviewTab({ data, userRole }: { data: any; userRole: Role }) {
     const isCampaign = log.logType === 'CAMPAIGN'
     
     return {
-      date: formatDateToMD(log.startDate || ''),
+      date: formatDateToMD(log.startDate || ''), // 그래프 매칭용 (02/16 형식)
       endDate: formatDateToMD(log.endDate || ''),
+      displayDate: formatDateForDisplay(log.startDate || ''), // 범례 표시용 (2/16 형식)
+      displayEndDate: formatDateForDisplay(log.endDate || ''),
       type: log.logType || 'CAMPAIGN',
       // 캠페인은 제목, 퍼포먼스는 세부유형 표시
       title: isCampaign ? (log.title || '') : (log.subType || ''),
@@ -888,8 +898,15 @@ function ChannelsTab({ data }: { data: any }) {
 function MarketingTab({ data }: { data: any }) {
   const { marketingLogs = [], dailyTrend = [], prevDailyTrend = [] } = data
 
-  // 날짜 문자열에서 M/D 형식으로 변환 (시간 제외)
+  // 날짜 문자열에서 MM/DD 형식으로 변환 (그래프 매칭용)
   const formatDateToMD = (dateStr: string): string => {
+    if (!dateStr) return ''
+    const dateOnly = dateStr.split('T')[0]
+    return dateOnly.slice(5).replace('-', '/')
+  }
+
+  // 사용자 표시용 M/D 형식
+  const formatDateForDisplay = (dateStr: string): string => {
     if (!dateStr) return ''
     const dateOnly = dateStr.split('T')[0]
     const parts = dateOnly.split('-')
@@ -898,12 +915,14 @@ function MarketingTab({ data }: { data: any }) {
       const day = parseInt(parts[2], 10)
       return `${month}/${day}`
     }
-    return dateStr.slice(5, 10).replace('-', '/')
+    return dateOnly.slice(5).replace('-', '/')
   }
 
   const markers = (marketingLogs || []).map((log: any) => ({
-    date: formatDateToMD(log.startDate || log.date || ''),
+    date: formatDateToMD(log.startDate || log.date || ''), // 그래프 매칭용
     endDate: formatDateToMD(log.endDate || ''),
+    displayDate: formatDateForDisplay(log.startDate || log.date || ''), // 범례 표시용
+    displayEndDate: formatDateForDisplay(log.endDate || ''),
     type: log.logType || log.type,
     title: log.subType || log.title,
   }))
