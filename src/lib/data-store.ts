@@ -41,7 +41,7 @@ export interface StoredUploadData {
   channels: Record<string, { name: string; count: number; feeRate: number }>
   categories: Record<string, { name: string; count: number }>
   monthly: {
-    onlineByChannel: Record<string, number>
+    onlineByChannel: Record<string, number | { count: number; feeRate: number }>
     onlineByAge: Record<string, number>
     offlineByCategory: Record<string, number>
     revenue: {
