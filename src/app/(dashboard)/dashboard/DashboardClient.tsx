@@ -158,6 +158,9 @@ function OverviewTab({ data, userRole, year, month }: { data: any; userRole: Rol
   
   // SKP 계정 여부 확인
   const isSkpUser = userRole === 'SUPER_ADMIN' || userRole === 'SKP_ADMIN'
+  
+  // SKP 상세 데이터
+  const skpDetails = rawData.skpDetails || null
 
   // 날짜 문자열에서 MM/DD 형식으로 변환 (시간 제외, 그래프 dateLabel과 동일 형식)
   const formatDateToMD = (dateStr: string): string => {
@@ -216,13 +219,47 @@ function OverviewTab({ data, userRole, year, month }: { data: any; userRole: Rol
 
   return (
     <div className="space-y-6">
+      {/* SKP 계정: SKP 매출과 비용 (최상단) */}
+      {isSkpUser && skpDetails && (
+        <Card>
+          <CardHeader title="SKP 매출과 비용" description="채널 수수료 및 지급 비용 현황" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="p-4 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-lg border border-blue-500/30">
+              <p className="text-sm text-blue-400">총 매출</p>
+              <p className="text-2xl font-bold text-dashboard-text mt-1">
+                {formatCurrency(skpDetails.grossRevenue)}
+              </p>
+            </div>
+            <div className="p-4 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-lg border border-red-500/30">
+              <p className="text-sm text-red-400">채널 수수료</p>
+              <p className="text-2xl font-bold text-red-500 mt-1">
+                -{formatCurrency(skpDetails.channelFees)}
+              </p>
+            </div>
+            <div className="p-4 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-lg border border-orange-500/30">
+              <p className="text-sm text-orange-400">지급 비용</p>
+              <p className="text-2xl font-bold text-orange-500 mt-1">
+                -{formatCurrency(skpDetails.totalCost)}
+              </p>
+              <p className="text-xs text-dashboard-muted mt-1">
+                메이즈 {formatCurrency(skpDetails.mazePayment)} + 컬처 {formatCurrency(skpDetails.culturePayment)} + FMC {formatCurrency(skpDetails.agencyPayment || 0)}
+              </p>
+            </div>
+            <div className="p-4 bg-gradient-to-br from-maze-500/10 to-maze-600/5 rounded-lg border border-maze-500/30">
+              <p className="text-sm text-maze-400">SKP 이익</p>
+              <p className="text-2xl font-bold text-maze-500 mt-1">
+                {formatCurrency(skpDetails.profit)}
+              </p>
+              <p className="text-xs text-dashboard-muted mt-1">
+                + 플랫폼 이용료 {formatCurrency(skpDetails.platformFeeIncome)}
+              </p>
+            </div>
+          </div>
+        </Card>
+      )}
+
       {/* KPI 카드 (전월비 표시) */}
-      <div className={cn(
-        "grid gap-6",
-        isSkpUser 
-          ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4" 
-          : "grid-cols-1 md:grid-cols-3"
-      )}>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <KpiCard
           title="총 방문객"
           value={formatNumber(summary.totalVisitors) + '명'}
@@ -241,16 +278,6 @@ function OverviewTab({ data, userRole, year, month }: { data: any; userRole: Rol
           comparison={comparison?.offlineCount}
           icon={<BarChart3 className="w-6 h-6" />}
         />
-        {/* SKP 계정에서만 디지털프로그램 매출 표시 */}
-        {isSkpUser && (
-          <KpiCard
-            title="디지털프로그램 매출"
-            value={formatCurrency(summary.totalRevenue)}
-            comparison={comparison?.totalRevenue}
-            icon={<DollarSign className="w-6 h-6" />}
-            subtitle="수수료 제외"
-          />
-        )}
       </div>
 
       {/* 인터넷/현장 비율 */}

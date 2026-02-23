@@ -288,9 +288,16 @@ export async function POST(request: NextRequest) {
       const offlineSalesData: any[] = []
       
       console.log('[Upload Save] Processing daily data:', finalDailyData.length, 'days')
+      if (finalDailyData.length > 0) {
+        console.log('[Upload Save] First day:', finalDailyData[0])
+        console.log('[Upload Save] Last day:', finalDailyData[finalDailyData.length - 1])
+      }
       
       for (const dayData of finalDailyData) {
-        const saleDate = new Date(dayData.date)
+        // 날짜를 UTC로 정확히 파싱 (시간대 문제 방지)
+        const dateStr = dayData.date.split('T')[0] // "2025-11-01" 형식으로 추출
+        const [y, m, d] = dateStr.split('-').map(Number)
+        const saleDate = new Date(Date.UTC(y, m - 1, d))
         
         // 온라인 일별 총합 저장 (채널 분배 없이 단순 저장)
         if (dayData.online > 0) {

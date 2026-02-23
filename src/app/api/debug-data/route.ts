@@ -66,6 +66,49 @@ export async function GET(request: NextRequest) {
     const offlineCount = await prisma.offlineSale.count()
     result.database.onlineSaleCount = onlineCount
     result.database.offlineSaleCount = offlineCount
+    
+    // 5. 각 UploadHistory별 Sales 개수
+    const salesByHistory: Record<string, { online: number; offline: number }> = {}
+    for (const history of histories) {
+      const historyOnline = await prisma.onlineSale.count({
+        where: { uploadHistoryId: history.id },
+      })
+      const historyOffline = await prisma.offlineSale.count({
+        where: { uploadHistoryId: history.id },
+      })
+      salesByHistory[history.id] = { online: historyOnline, offline: historyOffline }
+    }
+    result.database.salesByHistory = salesByHistory
+    
+    // 6. 각 월별 상세 정보 (dailyData 개수 포함)
+    const monthlyDetails: any[] = []
+    for (const summary of summaries) {
+      const history = await prisma.uploadHistory.findUnique({
+        where: { id: summary.uploadHistoryId },
+        include: {
+          onlineSales: { select: { id: true, saleDate: true, quantity: true } },
+          offlineSales: { select: { id: true, saleDate: true, quantity: true } },
+        },
+      })
+      
+      // 일별 데이터 재구성
+      const dailyDates = new Set<string>()
+      history?.onlineSales?.forEach(s => dailyDates.add(s.saleDate.toISOString().split('T')[0]))
+      history?.offlineSales?.forEach(s => dailyDates.add(s.saleDate.toISOString().split('T')[0]))
+      
+      monthlyDetails.push({
+        year: summary.year,
+        month: summary.month,
+        onlineTotal: summary.onlineTotal,
+        offlineTotal: summary.offlineTotal,
+        grandTotal: summary.grandTotal,
+        onlineSalesRecords: history?.onlineSales?.length || 0,
+        offlineSalesRecords: history?.offlineSales?.length || 0,
+        uniqueDates: dailyDates.size,
+        sampleDates: Array.from(dailyDates).slice(0, 5),
+      })
+    }
+    result.database.monthlyDetails = monthlyDetails
 
   } catch (dbError) {
     result.database.error = dbError instanceof Error ? dbError.message : String(dbError)

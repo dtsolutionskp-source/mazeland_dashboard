@@ -187,10 +187,23 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
       // 일별 데이터 재구성 (OnlineSale + OfflineSale에서)
       const dailyDataMap = new Map<string, { date: string; online: number; offline: number; total: number }>()
       
+      console.log(`[DataStore] uploadHistory exists:`, !!summary.uploadHistory)
+      console.log(`[DataStore] onlineSales count:`, summary.uploadHistory?.onlineSales?.length || 0)
+      console.log(`[DataStore] offlineSales count:`, summary.uploadHistory?.offlineSales?.length || 0)
+      
+      // 날짜 추출 헬퍼 함수 (UTC -> 로컬 시간대 고려)
+      const formatDateKey = (date: Date): string => {
+        // UTC 날짜를 사용 (DB에 저장된 날짜 그대로)
+        const year = date.getUTCFullYear()
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0')
+        const day = String(date.getUTCDate()).padStart(2, '0')
+        return `${year}-${month}-${day}`
+      }
+      
       // 온라인 판매 데이터
       if (summary.uploadHistory?.onlineSales) {
         for (const sale of summary.uploadHistory.onlineSales) {
-          const dateKey = sale.saleDate.toISOString().split('T')[0]
+          const dateKey = formatDateKey(sale.saleDate)
           const existing = dailyDataMap.get(dateKey) || { date: dateKey, online: 0, offline: 0, total: 0 }
           existing.online += sale.quantity
           existing.total = existing.online + existing.offline
@@ -201,7 +214,7 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
       // 오프라인 판매 데이터
       if (summary.uploadHistory?.offlineSales) {
         for (const sale of summary.uploadHistory.offlineSales) {
-          const dateKey = sale.saleDate.toISOString().split('T')[0]
+          const dateKey = formatDateKey(sale.saleDate)
           const existing = dailyDataMap.get(dateKey) || { date: dateKey, online: 0, offline: 0, total: 0 }
           existing.offline += sale.quantity
           existing.total = existing.online + existing.offline
@@ -214,6 +227,10 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
         .sort((a, b) => a.date.localeCompare(b.date))
       
       console.log(`[DataStore] Daily data reconstructed: ${dailyData.length} days`)
+      if (dailyData.length > 0) {
+        console.log(`[DataStore] First day:`, dailyData[0])
+        console.log(`[DataStore] Last day:`, dailyData[dailyData.length - 1])
+      }
       
       return {
         uploadedAt: summary.createdAt.toISOString(),
