@@ -94,20 +94,22 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 6. DB 저장 시도
+    // 6. DB 저장 시도 (항상 시도)
     let uploadHistoryId: string | null = null
     let dbSaveSuccess = false
 
     try {
-      // DB 연결 테스트
-      if (prisma && typeof prisma.uploadHistory?.create === 'function') {
-        // 트랜잭션으로 처리
-        const result = await saveToDatabase(parseResult, file, user.id)
-        uploadHistoryId = result.uploadHistoryId
-        dbSaveSuccess = true
-      }
+      console.log('[Upload] Attempting to save to DB...')
+      console.log('[Upload] onlineSales count:', parseResult.onlineSales.length)
+      console.log('[Upload] offlineSales count:', parseResult.offlineSales.length)
+      
+      const result = await saveToDatabase(parseResult, file, user.id)
+      uploadHistoryId = result.uploadHistoryId
+      dbSaveSuccess = true
+      console.log('[Upload] DB save SUCCESS, uploadHistoryId:', uploadHistoryId)
     } catch (dbError) {
-      console.log('DB 저장 실패, 파싱 결과만 반환:', dbError)
+      console.error('[Upload] DB 저장 실패:', dbError)
+      console.error('[Upload] DB error message:', dbError instanceof Error ? dbError.message : String(dbError))
     }
 
     // 7. 파서 결과에서 데이터 추출 (이제 파서가 일별 데이터에서 직접 계산함)
@@ -406,6 +408,14 @@ export async function POST(request: NextRequest) {
  * 데이터베이스에 저장
  */
 async function saveToDatabase(parseResult: ParseResult, file: File, userId: string): Promise<{ uploadHistoryId: string }> {
+  console.log('[saveToDatabase] Starting...')
+  console.log('[saveToDatabase] onlineSales count:', parseResult.onlineSales.length)
+  console.log('[saveToDatabase] offlineSales count:', parseResult.offlineSales.length)
+  
+  if (parseResult.onlineSales.length > 0) {
+    console.log('[saveToDatabase] First online sale:', JSON.stringify(parseResult.onlineSales[0]))
+  }
+  
   // 1. 업로드 기록 생성
   const uploadHistory = await prisma.uploadHistory.create({
     data: {
@@ -420,10 +430,12 @@ async function saveToDatabase(parseResult: ParseResult, file: File, userId: stri
       status: 'PROCESSING',
     },
   })
+  console.log('[saveToDatabase] Created uploadHistory:', uploadHistory.id)
 
   try {
     // 2. 온라인 판매 데이터 저장 (청크 단위로)
     const onlineChunks = chunkArray(parseResult.onlineSales, CHUNK_SIZE)
+    let onlineSaved = 0
     for (const chunk of onlineChunks) {
       await prisma.onlineSale.createMany({
         data: chunk.map(sale => ({
@@ -442,10 +454,13 @@ async function saveToDatabase(parseResult: ParseResult, file: File, userId: stri
         })),
         skipDuplicates: true,
       })
+      onlineSaved += chunk.length
     }
+    console.log('[saveToDatabase] Saved online sales:', onlineSaved)
 
     // 3. 오프라인 판매 데이터 저장 (청크 단위로)
     const offlineChunks = chunkArray(parseResult.offlineSales, CHUNK_SIZE)
+    let offlineSaved = 0
     for (const chunk of offlineChunks) {
       await prisma.offlineSale.createMany({
         data: chunk.map(sale => ({
@@ -459,7 +474,9 @@ async function saveToDatabase(parseResult: ParseResult, file: File, userId: stri
         })),
         skipDuplicates: true,
       })
+      offlineSaved += chunk.length
     }
+    console.log('[saveToDatabase] Saved offline sales:', offlineSaved)
 
     // 4. 월간 집계 저장
     const { monthlySummary } = parseResult

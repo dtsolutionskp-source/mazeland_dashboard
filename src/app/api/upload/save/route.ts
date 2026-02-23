@@ -309,8 +309,8 @@ export async function POST(request: NextRequest) {
           for (const [channelCode, chData] of Object.entries(channelData)) {
             if (chData.count > 0) {
               const feeRate = chData.feeRate || CHANNEL_FEE_RATES[channelCode] || 10
-              const grossAmount = BASE_PRICE * chData.count
-              const feeAmount = Math.round(grossAmount * (feeRate / 100))
+              const totalAmount = BASE_PRICE * chData.count
+              const feeAmount = Math.round(totalAmount * (feeRate / 100))
               onlineSalesData.push({
                 uploadHistoryId: uploadHistory.id,
                 saleDate,
@@ -321,9 +321,9 @@ export async function POST(request: NextRequest) {
                 ageGroup: '성인',
                 quantity: chData.count,
                 unitPrice: BASE_PRICE,
-                grossAmount,
+                totalAmount,
                 feeAmount,
-                netAmount: grossAmount - feeAmount,
+                netAmount: totalAmount - feeAmount,
               })
             }
           }
@@ -339,7 +339,7 @@ export async function POST(request: NextRequest) {
             ageGroup: '성인',
             quantity: dayData.online,
             unitPrice: BASE_PRICE,
-            grossAmount: BASE_PRICE * dayData.online,
+            totalAmount: BASE_PRICE * dayData.online,
             feeAmount: 0,
             netAmount: BASE_PRICE * dayData.online,
           })
