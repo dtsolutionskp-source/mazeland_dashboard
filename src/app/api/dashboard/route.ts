@@ -111,9 +111,11 @@ export async function GET(request: NextRequest) {
       m => m.year === requestedYear && m.month === requestedMonth
     )
 
-    // 데이터가 없으면 빈 응답 반환
+    console.log('[Dashboard API] hasDataForMonth:', hasDataForMonth)
+
+    // 데이터가 availableMonths에 없으면 직접 확인
     if (!hasDataForMonth) {
-      console.log('[Dashboard API] No data for requested month, returning empty response')
+      console.log('[Dashboard API] Month not in available list, checking upload data directly')
       
       // 해당 월의 upload-data에서 확인
       const uploadedData = await getUploadDataByMonth(requestedYear, requestedMonth)
@@ -121,6 +123,11 @@ export async function GET(request: NextRequest) {
         console.log('[Dashboard API] No upload data found for:', requestedYear, requestedMonth)
         return NextResponse.json(createEmptyResponse(requestedYear, requestedMonth, user, viewableCompanies, canViewAll, availableMonths))
       }
+      console.log('[Dashboard API] Found upload data directly:', {
+        dailyDataLength: uploadedData.dailyData?.length,
+        onlineCount: uploadedData.summary?.onlineCount,
+        offlineCount: uploadedData.summary?.offlineCount,
+      })
     }
 
     // 해당 월 데이터 로드
@@ -193,20 +200,39 @@ export async function GET(request: NextRequest) {
         const channelSum = Object.values(channels).reduce((sum, ch) => sum + (ch.count || 0), 0)
         const categorySum = Object.values(categories).reduce((sum, cat) => sum + (cat.count || 0), 0)
         
-        // 채널/카테고리 합계가 있으면 그것을 사용, 없으면 summary에서 가져옴
-        totalOnline = channelSum > 0 ? channelSum : uploadedData.summary.onlineCount
-        totalOffline = categorySum > 0 ? categorySum : uploadedData.summary.offlineCount
+        // 일별 데이터에서 합계 계산 (백업용)
+        const dailyOnlineSum = dailyData.reduce((sum, d) => sum + (d.online || 0), 0)
+        const dailyOfflineSum = dailyData.reduce((sum, d) => sum + (d.offline || 0), 0)
+        
+        console.log('[Dashboard API] Data sums:', { 
+          channelSum, categorySum, 
+          dailyOnlineSum, dailyOfflineSum,
+          summaryOnline: uploadedData.summary.onlineCount,
+          summaryOffline: uploadedData.summary.offlineCount
+        })
+        
+        // 채널/카테고리 합계 > summary > dailyData 순으로 우선순위
+        totalOnline = channelSum > 0 ? channelSum : 
+                      uploadedData.summary.onlineCount > 0 ? uploadedData.summary.onlineCount : 
+                      dailyOnlineSum
+        totalOffline = categorySum > 0 ? categorySum : 
+                       uploadedData.summary.offlineCount > 0 ? uploadedData.summary.offlineCount : 
+                       dailyOfflineSum
         totalVisitors = totalOnline + totalOffline
         
-        console.log('[Dashboard API] Loaded totals from channels/categories:', { totalOnline, totalOffline, totalVisitors })
-        console.log('[Dashboard API] (summary was:', uploadedData.summary, ')')
+        console.log('[Dashboard API] Final totals:', { totalOnline, totalOffline, totalVisitors })
       }
     }
 
-    // 데이터가 여전히 없으면 빈 응답
-    if (totalVisitors === 0) {
+    // 데이터가 여전히 없으면 빈 응답 (단, dailyData가 있으면 그래프는 표시)
+    if (totalVisitors === 0 && dailyData.length === 0) {
       console.log('[Dashboard API] No data found, returning empty response')
       return NextResponse.json(createEmptyResponse(requestedYear, requestedMonth, user, viewableCompanies, canViewAll, availableMonths))
+    }
+    
+    // totalVisitors가 0이어도 dailyData가 있으면 그래프 표시를 위해 계속 진행
+    if (totalVisitors === 0 && dailyData.length > 0) {
+      console.log('[Dashboard API] totalVisitors is 0 but dailyData exists, continuing with graph data')
     }
 
     // 정산 계산 (아직 없는 경우)

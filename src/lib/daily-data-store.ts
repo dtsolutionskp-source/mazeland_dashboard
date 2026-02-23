@@ -446,14 +446,18 @@ export async function getAvailableMonthsV2(): Promise<{ year: number; month: num
     // 1. DB에서 먼저 조회 (Vercel 환경에서 신뢰할 수 있는 소스)
     try {
       const summaries = await prisma.monthlySummary.findMany({
-        select: { year: true, month: true, grandTotal: true },
+        select: { year: true, month: true, grandTotal: true, onlineTotal: true, offlineTotal: true },
         orderBy: [{ year: 'desc' }, { month: 'desc' }],
       })
       
       console.log('[DailyDataStore] DB summaries found:', summaries.length)
       
       for (const s of summaries) {
-        if (s.grandTotal > 0) {
+        // grandTotal, onlineTotal, offlineTotal 중 하나라도 양수면 데이터 있음으로 판단
+        const hasData = (s.grandTotal && s.grandTotal > 0) || 
+                       (s.onlineTotal && s.onlineTotal > 0) || 
+                       (s.offlineTotal && s.offlineTotal > 0)
+        if (hasData) {
           const key = `${s.year}-${s.month}`
           if (!monthSet.has(key)) {
             monthSet.add(key)

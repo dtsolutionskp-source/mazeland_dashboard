@@ -155,6 +155,9 @@ function OverviewTab({ data, userRole, year, month }: { data: any; userRole: Rol
   const channels = rawData.channels || []
   const categories = rawData.categories || []
   const comparison = rawData.comparison || null
+  
+  // SKP 계정 여부 확인
+  const isSkpUser = userRole === 'SUPER_ADMIN' || userRole === 'SKP_ADMIN'
 
   // 날짜 문자열에서 MM/DD 형식으로 변환 (시간 제외, 그래프 dateLabel과 동일 형식)
   const formatDateToMD = (dateStr: string): string => {
@@ -214,7 +217,12 @@ function OverviewTab({ data, userRole, year, month }: { data: any; userRole: Rol
   return (
     <div className="space-y-6">
       {/* KPI 카드 (전월비 표시) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className={cn(
+        "grid gap-6",
+        isSkpUser 
+          ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-4" 
+          : "grid-cols-1 md:grid-cols-3"
+      )}>
         <KpiCard
           title="총 방문객"
           value={formatNumber(summary.totalVisitors) + '명'}
@@ -233,67 +241,48 @@ function OverviewTab({ data, userRole, year, month }: { data: any; userRole: Rol
           comparison={comparison?.offlineCount}
           icon={<BarChart3 className="w-6 h-6" />}
         />
-        <KpiCard
-          title="디지털프로그램 매출"
-          value={formatCurrency(summary.totalRevenue)}
-          comparison={comparison?.totalRevenue}
-          icon={<DollarSign className="w-6 h-6" />}
-          subtitle="수수료 제외"
-        />
+        {/* SKP 계정에서만 디지털프로그램 매출 표시 */}
+        {isSkpUser && (
+          <KpiCard
+            title="디지털프로그램 매출"
+            value={formatCurrency(summary.totalRevenue)}
+            comparison={comparison?.totalRevenue}
+            icon={<DollarSign className="w-6 h-6" />}
+            subtitle="수수료 제외"
+          />
+        )}
       </div>
 
-      {/* 인터넷/현장 비율 + 매출 상세 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader title="판매 채널 비율" />
-          <div className="flex items-center gap-8">
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-dashboard-muted">인터넷</span>
-                <span className="text-maze-500 font-semibold">{summary.onlineRatio}%</span>
-              </div>
-              <div className="h-3 bg-dashboard-border rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-maze-500 rounded-full transition-all duration-500"
-                  style={{ width: `${summary.onlineRatio}%` }}
-                />
-              </div>
+      {/* 인터넷/현장 비율 */}
+      <Card>
+        <CardHeader title="판매 채널 비율" />
+        <div className="flex items-center gap-8">
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-dashboard-muted">인터넷</span>
+              <span className="text-maze-500 font-semibold">{summary.onlineRatio}%</span>
             </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-dashboard-muted">현장</span>
-                <span className="text-blue-500 font-semibold">{summary.offlineRatio}%</span>
-              </div>
-              <div className="h-3 bg-dashboard-border rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                  style={{ width: `${summary.offlineRatio}%` }}
-                />
-              </div>
+            <div className="h-3 bg-dashboard-border rounded-full overflow-hidden">
+              <div
+                className="h-full bg-maze-500 rounded-full transition-all duration-500"
+                style={{ width: `${summary.onlineRatio}%` }}
+              />
             </div>
           </div>
-        </Card>
-
-        <Card>
-          <CardHeader title="매출 상세" />
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-4 bg-dashboard-bg rounded-lg">
-              <p className="text-sm text-dashboard-muted">디지털프로그램 매출</p>
-              <p className="text-xl font-bold text-maze-500 mt-1">
-                {formatCurrency(summary.totalRevenue)}
-              </p>
-              <p className="text-xs text-dashboard-muted mt-1">수수료 제외</p>
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-dashboard-muted">현장</span>
+              <span className="text-blue-500 font-semibold">{summary.offlineRatio}%</span>
             </div>
-            <div className="text-center p-4 bg-dashboard-bg rounded-lg">
-              <p className="text-sm text-dashboard-muted">채널 수수료 합계</p>
-              <p className="text-xl font-bold text-orange-500 mt-1">
-                {formatCurrency(summary.totalFee)}
-              </p>
-              <p className="text-xs text-dashboard-muted mt-1">이미 차감됨</p>
+            <div className="h-3 bg-dashboard-border rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                style={{ width: `${summary.offlineRatio}%` }}
+              />
             </div>
           </div>
-        </Card>
-      </div>
+        </div>
+      </Card>
 
       {/* 일별 추이 그래프 */}
       <Card>
@@ -475,6 +464,29 @@ function OverviewTab({ data, userRole, year, month }: { data: any; userRole: Rol
           </table>
         </div>
       </Card>
+
+      {/* SKP 계정에서만 매출 상세 표시 (최하단 배치) */}
+      {isSkpUser && (
+        <Card>
+          <CardHeader title="디지털프로그램 매출 상세" description="SKP 매출 및 비용 내역" />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-4 bg-dashboard-bg rounded-lg">
+              <p className="text-sm text-dashboard-muted">디지털프로그램 매출</p>
+              <p className="text-xl font-bold text-maze-500 mt-1">
+                {formatCurrency(summary.totalRevenue)}
+              </p>
+              <p className="text-xs text-dashboard-muted mt-1">수수료 제외</p>
+            </div>
+            <div className="text-center p-4 bg-dashboard-bg rounded-lg">
+              <p className="text-sm text-dashboard-muted">채널 수수료 합계</p>
+              <p className="text-xl font-bold text-orange-500 mt-1">
+                {formatCurrency(summary.totalFee)}
+              </p>
+              <p className="text-xs text-dashboard-muted mt-1">이미 차감됨</p>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   )
 }
