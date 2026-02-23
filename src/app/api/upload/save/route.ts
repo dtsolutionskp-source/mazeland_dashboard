@@ -177,7 +177,10 @@ export async function POST(request: NextRequest) {
       categories: finalCategories,
       monthly: {
         onlineByChannel: Object.fromEntries(
-          Object.entries(finalChannels).map(([code, data]: [string, any]) => [code, data.count || 0])
+          Object.entries(finalChannels).map(([code, data]: [string, any]) => [code, { 
+            count: data.count || 0, 
+            feeRate: data.feeRate || CHANNEL_FEE_RATES[code] || 10 
+          }])
         ),
         onlineByAge: {},
         offlineByCategory: Object.fromEntries(

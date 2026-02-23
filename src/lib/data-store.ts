@@ -154,17 +154,20 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
       })
       
       // DB 데이터를 StoredUploadData 형식으로 변환
-      const onlineByChannel = summary.onlineByChannel as Record<string, number> || {}
+      const onlineByChannel = summary.onlineByChannel as Record<string, any> || {}
       const offlineByCategory = summary.offlineByCategory as Record<string, number> || {}
       const onlineByAge = summary.onlineByAge as Record<string, number> || {}
       
-      // 채널 데이터 변환
+      // 채널 데이터 변환 (새 형식: { count, feeRate } 또는 이전 형식: 숫자)
       const channels: Record<string, { name: string; count: number; feeRate: number }> = {}
-      for (const [code, count] of Object.entries(onlineByChannel)) {
+      for (const [code, data] of Object.entries(onlineByChannel)) {
+        // 새 형식: { count: number, feeRate: number }
+        // 이전 형식: number (count만)
+        const isNewFormat = typeof data === 'object' && data !== null && 'count' in data
         channels[code] = {
           name: code,
-          count: count as number,
-          feeRate: getChannelFeeRate(code),
+          count: isNewFormat ? (data as { count: number; feeRate: number }).count : (data as number),
+          feeRate: isNewFormat ? (data as { count: number; feeRate: number }).feeRate : getChannelFeeRate(code),
         }
       }
       
