@@ -223,13 +223,41 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
       }
       
       // 일별 데이터 배열로 변환 및 정렬
-      const dailyData = Array.from(dailyDataMap.values())
+      let dailyData = Array.from(dailyDataMap.values())
         .sort((a, b) => a.date.localeCompare(b.date))
       
       console.log(`[DataStore] Daily data reconstructed: ${dailyData.length} days`)
       if (dailyData.length > 0) {
         console.log(`[DataStore] First day:`, dailyData[0])
         console.log(`[DataStore] Last day:`, dailyData[dailyData.length - 1])
+      }
+      
+      // 일별 레코드가 없지만 월간 총계가 있는 경우 - 월의 각 날짜에 균등 분배
+      if (dailyData.length === 0 && (summary.onlineTotal > 0 || summary.offlineTotal > 0)) {
+        console.log(`[DataStore] No daily records but has totals - generating fallback daily data`)
+        
+        // 해당 월의 일수 계산
+        const daysInMonth = new Date(year, month, 0).getDate()
+        const onlinePerDay = Math.floor(summary.onlineTotal / daysInMonth)
+        const offlinePerDay = Math.floor(summary.offlineTotal / daysInMonth)
+        const onlineRemainder = summary.onlineTotal % daysInMonth
+        const offlineRemainder = summary.offlineTotal % daysInMonth
+        
+        dailyData = []
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+          // 마지막 날에 나머지 할당
+          const online = day === daysInMonth ? onlinePerDay + onlineRemainder : onlinePerDay
+          const offline = day === daysInMonth ? offlinePerDay + offlineRemainder : offlinePerDay
+          dailyData.push({
+            date: dateStr,
+            online,
+            offline,
+            total: online + offline,
+          })
+        }
+        
+        console.log(`[DataStore] Generated ${dailyData.length} fallback daily records`)
       }
       
       return {
