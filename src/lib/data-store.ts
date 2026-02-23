@@ -158,18 +158,22 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
       const offlineByCategory = summary.offlineByCategory as Record<string, number> || {}
       const onlineByAge = summary.onlineByAge as Record<string, number> || {}
       
+      console.log(`[DataStore] onlineByChannel from DB:`, JSON.stringify(onlineByChannel))
+      
       // 채널 데이터 변환 (새 형식: { count, feeRate } 또는 이전 형식: 숫자)
       const channels: Record<string, { name: string; count: number; feeRate: number }> = {}
       for (const [code, data] of Object.entries(onlineByChannel)) {
         // 새 형식: { count: number, feeRate: number }
         // 이전 형식: number (count만)
         const isNewFormat = typeof data === 'object' && data !== null && 'count' in data
+        console.log(`[DataStore] Channel ${code}: isNewFormat=${isNewFormat}, data=${JSON.stringify(data)}`)
         channels[code] = {
           name: code,
           count: isNewFormat ? (data as { count: number; feeRate: number }).count : (data as number),
           feeRate: isNewFormat ? (data as { count: number; feeRate: number }).feeRate : getChannelFeeRate(code),
         }
       }
+      console.log(`[DataStore] Converted channels:`, JSON.stringify(channels))
       
       // 카테고리 데이터 변환
       const categories: Record<string, { name: string; count: number }> = {}

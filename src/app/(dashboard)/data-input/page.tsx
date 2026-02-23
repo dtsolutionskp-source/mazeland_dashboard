@@ -220,6 +220,7 @@ export default function DataInputPage() {
           )
           
           // 채널 데이터 설정
+          console.log('[LoadData] Channels from API:', JSON.stringify(uploadData.channels))
           setEditableChannels(uploadData.channels || {})
           
           // 카테고리 데이터 설정
@@ -635,6 +636,12 @@ export default function DataInputPage() {
     setIsSaving(true)
 
     try {
+      console.log('[Save] Sending channels with feeRates:', JSON.stringify(
+        Object.fromEntries(
+          Object.entries(editableChannels).map(([code, data]) => [code, { count: data.count, feeRate: data.feeRate }])
+        )
+      ))
+      
       const response = await fetch('/api/upload/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -883,9 +890,9 @@ export default function DataInputPage() {
     return { online, offline, total: online + offline }
   }, [channelSum, categorySum, dailyTotals])
 
-  // 불일치 체크 (일별 합계와 채널/카테고리 합계 비교)
-  const channelMismatch = channelSum !== dailyTotals.online && dailyTotals.online > 0 && channelSum > 0
-  const categoryMismatch = categorySum !== dailyTotals.offline && dailyTotals.offline > 0 && categorySum > 0
+  // 불일치 체크 (일별 합계와 채널/카테고리 합계 비교) - 정수로 변환하여 비교
+  const channelMismatch = Math.round(channelSum) !== Math.round(dailyTotals.online) && dailyTotals.online > 0 && channelSum > 0
+  const categoryMismatch = Math.round(categorySum) !== Math.round(dailyTotals.offline) && dailyTotals.offline > 0 && categorySum > 0
 
   // SKP 매출 계산 (수정된 수수료율 반영)
   const calculateSkpRevenue = useMemo(() => {
@@ -1154,7 +1161,7 @@ export default function DataInputPage() {
                   title="채널별 인터넷 판매"
                   description={
                     channelMismatch
-                      ? `⚠️ 일별 합계(${formatNumber(totals.online)})와 채널 합계(${formatNumber(channelSum)})가 다릅니다`
+                      ? `⚠️ 일별 합계(${formatNumber(dailyTotals.online)})와 채널 합계(${formatNumber(channelSum)})가 다릅니다`
                       : `수수료율도 수정 가능합니다`
                   }
                 />
@@ -1162,7 +1169,7 @@ export default function DataInputPage() {
                 <div className="mt-2">
                   {channelMismatch ? (
                     <span className="text-red-500">
-                      ⚠️ 일별 합계({formatNumber(totals.online)})와 채널 합계({formatNumber(channelSum)})가 다릅니다
+                      ⚠️ 일별 합계({formatNumber(dailyTotals.online)})와 채널 합계({formatNumber(channelSum)})가 다릅니다
                     </span>
                   ) : (
                     <span className="flex items-center gap-1 text-dashboard-muted">

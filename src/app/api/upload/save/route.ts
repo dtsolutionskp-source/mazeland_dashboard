@@ -176,12 +176,16 @@ export async function POST(request: NextRequest) {
       channels: finalChannels,
       categories: finalCategories,
       monthly: {
-        onlineByChannel: Object.fromEntries(
-          Object.entries(finalChannels).map(([code, data]: [string, any]) => [code, { 
-            count: data.count || 0, 
-            feeRate: data.feeRate || CHANNEL_FEE_RATES[code] || 10 
-          }])
-        ),
+        onlineByChannel: (() => {
+          const result = Object.fromEntries(
+            Object.entries(finalChannels).map(([code, data]: [string, any]) => [code, { 
+              count: data.count || 0, 
+              feeRate: data.feeRate || CHANNEL_FEE_RATES[code] || 10 
+            }])
+          )
+          console.log('[Upload Save] onlineByChannel to save:', JSON.stringify(result))
+          return result
+        })(),
         onlineByAge: {},
         offlineByCategory: Object.fromEntries(
           Object.entries(finalCategories).map(([code, data]: [string, any]) => [code, data.count || 0])
