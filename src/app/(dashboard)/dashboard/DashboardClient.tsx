@@ -219,39 +219,39 @@ function OverviewTab({ data, userRole, year, month }: { data: any; userRole: Rol
 
   return (
     <div className="space-y-6">
-      {/* SKP 계정: SKP 매출과 비용 (최상단) */}
+      {/* SKP 계정: SKP 매출과 비용 (최상단) - 부가세 포함/별도 표시 */}
       {isSkpUser && skpDetails && (
         <Card>
-          <CardHeader title="SKP 매출과 비용" description="채널 수수료 및 지급 비용 현황" />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <CardHeader title="SKP 매출과 비용" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* 총 매출 */}
             <div className="p-4 bg-gradient-to-br from-blue-500/10 to-blue-600/5 rounded-lg border border-blue-500/30">
               <p className="text-sm text-blue-400">총 매출</p>
               <p className="text-2xl font-bold text-dashboard-text mt-1">
-                {formatCurrency(skpDetails.grossRevenue)}
-              </p>
-            </div>
-            <div className="p-4 bg-gradient-to-br from-red-500/10 to-red-600/5 rounded-lg border border-red-500/30">
-              <p className="text-sm text-red-400">채널 수수료</p>
-              <p className="text-2xl font-bold text-red-500 mt-1">
-                -{formatCurrency(skpDetails.channelFees)}
-              </p>
-            </div>
-            <div className="p-4 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-lg border border-orange-500/30">
-              <p className="text-sm text-orange-400">지급 비용</p>
-              <p className="text-2xl font-bold text-orange-500 mt-1">
-                -{formatCurrency(skpDetails.totalCost)}
+                {formatCurrency(Math.round(skpDetails.grossRevenue * 1.1))}
               </p>
               <p className="text-xs text-dashboard-muted mt-1">
-                메이즈 {formatCurrency(skpDetails.mazePayment)} + 컬처 {formatCurrency(skpDetails.culturePayment)} + FMC {formatCurrency(skpDetails.agencyPayment || 0)}
+                부가세 별도 {formatCurrency(skpDetails.grossRevenue)}
               </p>
             </div>
+            {/* 총 비용 */}
+            <div className="p-4 bg-gradient-to-br from-orange-500/10 to-orange-600/5 rounded-lg border border-orange-500/30">
+              <p className="text-sm text-orange-400">총 비용</p>
+              <p className="text-2xl font-bold text-orange-500 mt-1">
+                -{formatCurrency(Math.round((skpDetails.totalCost + skpDetails.channelFees) * 1.1))}
+              </p>
+              <p className="text-xs text-dashboard-muted mt-1">
+                부가세 별도 -{formatCurrency(skpDetails.totalCost + skpDetails.channelFees)}
+              </p>
+            </div>
+            {/* SKP 이익 */}
             <div className="p-4 bg-gradient-to-br from-maze-500/10 to-maze-600/5 rounded-lg border border-maze-500/30">
               <p className="text-sm text-maze-400">SKP 이익</p>
               <p className="text-2xl font-bold text-maze-500 mt-1">
-                {formatCurrency(skpDetails.profit)}
+                {formatCurrency(Math.round(skpDetails.profit * 1.1))}
               </p>
               <p className="text-xs text-dashboard-muted mt-1">
-                + 플랫폼 이용료 {formatCurrency(skpDetails.platformFeeIncome)}
+                부가세 별도 {formatCurrency(skpDetails.profit)}
               </p>
             </div>
           </div>

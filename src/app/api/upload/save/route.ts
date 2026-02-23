@@ -291,6 +291,7 @@ export async function POST(request: NextRequest) {
       if (finalDailyData.length > 0) {
         console.log('[Upload Save] First day:', finalDailyData[0])
         console.log('[Upload Save] Last day:', finalDailyData[finalDailyData.length - 1])
+        console.log('[Upload Save] First day channelData:', (finalDailyData[0] as any).channelData)
       }
       
       for (const dayData of finalDailyData) {
@@ -299,8 +300,35 @@ export async function POST(request: NextRequest) {
         const [y, m, d] = dateStr.split('-').map(Number)
         const saleDate = new Date(Date.UTC(y, m - 1, d))
         
-        // 온라인 일별 총합 저장 (채널 분배 없이 단순 저장)
-        if (dayData.online > 0) {
+        // 채널별 상세 데이터가 있으면 사용, 없으면 총합으로 저장
+        const channelData = (dayData as any).channelData as Record<string, { count: number; feeRate: number }> | undefined
+        const categoryData = (dayData as any).categoryData as Record<string, { count: number }> | undefined
+        
+        if (channelData && Object.keys(channelData).length > 0) {
+          // 채널별 상세 저장
+          for (const [channelCode, chData] of Object.entries(channelData)) {
+            if (chData.count > 0) {
+              const feeRate = chData.feeRate || CHANNEL_FEE_RATES[channelCode] || 10
+              const grossAmount = BASE_PRICE * chData.count
+              const feeAmount = Math.round(grossAmount * (feeRate / 100))
+              onlineSalesData.push({
+                uploadHistoryId: uploadHistory.id,
+                saleDate,
+                vendor: channelCode.split('_')[0] || channelCode,
+                channel: channelCode,
+                channelCode,
+                feeRate,
+                ageGroup: '성인',
+                quantity: chData.count,
+                unitPrice: BASE_PRICE,
+                grossAmount,
+                feeAmount,
+                netAmount: grossAmount - feeAmount,
+              })
+            }
+          }
+        } else if (dayData.online > 0) {
+          // 상세 데이터 없으면 총합으로 저장
           onlineSalesData.push({
             uploadHistoryId: uploadHistory.id,
             saleDate,
@@ -317,8 +345,23 @@ export async function POST(request: NextRequest) {
           })
         }
         
-        // 오프라인 일별 총합 저장 (카테고리 분배 없이 단순 저장)
-        if (dayData.offline > 0) {
+        if (categoryData && Object.keys(categoryData).length > 0) {
+          // 카테고리별 상세 저장
+          for (const [categoryCode, catData] of Object.entries(categoryData)) {
+            if (catData.count > 0) {
+              offlineSalesData.push({
+                uploadHistoryId: uploadHistory.id,
+                saleDate,
+                category: categoryCode,
+                categoryCode,
+                quantity: catData.count,
+                unitPrice: BASE_PRICE,
+                totalAmount: BASE_PRICE * catData.count,
+              })
+            }
+          }
+        } else if (dayData.offline > 0) {
+          // 상세 데이터 없으면 총합으로 저장
           offlineSalesData.push({
             uploadHistoryId: uploadHistory.id,
             saleDate,
