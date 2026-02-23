@@ -184,8 +184,16 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
         }
       }
       
-      // 일별 데이터 재구성 (OnlineSale + OfflineSale에서)
-      const dailyDataMap = new Map<string, { date: string; online: number; offline: number; total: number }>()
+      // 일별 데이터 재구성 (OnlineSale + OfflineSale에서) - channelData/categoryData 포함
+      interface DailyDataItem {
+        date: string
+        online: number
+        offline: number
+        total: number
+        channelData: Record<string, { count: number; feeRate: number }>
+        categoryData: Record<string, { count: number }>
+      }
+      const dailyDataMap = new Map<string, DailyDataItem>()
       
       console.log(`[DataStore] uploadHistory exists:`, !!summary.uploadHistory)
       console.log(`[DataStore] onlineSales count:`, summary.uploadHistory?.onlineSales?.length || 0)
@@ -200,24 +208,56 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
         return `${year}-${month}-${day}`
       }
       
-      // 온라인 판매 데이터
+      // 온라인 판매 데이터 - 채널별로 집계
       if (summary.uploadHistory?.onlineSales) {
         for (const sale of summary.uploadHistory.onlineSales) {
           const dateKey = formatDateKey(sale.saleDate)
-          const existing = dailyDataMap.get(dateKey) || { date: dateKey, online: 0, offline: 0, total: 0 }
+          const existing = dailyDataMap.get(dateKey) || { 
+            date: dateKey, 
+            online: 0, 
+            offline: 0, 
+            total: 0,
+            channelData: {},
+            categoryData: {},
+          }
           existing.online += sale.quantity
           existing.total = existing.online + existing.offline
+          
+          // 채널별 집계 (DAILY_TOTAL 제외)
+          if (sale.channelCode !== 'DAILY_TOTAL') {
+            if (!existing.channelData[sale.channelCode]) {
+              existing.channelData[sale.channelCode] = { count: 0, feeRate: Number(sale.feeRate) || 10 }
+            }
+            existing.channelData[sale.channelCode].count += sale.quantity
+          }
+          
           dailyDataMap.set(dateKey, existing)
         }
       }
       
-      // 오프라인 판매 데이터
+      // 오프라인 판매 데이터 - 카테고리별로 집계
       if (summary.uploadHistory?.offlineSales) {
         for (const sale of summary.uploadHistory.offlineSales) {
           const dateKey = formatDateKey(sale.saleDate)
-          const existing = dailyDataMap.get(dateKey) || { date: dateKey, online: 0, offline: 0, total: 0 }
+          const existing = dailyDataMap.get(dateKey) || { 
+            date: dateKey, 
+            online: 0, 
+            offline: 0, 
+            total: 0,
+            channelData: {},
+            categoryData: {},
+          }
           existing.offline += sale.quantity
           existing.total = existing.online + existing.offline
+          
+          // 카테고리별 집계 (DAILY_TOTAL 제외)
+          if (sale.categoryCode !== 'DAILY_TOTAL') {
+            if (!existing.categoryData[sale.categoryCode]) {
+              existing.categoryData[sale.categoryCode] = { count: 0 }
+            }
+            existing.categoryData[sale.categoryCode].count += sale.quantity
+          }
+          
           dailyDataMap.set(dateKey, existing)
         }
       }
@@ -228,8 +268,20 @@ export async function getUploadDataByMonth(year: number, month: number): Promise
       
       console.log(`[DataStore] Daily data reconstructed: ${dailyData.length} days`)
       if (dailyData.length > 0) {
-        console.log(`[DataStore] First day:`, dailyData[0])
-        console.log(`[DataStore] Last day:`, dailyData[dailyData.length - 1])
+        const firstDay = dailyData[0]
+        const lastDay = dailyData[dailyData.length - 1]
+        console.log(`[DataStore] First day:`, {
+          date: firstDay.date,
+          online: firstDay.online,
+          offline: firstDay.offline,
+          channelCount: Object.keys(firstDay.channelData || {}).length,
+          categoryCount: Object.keys(firstDay.categoryData || {}).length,
+        })
+        console.log(`[DataStore] Last day:`, {
+          date: lastDay.date,
+          online: lastDay.online,
+          offline: lastDay.offline,
+        })
       } else if (summary.onlineTotal > 0 || summary.offlineTotal > 0) {
         console.log(`[DataStore] ⚠️ No daily records but has totals - dailyData will be empty`)
         console.log(`[DataStore] To fix: Delete and re-upload the data for ${year}-${month}`)
